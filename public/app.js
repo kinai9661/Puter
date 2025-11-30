@@ -35,7 +35,8 @@ const modelDescriptions = {
     'black-forest-labs/FLUX.1-schnell': '⚡ FLUX.1 Schnell: 快速生成模式,適合快速預覽',
     'black-forest-labs/FLUX.1-schnell-Free': '🆓 FLUX.1 Schnell Free: 免費快速生成版本',
     'black-forest-labs/FLUX.1-krea-dev': '🎨 FLUX.1 Krea Dev: 創意導向的開發版本',
-    'dall-e-3': '🤖 DALL-E 3: OpenAI 的經典圖像生成模型'
+    'dall-e-3': '🤖 DALL-E 3: OpenAI 的經典圖像生成模型',
+    'gpt-image-1': '🖼️ GPT Image 1: Puter 預設高品質模型'
 };
 
 // 聊天功能
@@ -73,10 +74,10 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// 圖像生成功能
+// 圖像生成功能 (修復版 - 正確使用 Puter.js API)
 async function generateImage() {
     const prompt = imagePrompt.value.trim();
-    const model = imageModelSelect.value;
+    const selectedModel = imageModelSelect.value;
     
     if (!prompt) {
         imageResult.innerHTML = '<p class="error">⚠️ 請輸入圖像描述</p>';
@@ -84,52 +85,65 @@ async function generateImage() {
     }
     
     generateImgBtn.disabled = true;
-    imageResult.innerHTML = '<p class="loading">🎨 正在使用 ' + model.split('/')[1] + ' 生成圖像...</p>';
+    const modelName = selectedModel.split('/')[1] || selectedModel;
+    imageResult.innerHTML = `<p class="loading">🎨 正在生成圖像...</p>`;
     
     try {
+        // Puter.js txt2img 正確的參數格式
+        // 只支持 model 和 quality 參數
         const options = {
-            model: model,
-            width: parseInt(imgWidth.value),
-            height: parseInt(imgHeight.value),
-            steps: parseInt(imgSteps.value),
-            guidance_scale: parseFloat(imgGuidance.value)
+            model: selectedModel,
+            quality: 'hd'  // 'hd' 或 'standard'
         };
         
-        let imageData;
-        if (model === 'dall-e-3') {
-            imageData = await puter.ai.txt2img(prompt);
-        } else {
-            imageData = await puter.ai.txt2img(prompt, options);
-        }
+        // 調用 Puter.js API - 返回 HTMLImageElement
+        const imageElement = await puter.ai.txt2img(prompt, options);
+        
+        // 獲取圖像的 data URL
+        const imageData = imageElement.src;
         
         imageResult.innerHTML = `
             <p class="success">✅ 圖像生成成功!</p>
             <p style="color: #666; font-size: 14px; margin-top: 10px;">
-                <strong>模型:</strong> ${model}<br>
-                <strong>尺寸:</strong> ${options.width}x${options.height}<br>
+                <strong>模型:</strong> ${selectedModel}<br>
+                <strong>品質:</strong> HD<br>
                 <strong>提示詞:</strong> ${prompt}
             </p>
-            <img src="${imageData}" alt="Generated Image" />
-            <div style="margin-top: 15px;">
-                <a href="${imageData}" download="flux-generated.png" style="
-                    display: inline-block;
-                    padding: 10px 20px;
-                    background: #667eea;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                    font-size: 14px;
-                ">💾 下載圖像</a>
-            </div>
         `;
+        
+        // 直接附加 HTMLImageElement
+        imageResult.appendChild(imageElement);
+        imageElement.style.cssText = 'max-width: 100%; border-radius: 10px; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
+        
+        // 添加下載連結
+        const downloadDiv = document.createElement('div');
+        downloadDiv.style.marginTop = '15px';
+        downloadDiv.innerHTML = `
+            <a href="${imageData}" download="ai-generated-${Date.now()}.png" style="
+                display: inline-block;
+                padding: 10px 20px;
+                background: #667eea;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                font-size: 14px;
+            ">💾 下載圖像</a>
+        `;
+        imageResult.appendChild(downloadDiv);
+        
     } catch (error) {
+        console.error('Image generation error:', error);
         imageResult.innerHTML = `
-            <p class="error">❌ 生成失敗: ${error.message}</p>
+            <p class="error">❌ 生成失敗: ${error.message || '未知錯誤'}</p>
             <p style="color: #666; font-size: 14px; margin-top: 10px;">
-                請嘗試:<br>
-                • 更換其他 FLUX 模型<br>
-                • 調整圖像尺寸<br>
-                • 簡化提示詞描述
+                <strong>可能的原因:</strong><br>
+                • 所選模型可能不支持 (Puter.js 只支持部分模型)<br>
+                • 提示詞包含不當內容<br>
+                • 網路連接問題<br><br>
+                <strong>建議:</strong><br>
+                • 嘗試使用 "gpt-image-1" 或 "dall-e-3"<br>
+                • 簡化提示詞內容<br>
+                • 檢查控制台查看詳細錯誤訊息
             </p>
         `;
     } finally {
