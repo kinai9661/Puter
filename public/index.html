@@ -3,106 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puter.js AI Chat - Zeabur</title>
+    <title>Puter AI - 免費 AI 圖像生成與聊天</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>🤖 AI 聊天與圖像生成</h1>
-        
-        <!-- AI 聊天區 -->
-        <div class="chat-section">
-            <div id="chat-messages" class="messages"></div>
-            <div class="input-group">
-                <select id="model-select">
-                    <option value="gpt-4o">GPT-4o</option>
-                    <option value="claude-3.5-sonnet">Claude Sonnet 3.5</option>
-                    <option value="gpt-5-nano">GPT-5 Nano</option>
-                </select>
-                <input type="text" id="chat-input" placeholder="輸入訊息..." />
-                <button id="send-btn">發送</button>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                    <path d="M16 8L24 16L16 24L8 16L16 8Z" fill="white" opacity="0.9"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                            <stop stop-color="#667eea"/>
+                            <stop offset="1" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>Puter AI</span>
             </div>
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="chat">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    AI 聊天
+                </button>
+                <button class="tab-btn" data-tab="image">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    圖像生成
+                </button>
+                <button class="tab-btn" data-tab="ocr">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                    </svg>
+                    OCR
+                </button>
+            </nav>
         </div>
+    </header>
+
+    <main class="main-content">
+        <!-- AI 聊天區 -->
+        <section id="chat-section" class="section active">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🤖 AI 聊天助手</h2>
+                    <select id="model-select" class="select-modern">
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="claude-3.5-sonnet">Claude Sonnet 3.5</option>
+                        <option value="gpt-5-nano">GPT-5 Nano</option>
+                    </select>
+                </div>
+                <div id="chat-messages" class="messages"></div>
+                <div class="input-container">
+                    <input type="text" id="chat-input" class="input-modern" placeholder="輸入你的訊息..." />
+                    <button id="send-btn" class="btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                        發送
+                    </button>
+                </div>
+            </div>
+        </section>
 
         <!-- 圖像生成區 -->
-        <div class="image-section">
-            <h2>🎨 AI 圖像生成</h2>
-            
-            <div class="model-selector">
-                <label for="image-model-select">選擇模型:</label>
-                <select id="image-model-select">
-                    <optgroup label="FLUX 2 系列 (最新)">
-                        <option value="black-forest-labs/FLUX.2-pro">FLUX.2 Pro (最高品質)</option>
-                        <option value="black-forest-labs/FLUX.2-dev">FLUX.2 Dev</option>
-                        <option value="black-forest-labs/FLUX.2-flex">FLUX.2 Flex (彈性)</option>
-                    </optgroup>
-                    <optgroup label="FLUX 1.1 系列">
-                        <option value="black-forest-labs/FLUX.1.1-pro">FLUX.1.1 Pro</option>
-                    </optgroup>
-                    <optgroup label="FLUX 1 Pro 系列">
-                        <option value="black-forest-labs/FLUX.1-pro" selected>FLUX.1 Pro</option>
-                        <option value="black-forest-labs/FLUX.1-Canny-pro">FLUX.1 Canny Pro (邊緣檢測)</option>
-                    </optgroup>
-                    <optgroup label="FLUX 1 Dev 系列">
-                        <option value="black-forest-labs/FLUX.1-dev">FLUX.1 Dev</option>
-                        <option value="black-forest-labs/FLUX.1-dev-lora">FLUX.1 Dev LoRA</option>
-                    </optgroup>
-                    <optgroup label="FLUX 1 Kontext 系列">
-                        <option value="black-forest-labs/FLUX.1-kontext-max">FLUX.1 Kontext Max</option>
-                        <option value="black-forest-labs/FLUX.1-kontext-pro">FLUX.1 Kontext Pro</option>
-                        <option value="black-forest-labs/FLUX.1-kontext-dev">FLUX.1 Kontext Dev</option>
-                    </optgroup>
-                    <optgroup label="FLUX 1 Schnell 系列 (快速)">
-                        <option value="black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</option>
-                        <option value="black-forest-labs/FLUX.1-schnell-Free">FLUX.1 Schnell Free</option>
-                    </optgroup>
-                    <optgroup label="FLUX 1 Krea 系列">
-                        <option value="black-forest-labs/FLUX.1-krea-dev">FLUX.1 Krea Dev</option>
-                    </optgroup>
-                    <optgroup label="其他模型">
-                        <option value="dall-e-3">DALL-E 3</option>
-                    </optgroup>
-                </select>
-            </div>
-
-            <div class="model-info" id="model-info">
-                <p>📌 <strong>FLUX.1 Pro</strong>: 平衡品質與速度的專業級模型</p>
-            </div>
-
-            <div class="input-group">
-                <input type="text" id="image-prompt" placeholder="描述你想生成的圖像..." />
-                <button id="generate-img-btn">生成圖像</button>
-            </div>
-
-            <!-- 高級選項 -->
-            <div class="advanced-options" id="advanced-options">
-                <h3>⚙️ 高級選項</h3>
-                <div class="option-row">
-                    <label>寬度:</label>
-                    <input type="number" id="img-width" value="1024" min="256" max="2048" step="64">
-                    <label>高度:</label>
-                    <input type="number" id="img-height" value="1024" min="256" max="2048" step="64">
+        <section id="image-section" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🎨 AI 圖像生成</h2>
                 </div>
-                <div class="option-row">
-                    <label>步數 (Steps):</label>
-                    <input type="number" id="img-steps" value="30" min="1" max="100">
-                    <label>引導強度 (Guidance):</label>
-                    <input type="number" id="img-guidance" value="7.5" min="0" max="20" step="0.5">
+                
+                <div class="form-group">
+                    <label class="label-modern">選擇模型</label>
+                    <select id="image-model-select" class="select-modern">
+                        <optgroup label="推薦模型">
+                            <option value="gpt-image-1" selected>GPT Image 1 (推薦)</option>
+                            <option value="dall-e-3">DALL-E 3</option>
+                        </optgroup>
+                        <optgroup label="FLUX 2 系列">
+                            <option value="black-forest-labs/FLUX.2-pro">FLUX.2 Pro</option>
+                            <option value="black-forest-labs/FLUX.2-dev">FLUX.2 Dev</option>
+                        </optgroup>
+                        <optgroup label="FLUX 1 系列">
+                            <option value="black-forest-labs/FLUX.1-pro">FLUX.1 Pro</option>
+                            <option value="black-forest-labs/FLUX.1-dev">FLUX.1 Dev</option>
+                            <option value="black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</option>
+                        </optgroup>
+                    </select>
                 </div>
-            </div>
 
-            <div id="image-result"></div>
-        </div>
+                <div class="model-info-card" id="model-info">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>🖼️ GPT Image 1: Puter 預設高品質模型</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="label-modern">圖像描述</label>
+                    <textarea id="image-prompt" class="textarea-modern" rows="3" placeholder="詳細描述你想生成的圖像...例如: 一個未來科技城市，高楼大廈，霹號燈，賽博龐克風格"></textarea>
+                </div>
+
+                <button id="generate-img-btn" class="btn-primary btn-large">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m8.66-11.66l-4.24 4.24M7.58 16.42l-4.24 4.24M1 12h6m6 0h6M3.34 3.34l4.24 4.24m8.84 8.84l4.24 4.24"/>
+                    </svg>
+                    生成圖像
+                </button>
+
+                <div id="image-result" class="result-container"></div>
+            </div>
+        </section>
 
         <!-- OCR 區 -->
-        <div class="ocr-section">
-            <h2>📝 圖像轉文字 (OCR)</h2>
-            <input type="text" id="image-url" placeholder="輸入圖像 URL..." />
-            <button id="ocr-btn">提取文字</button>
-            <div id="ocr-result"></div>
-        </div>
-    </div>
+        <section id="ocr-section" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📝 圖像轉文字 (OCR)</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label class="label-modern">圖像 URL</label>
+                    <input type="text" id="image-url" class="input-modern" placeholder="輸入圖像連結..." />
+                </div>
+
+                <button id="ocr-btn" class="btn-primary btn-large">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    提取文字
+                </button>
+
+                <div id="ocr-result" class="result-container"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Powered by <a href="https://puter.com" target="_blank">Puter.js</a> • 免費使用 • 無需 API 金鑰</p>
+    </footer>
 
     <script src="app.js"></script>
 </body>

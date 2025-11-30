@@ -10,33 +10,39 @@ const imagePrompt = document.getElementById('image-prompt');
 const generateImgBtn = document.getElementById('generate-img-btn');
 const imageResult = document.getElementById('image-result');
 
-const imgWidth = document.getElementById('img-width');
-const imgHeight = document.getElementById('img-height');
-const imgSteps = document.getElementById('img-steps');
-const imgGuidance = document.getElementById('img-guidance');
-
 const imageUrl = document.getElementById('image-url');
 const ocrBtn = document.getElementById('ocr-btn');
 const ocrResult = document.getElementById('ocr-result');
 
+// Tab 切換
+const tabBtns = document.querySelectorAll('.tab-btn');
+const sections = document.querySelectorAll('.section');
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        sections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === `${targetTab}-section`) {
+                section.classList.add('active');
+            }
+        });
+    });
+});
+
 // 模型資訊
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,提供最高品質的圖像生成',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗和測試新功能',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,可適應多種生成需求',
-    'black-forest-labs/FLUX.1.1-pro': '⚡ FLUX.1.1 Pro: 改進版專業模型,速度更快',
-    'black-forest-labs/FLUX.1-pro': '📌 FLUX.1 Pro: 平衡品質與速度的專業級模型',
-    'black-forest-labs/FLUX.1-Canny-pro': '🎨 FLUX.1 Canny Pro: 專門用於邊緣檢測和線稿轉換',
-    'black-forest-labs/FLUX.1-dev': '🛠️ FLUX.1 Dev: 開發者友好版本,支持更多自訂參數',
-    'black-forest-labs/FLUX.1-dev-lora': '🎯 FLUX.1 Dev LoRA: 支持 LoRA 微調的開發版',
-    'black-forest-labs/FLUX.1-kontext-max': '🚀 FLUX.1 Kontext Max: 最大上下文理解能力',
-    'black-forest-labs/FLUX.1-kontext-pro': '💼 FLUX.1 Kontext Pro: 專業級上下文理解',
-    'black-forest-labs/FLUX.1-kontext-dev': '🔍 FLUX.1 Kontext Dev: 開發級上下文理解',
-    'black-forest-labs/FLUX.1-schnell': '⚡ FLUX.1 Schnell: 快速生成模式,適合快速預覽',
-    'black-forest-labs/FLUX.1-schnell-Free': '🆓 FLUX.1 Schnell Free: 免費快速生成版本',
-    'black-forest-labs/FLUX.1-krea-dev': '🎨 FLUX.1 Krea Dev: 創意導向的開發版本',
+    'gpt-image-1': '🖼️ GPT Image 1: Puter 預設高品質模型，平衡速度與品質',
     'dall-e-3': '🤖 DALL-E 3: OpenAI 的經典圖像生成模型',
-    'gpt-image-1': '🖼️ GPT Image 1: Puter 預設高品質模型'
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型 (可能不支持)',
+    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本 (可能不支持)',
+    'black-forest-labs/FLUX.1-pro': '📌 FLUX.1 Pro: 專業級模型 (可能不支持)',
+    'black-forest-labs/FLUX.1-dev': '🛠️ FLUX.1 Dev: 開發者版本 (可能不支持)',
+    'black-forest-labs/FLUX.1-schnell': '⚡ FLUX.1 Schnell: 快速生成 (可能不支持)'
 };
 
 // 聊天功能
@@ -74,7 +80,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// 圖像生成功能 (修復版 - 正確使用 Puter.js API)
+// 圖像生成功能
 async function generateImage() {
     const prompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
@@ -85,49 +91,31 @@ async function generateImage() {
     }
     
     generateImgBtn.disabled = true;
-    const modelName = selectedModel.split('/')[1] || selectedModel;
-    imageResult.innerHTML = `<p class="loading">🎨 正在生成圖像...</p>`;
+    imageResult.innerHTML = '<p class="loading">🎨 正在生成圖像，請稍候...</p>';
     
     try {
-        // Puter.js txt2img 正確的參數格式
-        // 只支持 model 和 quality 參數
         const options = {
             model: selectedModel,
-            quality: 'hd'  // 'hd' 或 'standard'
+            quality: 'hd'
         };
         
-        // 調用 Puter.js API - 返回 HTMLImageElement
         const imageElement = await puter.ai.txt2img(prompt, options);
-        
-        // 獲取圖像的 data URL
         const imageData = imageElement.src;
         
-        imageResult.innerHTML = `
-            <p class="success">✅ 圖像生成成功!</p>
-            <p style="color: #666; font-size: 14px; margin-top: 10px;">
-                <strong>模型:</strong> ${selectedModel}<br>
-                <strong>品質:</strong> HD<br>
-                <strong>提示詞:</strong> ${prompt}
-            </p>
-        `;
-        
-        // 直接附加 HTMLImageElement
+        imageResult.innerHTML = '<p class="success">✅ 圖像生成成功!</p>';
         imageResult.appendChild(imageElement);
-        imageElement.style.cssText = 'max-width: 100%; border-radius: 10px; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
+        imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);';
         
-        // 添加下載連結
         const downloadDiv = document.createElement('div');
-        downloadDiv.style.marginTop = '15px';
         downloadDiv.innerHTML = `
-            <a href="${imageData}" download="ai-generated-${Date.now()}.png" style="
-                display: inline-block;
-                padding: 10px 20px;
-                background: #667eea;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                font-size: 14px;
-            ">💾 下載圖像</a>
+            <a href="${imageData}" download="ai-generated-${Date.now()}.png">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                下載圖像
+            </a>
         `;
         imageResult.appendChild(downloadDiv);
         
@@ -135,15 +123,11 @@ async function generateImage() {
         console.error('Image generation error:', error);
         imageResult.innerHTML = `
             <p class="error">❌ 生成失敗: ${error.message || '未知錯誤'}</p>
-            <p style="color: #666; font-size: 14px; margin-top: 10px;">
-                <strong>可能的原因:</strong><br>
-                • 所選模型可能不支持 (Puter.js 只支持部分模型)<br>
-                • 提示詞包含不當內容<br>
-                • 網路連接問題<br><br>
+            <p style="color: var(--text-secondary); margin-top: 1rem;">
                 <strong>建議:</strong><br>
-                • 嘗試使用 "gpt-image-1" 或 "dall-e-3"<br>
+                • 嘗試使用 "gpt-image-1" 或 "dall-e-3" 模型<br>
                 • 簡化提示詞內容<br>
-                • 檢查控制台查看詳細錯誤訊息
+                • 檢查網路連接
             </p>
         `;
     } finally {
@@ -161,13 +145,13 @@ async function extractText() {
     }
     
     ocrBtn.disabled = true;
-    ocrResult.innerHTML = '<p class="loading">📝 提取文字中...</p>';
+    ocrResult.innerHTML = '<p class="loading">📝 正在提取文字...</p>';
     
     try {
         const text = await puter.ai.img2txt(url);
         ocrResult.innerHTML = `
             <p class="success">✅ 文字提取成功!</p>
-            <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 5px; border: 1px solid #e0e0e0;">
+            <div style="margin-top: 1rem; padding: 1.5rem; background: white; border-radius: 12px; border: 1px solid var(--border);">
                 <strong>提取的文字:</strong><br><br>
                 ${text.replace(/\n/g, '<br>')}
             </div>
@@ -183,7 +167,14 @@ async function extractText() {
 function updateModelInfo() {
     const selectedModel = imageModelSelect.value;
     const description = modelDescriptions[selectedModel] || '選擇一個模型開始生成';
-    modelInfo.innerHTML = `<p>${description}</p>`;
+    modelInfo.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>${description}</span>
+    `;
 }
 
 // 事件監聽器
@@ -195,11 +186,14 @@ chatInput.addEventListener('keypress', (e) => {
 imageModelSelect.addEventListener('change', updateModelInfo);
 generateImgBtn.addEventListener('click', generateImage);
 imagePrompt.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') generateImage();
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        generateImage();
+    }
 });
 
 ocrBtn.addEventListener('click', extractText);
 
 // 初始化
-addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
+addMessage('👋 您好！我是 AI 助手，有什麼可以幫您的嗎？', 'ai');
 updateModelInfo();
