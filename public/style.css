@@ -138,6 +138,24 @@ body {
     color: var(--text-primary);
 }
 
+.btn-secondary {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: white;
+    border-color: var(--primary);
+}
+
+.btn-secondary svg {
+    stroke: var(--text-secondary);
+}
+
 /* Messages */
 .messages {
     height: 450px;
@@ -235,8 +253,9 @@ body {
 }
 
 .select-modern {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
     border: 2px solid var(--border);
     border-radius: 12px;
     background: white;
@@ -254,6 +273,33 @@ body {
 .input-container {
     display: flex;
     gap: 0.75rem;
+}
+
+/* Advanced Section */
+.advanced-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: 12px;
+}
+
+.advanced-section summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary);
+    user-select: none;
+    list-style: none;
+}
+
+.advanced-section summary::-webkit-details-marker {
+    display: none;
+}
+
+.advanced-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 /* Buttons */
@@ -348,26 +394,6 @@ body {
     font-weight: 600;
 }
 
-.result-container a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    margin-top: 1rem;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    text-decoration: none;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow);
-}
-
-.result-container a:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
 /* Footer */
 .footer {
     text-align: center;
@@ -406,10 +432,6 @@ body {
         font-size: 0.85rem;
     }
 
-    .tab-btn span {
-        display: none;
-    }
-
     .main-content {
         padding: 1rem;
     }
@@ -429,5 +451,9 @@ body {
 
     .input-container {
         flex-direction: column;
+    }
+    
+    .advanced-grid {
+        grid-template-columns: 1fr;
     }
 }

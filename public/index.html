@@ -81,24 +81,18 @@
             <div class="card">
                 <div class="card-header">
                     <h2>🎨 AI 圖像生成</h2>
+                    <button id="refresh-models-btn" class="btn-secondary" title="重新載入模型">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <div class="form-group">
                     <label class="label-modern">選擇模型</label>
                     <select id="image-model-select" class="select-modern">
-                        <optgroup label="推薦模型">
-                            <option value="gpt-image-1" selected>GPT Image 1 (推薦)</option>
-                            <option value="dall-e-3">DALL-E 3</option>
-                        </optgroup>
-                        <optgroup label="FLUX 2 系列">
-                            <option value="black-forest-labs/FLUX.2-pro">FLUX.2 Pro</option>
-                            <option value="black-forest-labs/FLUX.2-dev">FLUX.2 Dev</option>
-                        </optgroup>
-                        <optgroup label="FLUX 1 系列">
-                            <option value="black-forest-labs/FLUX.1-pro">FLUX.1 Pro</option>
-                            <option value="black-forest-labs/FLUX.1-dev">FLUX.1 Dev</option>
-                            <option value="black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</option>
-                        </optgroup>
+                        <option value="">載入模型中...</option>
                     </select>
                 </div>
 
@@ -108,13 +102,36 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🖼️ GPT Image 1: Puter 預設高品質模型</span>
+                    <span>正在載入模型資訊...</span>
                 </div>
 
                 <div class="form-group">
                     <label class="label-modern">圖像描述</label>
-                    <textarea id="image-prompt" class="textarea-modern" rows="3" placeholder="詳細描述你想生成的圖像...例如: 一個未來科技城市，高楼大廈，霹號燈，賽博龐克風格"></textarea>
+                    <textarea id="image-prompt" class="textarea-modern" rows="3" placeholder="詳細描述你想生成的圖像...例如: 一個未來科技城市,高樓大廈,霓虹燈,賽博龐克風格"></textarea>
                 </div>
+
+                <!-- 高級選項 -->
+                <details class="advanced-section" open>
+                    <summary>⚙️ 高級參數</summary>
+                    <div class="advanced-grid">
+                        <div class="form-group">
+                            <label class="label-modern">寬度</label>
+                            <input type="number" id="img-width" class="input-modern" value="1024" min="256" max="2048" step="64">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-modern">高度</label>
+                            <input type="number" id="img-height" class="input-modern" value="1024" min="256" max="2048" step="64">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-modern">步數</label>
+                            <input type="number" id="img-steps" class="input-modern" value="30" min="1" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-modern">引導強度</label>
+                            <input type="number" id="img-guidance" class="input-modern" value="7.5" min="0" max="20" step="0.5">
+                        </div>
+                    </div>
+                </details>
 
                 <button id="generate-img-btn" class="btn-primary btn-large">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
