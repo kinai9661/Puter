@@ -10,9 +10,21 @@ const imagePrompt = document.getElementById('image-prompt');
 const generateImgBtn = document.getElementById('generate-img-btn');
 const imageResult = document.getElementById('image-result');
 
+const aspectBtns = document.querySelectorAll('.aspect-btn');
+const customDimensions = document.getElementById('custom-dimensions');
+const customWidth = document.getElementById('custom-width');
+const customHeight = document.getElementById('custom-height');
+const imgSteps = document.getElementById('img-steps');
+const imgSeed = document.getElementById('img-seed');
+const negativePrompt = document.getElementById('negative-prompt');
+
 const imageUrl = document.getElementById('image-url');
 const ocrBtn = document.getElementById('ocr-btn');
 const ocrResult = document.getElementById('ocr-result');
+
+// 當前選擇的尺寸
+let currentWidth = 1024;
+let currentHeight = 1024;
 
 // Tab 切換
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -34,11 +46,40 @@ tabBtns.forEach(btn => {
     });
 });
 
+// 比例選擇
+aspectBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        aspectBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        if (btn.dataset.custom === 'true') {
+            customDimensions.style.display = 'block';
+            currentWidth = parseInt(customWidth.value);
+            currentHeight = parseInt(customHeight.value);
+        } else {
+            customDimensions.style.display = 'none';
+            currentWidth = parseInt(btn.dataset.width);
+            currentHeight = parseInt(btn.dataset.height);
+        }
+    });
+});
+
+// 自訂尺寸輸入
+customWidth.addEventListener('input', () => {
+    currentWidth = parseInt(customWidth.value);
+});
+
+customHeight.addEventListener('input', () => {
+    currentHeight = parseInt(customHeight.value);
+});
+
 // 模型資訊
 const modelDescriptions = {
     'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染與提示詞遵循',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
+    'black-forest-labs/FLUX.1.1-pro': '⚡ FLUX.1.1 Pro: 改進版專業模型,速度更快',
+    'black-forest-labs/FLUX.1-pro': '📌 FLUX.1 Pro: 平衡品質與速度的專業級模型',
+    'black-forest-labs/FLUX.1-schnell': '🚀 FLUX.1 Schnell: 快速生成模式,適合快速預覽',
+    'black-forest-labs/FLUX.1-dev': '🔧 FLUX.1 Dev: 開發者版本,適合實驗與測試',
     'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
     'dall-e-3': '✨ DALL-E 3: OpenAI 經典圖像生成模型'
 };
@@ -78,7 +119,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// FLUX.2 圖像生成功能 (官方 API 格式)
+// FLUX 圖像生成功能 (官方完整參數)
 async function generateImage() {
     const prompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
@@ -95,17 +136,26 @@ async function generateImage() {
             <div class="loading-spinner"></div>
             <p class="loading">⚡ 正在使用 ${modelName} 生成圖像...</p>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                FLUX.2 官方 API • 約 15-30 秒
+                尺寸: ${currentWidth}×${currentHeight} • 約 15-30 秒
             </p>
         </div>
     `;
     
     try {
-        // ✅ Puter.js 官方 FLUX.2 API 格式
+        // ✅ 根據官方文檔的完整參數支持
         const options = {
             model: selectedModel,
-            disable_safety_checker: true  // 關鍵:支持創意內容
+            width: currentWidth,
+            height: currentHeight,
+            steps: parseInt(imgSteps.value),
+            negative_prompt: negativePrompt.value.trim() || undefined
         };
+        
+        // 添加種子 (如果設置)
+        const seedValue = imgSeed.value.trim();
+        if (seedValue) {
+            options.seed = parseInt(seedValue);
+        }
         
         console.log('生成參數:', { prompt, ...options });
         
@@ -127,7 +177,7 @@ async function generateImage() {
                 <div>
                     <p class="success">✅ 圖像生成成功!</p>
                     <p style="color: var(--text-secondary); font-size: 0.85rem;">
-                        模型: ${selectedModel} • FLUX.2 官方 API
+                        模型: ${selectedModel} • 尺寸: ${currentWidth}×${currentHeight} • 步數: ${options.steps}
                     </p>
                 </div>
             </div>
@@ -140,7 +190,7 @@ async function generateImage() {
         const downloadDiv = document.createElement('div');
         downloadDiv.style.marginTop = '1rem';
         downloadDiv.innerHTML = `
-            <a href="${imageData}" download="flux2-${modelName}-${Date.now()}.png" class="download-btn">
+            <a href="${imageData}" download="flux-${modelName}-${currentWidth}x${currentHeight}.png" class="download-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -164,7 +214,8 @@ async function generateImage() {
                 <div class="error-suggestions">
                     <p><strong>💡 建議:</strong></p>
                     <ul>
-                        <li>嘗試使用 <strong>FLUX.2-flex</strong> (更快速)</li>
+                        <li>嘗試使用 <strong>FLUX.1-schnell</strong> (最快)</li>
+                        <li>減少圖像尺寸 (如 768×768)</li>
                         <li>簡化提示詞內容</li>
                         <li>切換到 <strong>gpt-image-1</strong> 或 <strong>dall-e-3</strong></li>
                         <li>檢查網路連接</li>

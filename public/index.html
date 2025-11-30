@@ -37,7 +37,7 @@
                         <circle cx="8.5" cy="8.5" r="1.5"/>
                         <path d="M21 15l-5-5L5 21"/>
                     </svg>
-                    FLUX.2 圖像
+                    FLUX 圖像
                 </button>
                 <button class="tab-btn" data-tab="ocr">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -76,26 +76,28 @@
             </div>
         </section>
 
-        <!-- FLUX.2 圖像生成區 -->
+        <!-- FLUX 圖像生成區 -->
         <section id="image-section" class="section">
             <div class="card">
                 <div class="card-header">
-                    <h2>⚡ FLUX.2 圖像生成</h2>
+                    <h2>⚡ FLUX AI 圖像生成</h2>
                 </div>
                 
                 <div class="flux-badge">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    <span>Powered by Black Forest Labs FLUX.2</span>
+                    <span>Powered by Black Forest Labs FLUX</span>
                 </div>
 
                 <div class="form-group">
-                    <label class="label-modern">選擇 FLUX.2 模型</label>
+                    <label class="label-modern">選擇 FLUX 模型</label>
                     <select id="image-model-select" class="select-modern">
-                        <option value="black-forest-labs/FLUX.2-pro" selected>🏆 FLUX.2 Pro (最高品質)</option>
-                        <option value="black-forest-labs/FLUX.2-flex">🔄 FLUX.2 Flex (彈性)</option>
-                        <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2 Dev (開發)</option>
+                        <option value="black-forest-labs/FLUX.2-pro">🏆 FLUX.2 Pro (最高品質)</option>
+                        <option value="black-forest-labs/FLUX.1.1-pro">⚡ FLUX.1.1 Pro (快速)</option>
+                        <option value="black-forest-labs/FLUX.1-pro">📌 FLUX.1 Pro</option>
+                        <option value="black-forest-labs/FLUX.1-schnell" selected>🚀 FLUX.1 Schnell (推薦)</option>
+                        <option value="black-forest-labs/FLUX.1-dev">🔧 FLUX.1 Dev</option>
                         <option value="gpt-image-1">🤖 GPT Image-1 (備用)</option>
                         <option value="dall-e-3">✨ DALL-E 3 (經典)</option>
                     </select>
@@ -107,24 +109,111 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染與提示詞遵循</span>
+                    <span>🚀 FLUX.1 Schnell: 快速生成模式,適合快速預覽</span>
                 </div>
 
                 <div class="form-group">
                     <label class="label-modern">圖像描述</label>
-                    <textarea id="image-prompt" class="textarea-modern" rows="4" placeholder="詳細描述你想生成的圖像...
+                    <textarea id="image-prompt" class="textarea-modern" rows="3" placeholder="詳細描述你想生成的圖像...
 
 示例:
-• A vintage movie poster for 'The Last Voyage', featuring bold art deco typography
-• An infographic showing how to make coffee step by step
-• A majestic dragon on a mountain peak, fantasy art, detailed scales">A majestic dragon perched on a mountain peak, fantasy art style, detailed scales, dramatic lighting, 8K quality</textarea>
+• A majestic dragon perched on a mountain peak, fantasy art style
+• A serene Japanese garden with cherry blossoms and a koi pond
+• A cyberpunk cityscape with neon lights and flying vehicles">A majestic dragon perched on a mountain peak, fantasy art style, detailed scales, dramatic lighting</textarea>
                 </div>
+
+                <!-- 圖像尺寸選擇 -->
+                <div class="form-group">
+                    <label class="label-modern">圖像比例</label>
+                    <div class="aspect-ratio-grid">
+                        <button class="aspect-btn active" data-width="1024" data-height="1024">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            </svg>
+                            <span>1:1</span>
+                            <small>1024×1024</small>
+                        </button>
+                        <button class="aspect-btn" data-width="1024" data-height="768">
+                            <svg width="24" height="20" viewBox="0 0 24 20" fill="none" stroke="currentColor">
+                                <rect x="2" y="2" width="20" height="16" rx="2"/>
+                            </svg>
+                            <span>4:3</span>
+                            <small>1024×768</small>
+                        </button>
+                        <button class="aspect-btn" data-width="768" data-height="1024">
+                            <svg width="20" height="24" viewBox="0 0 20 24" fill="none" stroke="currentColor">
+                                <rect x="2" y="2" width="16" height="20" rx="2"/>
+                            </svg>
+                            <span>3:4</span>
+                            <small>768×1024</small>
+                        </button>
+                        <button class="aspect-btn" data-width="1280" data-height="720">
+                            <svg width="24" height="16" viewBox="0 0 24 16" fill="none" stroke="currentColor">
+                                <rect x="2" y="2" width="20" height="12" rx="2"/>
+                            </svg>
+                            <span>16:9</span>
+                            <small>1280×720</small>
+                        </button>
+                        <button class="aspect-btn" data-width="720" data-height="1280">
+                            <svg width="16" height="24" viewBox="0 0 16 24" fill="none" stroke="currentColor">
+                                <rect x="2" y="2" width="12" height="20" rx="2"/>
+                            </svg>
+                            <span>9:16</span>
+                            <small>720×1280</small>
+                        </button>
+                        <button class="aspect-btn" data-custom="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            <span>自訂</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 自訂尺寸 -->
+                <div id="custom-dimensions" class="custom-dimensions" style="display: none;">
+                    <div class="dimension-inputs">
+                        <div class="input-wrapper">
+                            <label>寬度</label>
+                            <input type="number" id="custom-width" value="1024" min="256" max="2048" step="64">
+                        </div>
+                        <div class="input-wrapper">
+                            <label>高度</label>
+                            <input type="number" id="custom-height" value="1024" min="256" max="2048" step="64">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 高級參數 -->
+                <details class="advanced-section">
+                    <summary>⚙️ 高級參數 (可選)</summary>
+                    <div class="advanced-grid">
+                        <div class="form-group">
+                            <label class="label-modern">步數 (Steps)</label>
+                            <input type="number" id="img-steps" class="input-modern" value="30" min="1" max="100">
+                            <small>更多步數 = 更高品質 (較慢)</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-modern">種子 (Seed)</label>
+                            <input type="number" id="img-seed" class="input-modern" value="" placeholder="隨機 (留空)">
+                            <small>固定種子可重現結果</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-modern">負面提示詞 (Negative Prompt)</label>
+                        <textarea id="negative-prompt" class="textarea-modern" rows="2" placeholder="描述你不想在圖像中出現的元素...
+例如: blurry, low quality, distorted, ugly, watermark">blurry, low quality, distorted, ugly, bad anatomy, watermark, text, signature</textarea>
+                    </div>
+                </details>
 
                 <button id="generate-img-btn" class="btn-primary btn-large">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    生成 FLUX.2 圖像
+                    生成 FLUX 圖像
                 </button>
 
                 <div id="image-result" class="result-container"></div>
@@ -160,7 +249,7 @@
     <footer class="footer">
         <p>
             Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + 
-            <a href="https://blackforestlabs.ai" target="_blank">FLUX.2</a> • 
+            <a href="https://blackforestlabs.ai" target="_blank">FLUX</a> • 
             免費使用 • 無需 API 金鑰
         </p>
     </footer>
