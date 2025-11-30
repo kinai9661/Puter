@@ -180,7 +180,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// 圖像生成功能 (支持 FLUX Pro 完整參數)
+// 圖像生成功能 (修復版 - 正確的 Puter.js API 格式)
 async function generateImage() {
     const prompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
@@ -200,20 +200,22 @@ async function generateImage() {
     imageResult.innerHTML = `<p class="loading">🎨 正在使用 ${modelName} 生成圖像,請稍候...</p>`;
     
     try {
-        // 完整參數支持 (FLUX Pro 需要)
+        // Puter.js txt2img 正確的 API 格式
+        // 根據官方文檔,只支持 model 和 quality 參數
         const options = {
             model: selectedModel,
-            width: parseInt(imgWidth.value),
-            height: parseInt(imgHeight.value),
-            steps: parseInt(imgSteps.value),
-            guidance_scale: parseFloat(imgGuidance.value),
-            seed: Math.floor(Math.random() * 1000000)
+            quality: 'hd'  // 'hd' 或 'standard'
         };
         
-        console.log('生成參數:', options);
+        console.log('生成參數:', { prompt, ...options });
         
-        // 調用 Puter.js API
+        // 調用 Puter.js API - 返回 HTMLImageElement
         const imageElement = await puter.ai.txt2img(prompt, options);
+        
+        if (!imageElement || !imageElement.src) {
+            throw new Error('圖像生成失敗:無效的回應');
+        }
+        
         const imageData = imageElement.src;
         
         // 顯示成功結果
@@ -221,11 +223,12 @@ async function generateImage() {
             <p class="success">✅ 圖像生成成功!</p>
             <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
                 <strong>模型:</strong> ${selectedModel}<br>
-                <strong>尺寸:</strong> ${options.width}x${options.height}<br>
-                <strong>步數:</strong> ${options.steps}
+                <strong>品質:</strong> HD<br>
+                <strong>提示詞:</strong> ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}
             </p>
         `;
         
+        // 附加圖像
         imageResult.appendChild(imageElement);
         imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);';
         
@@ -233,7 +236,7 @@ async function generateImage() {
         const downloadDiv = document.createElement('div');
         downloadDiv.style.marginTop = '1rem';
         downloadDiv.innerHTML = `
-            <a href="${imageData}" download="flux-${modelName}-${Date.now()}.png" style="
+            <a href="${imageData}" download="ai-generated-${Date.now()}.png" style="
                 display: inline-flex;
                 align-items: center;
                 gap: 0.5rem;
@@ -262,10 +265,10 @@ async function generateImage() {
             <p style="color: var(--text-secondary); margin-top: 1rem;">
                 <strong>建議:</strong><br>
                 • 嘗試使用 "gpt-image-1" 或 "dall-e-3" 模型<br>
+                • Puter.js 目前只支持部分模型<br>
+                • FLUX 模型可能需要特殊權限或配置<br>
                 • 簡化提示詞內容<br>
-                • 調整圖像尺寸 (建議 1024x1024)<br>
-                • 檢查網路連接<br>
-                • 某些 FLUX Pro 模型可能需要特殊權限
+                • 檢查網路連接
             </p>
         `;
     } finally {
@@ -314,11 +317,11 @@ function updateModelInfo() {
     
     if (!description) {
         if (selectedModel.includes('FLUX') && selectedModel.includes('pro')) {
-            description = '🏆 FLUX Pro: 專業級模型,支援完整參數與最高品質';
+            description = '🏆 FLUX Pro: 專業級模型 (可能需要特殊權限)';
         } else if (selectedModel.includes('FLUX') && selectedModel.includes('dev')) {
-            description = '🔧 FLUX Dev: 開發者版本,適合實驗與測試';
+            description = '🔧 FLUX Dev: 開發者版本 (可能需要特殊權限)';
         } else if (selectedModel.includes('schnell')) {
-            description = '⚡ FLUX Schnell: 快速生成模式,適合快速預覽';
+            description = '⚡ FLUX Schnell: 快速生成模式 (可能需要特殊權限)';
         } else {
             description = '選擇一個模型開始生成';
         }
