@@ -16,7 +16,7 @@
 
 ### 1. 註冊免費帳號 (推薦)
 
-訪問應用時,會自動彈出 Puter.com 登入視窗:
+訪問生成圖片時,會自動彈出 Puter.com 登入,自行拉大視窗就會出現:
 
 ![Puter 登入介面](https://github.com/kinai9661/Puter/blob/main/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%202025-12-01%20210358.png?raw=true)
 
