@@ -161,6 +161,11 @@ function openImageModal(imageData, prompt, modelName) {
     // 創建模態視窗
     const modal = document.createElement('div');
     modal.className = 'image-modal';
+    
+    // 處理提示詞，避免 HTML 和 JS 注入
+    const safePrompt = prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const jsPrompt = prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+    
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content">
@@ -170,16 +175,16 @@ function openImageModal(imageData, prompt, modelName) {
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
-            <img src="${imageData}" alt="${prompt}" />
+            <img src="${imageData}" alt="Generated image" />
             <div class="modal-info">
                 <div class="modal-prompt">
                     <strong>📝 提示詞:</strong>
-                    <p>${prompt}</p>
+                    <p>${safePrompt}</p>
                 </div>
                 <div class="modal-meta">
                     <span class="modal-model">🎨 ${modelName}</span>
                     <div class="modal-actions">
-                        <button class="btn-modal-action" onclick="copyPrompt('${prompt.replace(/'/g, "\\'")}')、title="複製提示詞">
+                        <button class="btn-modal-action btn-copy-prompt" title="複製提示詞">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2"/>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -201,6 +206,11 @@ function openImageModal(imageData, prompt, modelName) {
     `;
     
     document.body.appendChild(modal);
+    
+    // 添加複製事件
+    modal.querySelector('.btn-copy-prompt').addEventListener('click', () => {
+        copyPrompt(prompt);
+    });
     
     // 添加關閉事件
     modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
@@ -239,23 +249,31 @@ function renderHistory() {
         return;
     }
 
-    historyGrid.innerHTML = history.map(item => `
-        <div class="history-item" data-id="${item.id}">
-            <img src="${item.imageData}" alt="${item.prompt}" loading="lazy" onclick="openImageModal('${item.imageData}', '${item.prompt.replace(/'/g, "\\'")}, '${item.modelName}')">
+    historyGrid.innerHTML = '';
+    
+    history.forEach(item => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.dataset.id = item.id;
+        
+        const truncatedPrompt = item.prompt.substring(0, 80) + (item.prompt.length > 80 ? '...' : '');
+        
+        historyItem.innerHTML = `
+            <img src="${item.imageData}" alt="${truncatedPrompt}" loading="lazy">
             <div class="history-overlay">
                 <div class="history-info">
                     <span class="history-model">${item.modelName}</span>
                     <span class="history-date">${new Date(item.timestamp).toLocaleString('zh-TW')}</span>
                 </div>
-                <p class="history-prompt">${item.prompt.substring(0, 80)}${item.prompt.length > 80 ? '...' : ''}</p>
+                <p class="history-prompt">${truncatedPrompt}</p>
                 <div class="history-actions">
-                    <button class="btn-icon" onclick="copyPrompt('${item.prompt.replace(/'/g, "\\'")}')" title="複製提示詞">
+                    <button class="btn-icon btn-copy" title="複製提示詞">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="9" y="9" width="13" height="13" rx="2"/>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                         </svg>
                     </button>
-                    <button class="btn-icon" onclick="openImageModal('${item.imageData}', '${item.prompt.replace(/'/g, "\\'")}, '${item.modelName}')" title="放大查看">
+                    <button class="btn-icon btn-zoom" title="放大查看">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
                         </svg>
@@ -267,7 +285,7 @@ function renderHistory() {
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
                     </a>
-                    <button class="btn-icon btn-delete" data-id="${item.id}" title="刪除">
+                    <button class="btn-icon btn-delete" title="刪除">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -275,19 +293,32 @@ function renderHistory() {
                     </button>
                 </div>
             </div>
-        </div>
-    `).join('');
-
-    // 綁定刪除事件
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        `;
+        
+        // 綁定事件
+        const img = historyItem.querySelector('img');
+        const btnCopy = historyItem.querySelector('.btn-copy');
+        const btnZoom = historyItem.querySelector('.btn-zoom');
+        const btnDelete = historyItem.querySelector('.btn-delete');
+        
+        img.addEventListener('click', () => openImageModal(item.imageData, item.prompt, item.modelName));
+        btnCopy.addEventListener('click', (e) => {
             e.stopPropagation();
-            const id = parseInt(btn.dataset.id);
+            copyPrompt(item.prompt);
+        });
+        btnZoom.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openImageModal(item.imageData, item.prompt, item.modelName);
+        });
+        btnDelete.addEventListener('click', (e) => {
+            e.stopPropagation();
             if (confirm('確定要刪除這張圖片嗎?')) {
-                imageHistory.deleteImage(id);
+                imageHistory.deleteImage(item.id);
                 renderHistory();
             }
         });
+        
+        historyGrid.appendChild(historyItem);
     });
 }
 
@@ -403,7 +434,7 @@ async function generateImage() {
         
         imageResult.appendChild(imageElement);
         imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); cursor: pointer;';
-        imageElement.onclick = () => openImageModal(imageData, prompt, modelName);
+        imageElement.addEventListener('click', () => openImageModal(imageData, prompt, modelName));
         
         // 下載按鈕
         const downloadDiv = document.createElement('div');
