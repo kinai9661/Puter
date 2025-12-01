@@ -10,7 +10,7 @@ const MODELS = {
     'flash': {
         model: 'gemini-2.5-flash-image-preview',
         provider: null,
-        displayName: 'Gemini 2.5 Flash'
+        displayName: 'Gemini 2.5 Flash Image'
     }
 };
 
@@ -660,6 +660,7 @@ window.addEventListener('load', () => {
         showNotification('⚠️ Puter.js 載入失敗，請重新整理頁面', 'error');
     } else {
         console.log('🍌 Nano Banana AI Ready! (Full Version)');
+        console.log('🔧 Models:', MODELS);
     }
     
     setupImg2ImgUpload();
