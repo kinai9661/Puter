@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano Banana AI - 免費 FLUX.2 圖像生成</title>
+    <title>Nano Banana AI - 免費 Gemini 2.5 Flash Image 生成</title>
     <link rel="stylesheet" href="nano-banana.css">
     <script src="https://js.puter.com/v2/"></script>
 </head>
@@ -46,7 +46,7 @@
             <div class="nb-container">
                 <div class="nb-hero">
                     <h2 class="nb-hero-title">🍌 香蕉動力,無限創意</h2>
-                    <p class="nb-hero-subtitle">免費 FLUX.2 Pro 圖像生成 • 13種專業風格 • 雲端同步</p>
+                    <p class="nb-hero-subtitle">免費 Gemini 2.5 Flash Image + FLUX.2 • 13種專業風格 • 雲端同步</p>
                 </div>
 
                 <div class="nb-card">
@@ -59,12 +59,22 @@
                             AI 模型
                         </label>
                         <select id="nb-model-select" class="nb-select">
-                            <option value="black-forest-labs/FLUX.2-pro" selected>🏆 FLUX.2 Pro - 最高品質</option>
+                            <option value="gemini-2.5-flash-image-preview" selected>🍌 Nano Banana (Gemini 2.5 Flash Image) - Google 最新</option>
+                            <option value="black-forest-labs/FLUX.2-pro">🏆 FLUX.2 Pro - 最高品質</option>
                             <option value="black-forest-labs/FLUX.2-flex">🔄 FLUX.2 Flex - 快速</option>
                             <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2 Dev - 開發</option>
                             <option value="gpt-image-1">🤖 GPT Image-1</option>
                             <option value="dall-e-3">✨ DALL-E 3</option>
                         </select>
+                    </div>
+
+                    <!-- 模型說明 -->
+                    <div class="nb-style-preview" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.15)); border-color: #FFD700; margin-bottom: 1.5rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span><strong>🍌 Nano Banana</strong> 是 Google 最新的 Gemini 2.5 Flash Image 模型，免費無限使用！</span>
                     </div>
 
                     <!-- 風格選擇 -->
@@ -112,8 +122,9 @@
                         </label>
                         <textarea id="nb-prompt-input" class="nb-textarea" rows="4" placeholder="例如：
 A cute banana character with sunglasses dancing
-A majestic dragon on a mountain peak at sunset
-A futuristic city with neon lights and flying cars"></textarea>
+A serene Japanese garden with cherry blossoms
+A cyberpunk street scene with neon lights
+A majestic dragon on a mountain peak at sunset">A cute banana character wearing sunglasses, standing in a tropical paradise, digital art style</textarea>
                     </div>
 
                     <!-- 生成按鈕 -->
@@ -131,9 +142,9 @@ A futuristic city with neon lights and flying cars"></textarea>
                 <!-- 特色卡片 -->
                 <div class="nb-features">
                     <div class="nb-feature-card">
-                        <div class="nb-feature-icon">⚡</div>
-                        <h3>FLUX.2 Pro</h3>
-                        <p>最高品質生成</p>
+                        <div class="nb-feature-icon">🍌</div>
+                        <h3>Nano Banana</h3>
+                        <p>Google 最新模型</p>
                     </div>
                     <div class="nb-feature-card">
                         <div class="nb-feature-icon">🎨</div>
@@ -141,9 +152,9 @@ A futuristic city with neon lights and flying cars"></textarea>
                         <p>自動優化提示詞</p>
                     </div>
                     <div class="nb-feature-card">
-                        <div class="nb-feature-icon">🍌</div>
-                        <h3>香蕉主題</h3>
-                        <p>可愛有趣設計</p>
+                        <div class="nb-feature-icon">🆓</div>
+                        <h3>完全免費</h3>
+                        <p>無需 API 金鑰</p>
                     </div>
                 </div>
             </div>
@@ -214,8 +225,8 @@ A futuristic city with neon lights and flying cars"></textarea>
     <!-- Footer -->
     <footer class="nb-footer">
         <div class="nb-container">
-            <p>🍌 Nano Banana AI | Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + <a href="https://blackforestlabs.ai" target="_blank">FLUX.2</a></p>
-            <p><a href="index.html">← 返回主頁面</a> • <a href="https://github.com/kinai9661/Puter" target="_blank">GitHub</a> • MIT License</p>
+            <p>🍌 Nano Banana AI | Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + <a href="https://ai.google.dev/" target="_blank">Gemini 2.5</a> + <a href="https://blackforestlabs.ai" target="_blank">FLUX.2</a></p>
+            <p><a href="index.html">← 返回主頁面</a> • <a href="https://github.com/kinai9661/Puter" target="_blank">GitHub</a> • <a href="https://developer.puter.com/tutorials/free-unlimited-nano-banana-api/" target="_blank">🍌 API 文檔</a> • MIT License</p>
         </div>
     </footer>
 
