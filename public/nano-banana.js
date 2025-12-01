@@ -63,6 +63,12 @@ const styleDescriptions = {
     'surreal': '🌀 超現實 - 超現實藝術'
 };
 
+// 模型名稱映射
+const modelNames = {
+    'google/gemini-3-pro-image': 'Gemini 3 Pro Image',
+    'gemini-2.5-flash-image-preview': 'Gemini 2.5 Flash Image'
+};
+
 // 圖片管理類
 class BananaGallery {
     constructor() {
@@ -99,7 +105,7 @@ class BananaGallery {
             prompt,
             model,
             style,
-            modelName: model.split('/').pop() || model
+            modelName: modelNames[model] || model
         };
 
         this.images.unshift(image);
@@ -205,14 +211,14 @@ async function generateImage() {
     }
     
     generateBtn.disabled = true;
-    const modelName = selectedModel.split('/').pop() || selectedModel;
+    const modelName = modelNames[selectedModel] || selectedModel;
     
     resultContainer.style.display = 'block';
     resultContainer.innerHTML = `
         <div class="nb-loading">
             <div class="nb-loading-spinner"></div>
             <p>🍌 香蕉動力生成中... (使用 ${modelName})</p>
-            <small style="color: var(--nb-text-secondary);">FLUX.2 官方 API • 預計 15-30 秒</small>
+            <small style="color: var(--nb-text-secondary);">Nano Banana AI 官方 API • 預計 15-30 秒</small>
         </div>
     `;
     
@@ -238,7 +244,7 @@ async function generateImage() {
                     ✅ 香蕉圖像生成成功!
                 </p>
                 <p style="color: var(--nb-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
-                    模型: ${selectedModel} | 風格: ${styleDescriptions[styleKey] || '無'}
+                    模型: ${modelName} | 風格: ${styleDescriptions[styleKey] || '無'}
                 </p>
             </div>
         `;
@@ -250,7 +256,7 @@ async function generateImage() {
         // 下載按鈕
         const downloadBtn = document.createElement('a');
         downloadBtn.href = imageData;
-        downloadBtn.download = `banana-${modelName}-${Date.now()}.png`;
+        downloadBtn.download = `banana-${modelName.replace(/\s+/g, '-')}-${Date.now()}.png`;
         downloadBtn.className = 'nb-btn-primary';
         downloadBtn.style.marginTop = '1rem';
         downloadBtn.innerHTML = `
