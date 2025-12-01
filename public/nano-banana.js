@@ -277,6 +277,15 @@ function showLoading(modelName, container) {
     `;
 }
 
+// 提取錯誤訊息
+function extractErrorMessage(error) {
+    if (typeof error === 'string') return error;
+    if (error?.error?.message) return error.error.message;
+    if (error?.error) return JSON.stringify(error.error);
+    if (error?.message) return error.message;
+    return JSON.stringify(error);
+}
+
 // ========== API Functions ==========
 
 // 圖片生成 API（使用 IMG_MODELS）
@@ -288,7 +297,16 @@ async function generateImage(prompt, modelKey) {
     if (config.provider) options.provider = config.provider;
 
     console.log('🍌 Text2Img API:', options);
-    return await puter.ai.txt2img(prompt, options);
+    const result = await puter.ai.txt2img(prompt, options);
+    
+    // 檢查 API 返回
+    if (result && result.success === false) {
+        const errorMsg = extractErrorMessage(result);
+        console.error('❌ API Error:', result);
+        throw new Error(`API 錯誤: ${errorMsg}`);
+    }
+    
+    return result;
 }
 
 // 圖生圖 API（使用 IMG_MODELS）
@@ -308,11 +326,17 @@ async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
     console.log('🍌 Img2Img API:', options);
     
     try {
-        if (puter.ai.img2img) {
-            return await puter.ai.img2img(options);
-        } else {
-            return await puter.ai.txt2img(prompt + ' (style transfer)', options);
+        const result = puter.ai.img2img 
+            ? await puter.ai.img2img(options)
+            : await puter.ai.txt2img(prompt + ' (style transfer)', options);
+        
+        if (result && result.success === false) {
+            const errorMsg = extractErrorMessage(result);
+            console.error('❌ API Error:', result);
+            throw new Error(`API 錯誤: ${errorMsg}`);
         }
+        
+        return result;
     } catch (error) {
         console.error('Img2Img error:', error);
         throw error;
@@ -335,11 +359,17 @@ async function editImage(imageFile, instruction, modelKey) {
     console.log('🍌 Edit API:', options);
     
     try {
-        if (puter.ai.editImage) {
-            return await puter.ai.editImage(options);
-        } else {
-            return await puter.ai.txt2img(instruction, options);
+        const result = puter.ai.editImage
+            ? await puter.ai.editImage(options)
+            : await puter.ai.txt2img(instruction, options);
+        
+        if (result && result.success === false) {
+            const errorMsg = extractErrorMessage(result);
+            console.error('❌ API Error:', result);
+            throw new Error(`API 錯誤: ${errorMsg}`);
         }
+        
+        return result;
     } catch (error) {
         console.error('Edit error:', error);
         throw error;
@@ -415,14 +445,15 @@ async function handleGenerate() {
         showNotification('✅ 圖像生成成功！');
     } catch (error) {
         console.error('Generate error:', error);
+        const errorMsg = extractErrorMessage(error);
         elements.result.innerHTML = `
             <div class="text-center">
                 <p class="text-error" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">❌ 生成失敗</p>
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">${error.message}</p>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">${errorMsg}</p>
                 <button onclick="handleGenerate()" class="btn btn-secondary">🔄 重試</button>
             </div>
         `;
-        showNotification('❌ ' + error.message, 'error');
+        showNotification('❌ ' + errorMsg, 'error');
     } finally {
         elements.btnGenerate.disabled = false;
         elements.btnBatch.disabled = false;
@@ -480,14 +511,15 @@ async function handleBatch() {
                 }
             } catch (error) {
                 console.error(`Batch ${i + 1} error:`, error);
-                itemDiv.innerHTML = `<p class="text-error" style="padding: 2rem; text-align: center;">❌ 失敗</p>`;
+                const errorMsg = extractErrorMessage(error);
+                itemDiv.innerHTML = `<p class="text-error" style="padding: 1rem; text-align: center; font-size: 0.85rem;">❌ ${errorMsg.substring(0, 50)}</p>`;
             }
         }
 
         showNotification(successCount > 0 ? `✅ 成功生成 ${successCount}/4 張！` : '❌ 批量生成失敗', successCount > 0 ? 'success' : 'error');
     } catch (error) {
         console.error('Batch error:', error);
-        showNotification('❌ ' + error.message, 'error');
+        showNotification('❌ ' + extractErrorMessage(error), 'error');
     } finally {
         elements.btnGenerate.disabled = false;
         elements.btnBatch.disabled = false;
@@ -573,8 +605,9 @@ async function handleImg2Img() {
         showNotification('✅ 圖生圖成功！');
     } catch (error) {
         console.error('Img2Img error:', error);
-        elements.img2imgResult.innerHTML = `<div class="text-center"><p class="text-error">❌ 圖生圖失敗: ${error.message}</p></div>`;
-        showNotification('❌ ' + error.message, 'error');
+        const errorMsg = extractErrorMessage(error);
+        elements.img2imgResult.innerHTML = `<div class="text-center"><p class="text-error">❌ 圖生圖失敗: ${errorMsg}</p></div>`;
+        showNotification('❌ ' + errorMsg, 'error');
     } finally {
         elements.btnImg2Img.disabled = false;
     }
@@ -659,8 +692,9 @@ async function handleEdit() {
         showNotification('✅ 圖像編輯成功！');
     } catch (error) {
         console.error('Edit error:', error);
-        elements.editResult.innerHTML = `<div class="text-center"><p class="text-error">❌ 編輯失敗: ${error.message}</p></div>`;
-        showNotification('❌ ' + error.message, 'error');
+        const errorMsg = extractErrorMessage(error);
+        elements.editResult.innerHTML = `<div class="text-center"><p class="text-error">❌ 編輯失敗: ${errorMsg}</p></div>`;
+        showNotification('❌ ' + errorMsg, 'error');
     } finally {
         elements.btnEdit.disabled = false;
     }
@@ -766,14 +800,15 @@ async function handleAnalyze() {
         showNotification('✅ 分析完成！');
     } catch (error) {
         console.error('Analyze error:', error);
+        const errorMsg = extractErrorMessage(error);
         elements.analyzeResult.innerHTML = `
             <div class="text-center">
                 <p class="text-error" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">❌ 分析失敗</p>
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">${error.message}</p>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">${errorMsg}</p>
                 <button onclick="handleAnalyze()" class="btn btn-secondary">🔄 重試</button>
             </div>
         `;
-        showNotification('❌ ' + error.message, 'error');
+        showNotification('❌ ' + errorMsg, 'error');
     } finally {
         elements.btnAnalyze.disabled = false;
     }
@@ -814,7 +849,7 @@ if (elements.btnOptimize) {
             showNotification('✅ 提示詞已優化完成！生成效果將更好～');
         } catch (error) {
             console.error('Prompt 優化錯誤:', error);
-            showNotification(`❌ 優化失敗: ${error.message}`, 'error');
+            showNotification(`❌ 優化失敗: ${extractErrorMessage(error)}`, 'error');
         } finally {
             elements.btnOptimize.disabled = false;
             elements.btnOptimize.textContent = '✨ AI 優化提示詞';
@@ -846,6 +881,7 @@ window.addEventListener('load', () => {
         console.log('🍌 Nano Banana AI Ready! (簡化版)');
         console.log('📸 Image Models:', IMG_MODELS);
         console.log('💬 Chat Models:', CHAT_MODELS);
+        console.log('🔧 Puter.ai 可用方法:', Object.keys(puter.ai));
     }
     
     setupImg2ImgUpload();
