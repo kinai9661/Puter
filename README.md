@@ -18,7 +18,7 @@
 
 訪問應用時,會自動彈出 Puter.com 登入視窗:
 
-![Puter 登入介面]()
+![Puter 登入介面](https://github.com/kinai9661/Puter/blob/main/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%202025-12-01%20210358.png?raw=true)
 
 **步驟**:
 1. **點擊「Create Free Account」** (創建免費帳號)
