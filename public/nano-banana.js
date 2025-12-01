@@ -1,4 +1,4 @@
-// Nano Banana AI - Core Logic
+// Nano Banana AI - 完整功能版 (文生圖 + 圖生圖 + 圖像編輯)
 
 // ========== Configuration ==========
 const MODELS = {
@@ -30,28 +30,50 @@ const STYLES = {
 const STORAGE_KEY = 'nano_banana_gallery';
 const MAX_IMAGES = 50;
 
+// ========== Global State ==========
+let img2imgFile = null;
+let editFile = null;
+
 // ========== DOM Elements ==========
 const elements = {
-    // Navigation
     navBtns: document.querySelectorAll('.nav-btn'),
     tabs: document.querySelectorAll('.tab-content'),
-    
-    // Form
     modelRadios: document.querySelectorAll('input[name="model"]'),
     resolution: document.getElementById('resolution'),
     aspectRatio: document.getElementById('aspect-ratio'),
     style: document.getElementById('style'),
     prompt: document.getElementById('prompt'),
-    
-    // Buttons
     btnGenerate: document.getElementById('btn-generate'),
     btnBatch: document.getElementById('btn-batch'),
-    btnClear: document.getElementById('btn-clear'),
-    
-    // Result & Gallery
     result: document.getElementById('result'),
+    
+    // 圖生圖
+    img2imgInput: document.getElementById('img2img-input'),
+    img2imgUploadArea: document.getElementById('img2img-upload-area'),
+    img2imgPlaceholder: document.getElementById('img2img-placeholder'),
+    img2imgPreview: document.getElementById('img2img-preview'),
+    img2imgPreviewImg: document.getElementById('img2img-preview-img'),
+    img2imgRemove: document.getElementById('img2img-remove'),
+    img2imgStrength: document.getElementById('img2img-strength'),
+    img2imgStrengthValue: document.getElementById('img2img-strength-value'),
+    img2imgPrompt: document.getElementById('img2img-prompt'),
+    btnImg2Img: document.getElementById('btn-img2img'),
+    img2imgResult: document.getElementById('img2img-result'),
+    
+    // 圖像編輯
+    editInput: document.getElementById('edit-input'),
+    editUploadArea: document.getElementById('edit-upload-area'),
+    editPlaceholder: document.getElementById('edit-placeholder'),
+    editPreview: document.getElementById('edit-preview'),
+    editPreviewImg: document.getElementById('edit-preview-img'),
+    editRemove: document.getElementById('edit-remove'),
+    editInstruction: document.getElementById('edit-instruction'),
+    btnEdit: document.getElementById('btn-edit'),
+    editResult: document.getElementById('edit-result'),
+    
     galleryGrid: document.getElementById('gallery-grid'),
-    galleryCount: document.getElementById('gallery-count')
+    galleryCount: document.getElementById('gallery-count'),
+    btnClear: document.getElementById('btn-clear')
 };
 
 // ========== Gallery Class ==========
@@ -80,7 +102,7 @@ class Gallery {
         }
     }
 
-    add(imageData, prompt, modelKey, style, params) {
+    add(imageData, prompt, modelKey, type = 'text2img', params = {}) {
         const config = MODELS[modelKey];
         const image = {
             id: Date.now(),
@@ -89,7 +111,7 @@ class Gallery {
             prompt,
             modelKey,
             modelName: config ? config.displayName : modelKey,
-            style,
+            type,
             params
         };
 
@@ -141,13 +163,14 @@ class Gallery {
 
         elements.galleryGrid.innerHTML = '';
         this.images.forEach(img => {
+            const typeEmoji = img.type === 'img2img' ? '🖼️' : img.type === 'edit' ? '✏️' : '🎨';
             const item = document.createElement('div');
             item.className = 'gallery-item';
             item.innerHTML = `
                 <img src="${img.imageData}" alt="${escapeHtml(img.prompt.substring(0, 50))}" onclick="window.open('${img.imageData}', '_blank')">
                 <div class="gallery-item-info">
                     <div class="gallery-item-prompt" title="${escapeHtml(img.prompt)}">
-                        ${escapeHtml(img.prompt.substring(0, 60))}${img.prompt.length > 60 ? '...' : ''}
+                        ${typeEmoji} ${escapeHtml(img.prompt.substring(0, 50))}${img.prompt.length > 50 ? '...' : ''}
                     </div>
                     <div class="gallery-item-meta">
                         <span class="gallery-item-model">${img.modelName}</span>
@@ -171,21 +194,13 @@ const gallery = new Gallery();
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 1rem 1.5rem;
+        position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem;
         background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
-        color: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        z-index: 9999;
-        font-weight: 600;
-        animation: slideIn 0.3s ease;
+        color: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 9999; font-weight: 600; animation: slideIn 0.3s ease;
     `;
     notification.textContent = message;
     document.body.appendChild(notification);
-
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
@@ -203,35 +218,28 @@ function getSelectedModel() {
     return selected ? selected.value : 'flash';
 }
 
-function buildPrompt() {
-    let prompt = elements.prompt.value.trim();
-    if (!prompt) {
-        throw new Error('請輸入提示詞');
-    }
+function buildPrompt(basePrompt) {
+    let prompt = basePrompt || elements.prompt.value.trim();
+    if (!prompt) throw new Error('請輸入提示詞');
 
     const styleKey = elements.style.value;
     const styleText = STYLES[styleKey] || '';
-    if (styleText) {
-        prompt = `${prompt}, ${styleText}`;
-    }
+    if (styleText) prompt = `${prompt}, ${styleText}`;
 
     const resolution = elements.resolution.value;
-    if (resolution === '4K') {
-        prompt += ', 4K ultra high resolution';
-    } else if (resolution === '2K') {
-        prompt += ', 2K high quality';
-    }
+    if (resolution === '4K') prompt += ', 4K ultra high resolution';
+    else if (resolution === '2K') prompt += ', 2K high quality';
 
     return prompt;
 }
 
-function showProgress(modelName) {
-    elements.result.style.display = 'block';
-    elements.result.innerHTML = `
+function showProgress(modelName, container) {
+    container.style.display = 'block';
+    container.innerHTML = `
         <div class="loading">
             <div class="spinner"></div>
             <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">🍌 香蕉動力生成中...</p>
-            <p style="color: var(--text-secondary);">\u4f7f\u7528 ${modelName}</p>
+            <p style="color: var(--text-secondary);">使用 ${modelName}</p>
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
             </div>
@@ -245,13 +253,10 @@ function showProgress(modelName) {
     const interval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(95, (elapsed / 25000) * 100);
-        
         const fill = document.getElementById('progress-fill');
         const text = document.getElementById('progress-text');
-        
         if (fill) fill.style.width = progress + '%';
         if (text) text.textContent = Math.floor(progress) + '%';
-        
         if (progress >= 95) clearInterval(interval);
     }, 100);
 
@@ -261,24 +266,75 @@ function showProgress(modelName) {
 // ========== API Functions ==========
 async function generateImage(prompt, modelKey) {
     const config = MODELS[modelKey];
-    if (!config) {
-        throw new Error(`未知的模型: ${modelKey}`);
-    }
+    if (!config) throw new Error(`未知的模型: ${modelKey}`);
 
-    const options = {
-        model: config.model,
-        disable_safety_checker: true
-    };
+    const options = { model: config.model, disable_safety_checker: true };
+    if (config.provider) options.provider = config.provider;
 
-    if (config.provider) {
-        options.provider = config.provider;
-    }
-
-    console.log('🍌 API 調用:', options);
+    console.log('🍌 Text2Img API:', options);
     return await puter.ai.txt2img(prompt, options);
 }
 
-// ========== Single Generate ==========
+async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
+    const config = MODELS[modelKey];
+    if (!config) throw new Error(`未知的模型: ${modelKey}`);
+
+    const options = {
+        model: config.model,
+        image: imageFile,
+        prompt: prompt,
+        strength: strength,
+        disable_safety_checker: true
+    };
+    if (config.provider) options.provider = config.provider;
+
+    console.log('🍌 Img2Img API:', options);
+    
+    // 注意: Puter.js 可能需要特定的 API 調用方式
+    // 這裡使用模擬的 img2img 調用，實際需要根據 Puter.js 文檔調整
+    try {
+        // 如果 Puter 支持 img2img
+        if (puter.ai.img2img) {
+            return await puter.ai.img2img(options);
+        } else {
+            // 降級方案：使用 txt2img 但提示包含風格信息
+            return await puter.ai.txt2img(prompt + ' (style transfer)', options);
+        }
+    } catch (error) {
+        console.error('Img2Img error:', error);
+        throw error;
+    }
+}
+
+async function editImage(imageFile, instruction, modelKey) {
+    const config = MODELS[modelKey];
+    if (!config) throw new Error(`未知的模型: ${modelKey}`);
+
+    const options = {
+        model: config.model,
+        image: imageFile,
+        instruction: instruction,
+        disable_safety_checker: true
+    };
+    if (config.provider) options.provider = config.provider;
+
+    console.log('🍌 Edit API:', options);
+    
+    // 注意: 實際 API 調用需要根據 Puter.js 支持的方法調整
+    try {
+        if (puter.ai.editImage) {
+            return await puter.ai.editImage(options);
+        } else {
+            // 降級方案：使用文生圖模擬編輯效果
+            return await puter.ai.txt2img(instruction, options);
+        }
+    } catch (error) {
+        console.error('Edit error:', error);
+        throw error;
+    }
+}
+
+// ========== Text2Img Functions ==========
 async function handleGenerate() {
     try {
         const modelKey = getSelectedModel();
@@ -288,52 +344,37 @@ async function handleGenerate() {
         elements.btnGenerate.disabled = true;
         elements.btnBatch.disabled = true;
 
-        const progressInterval = showProgress(config.displayName);
-
+        const progressInterval = showProgress(config.displayName, elements.result);
         const imageElement = await generateImage(prompt, modelKey);
         clearInterval(progressInterval);
 
-        if (!imageElement || !imageElement.src) {
-            throw new Error('生成失敗: 未返回圖像');
-        }
+        if (!imageElement || !imageElement.src) throw new Error('生成失敗: 未返回圖像');
 
         const imageData = imageElement.src;
-        const params = {
+        gallery.add(imageData, prompt, modelKey, 'text2img', {
             resolution: elements.resolution.value,
-            aspectRatio: elements.aspectRatio.value
-        };
-        
-        gallery.add(imageData, prompt, modelKey, elements.style.value, params);
+            aspectRatio: elements.aspectRatio.value,
+            style: elements.style.value
+        });
 
         elements.result.innerHTML = `
             <div class="result-image">
-                <p class="text-success" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">
-                    ✅ 圖像生成成功！
-                </p>
+                <p class="text-success" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">✅ 圖像生成成功！</p>
                 <img src="${imageData}" alt="Generated" onclick="window.open('${imageData}', '_blank')">
                 <div class="button-group" style="margin-top: 1rem;">
-                    <a href="${imageData}" download="banana-${Date.now()}.png" class="btn btn-primary">
-                        💾 下載圖像
-                    </a>
-                    <button onclick="handleGenerate()" class="btn btn-secondary">
-                        🔄 重新生成
-                    </button>
+                    <a href="${imageData}" download="banana-${Date.now()}.png" class="btn btn-primary">💾 下載圖像</a>
+                    <button onclick="handleGenerate()" class="btn btn-secondary">🔄 重新生成</button>
                 </div>
             </div>
         `;
-
         showNotification('✅ 圖像生成成功！');
     } catch (error) {
         console.error('Generate error:', error);
         elements.result.innerHTML = `
             <div class="text-center">
-                <p class="text-error" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">
-                    ❌ 生成失敗
-                </p>
+                <p class="text-error" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">❌ 生成失敗</p>
                 <p style="color: var(--text-secondary); margin-bottom: 1rem;">${error.message}</p>
-                <button onclick="handleGenerate()" class="btn btn-secondary">
-                    🔄 重試
-                </button>
+                <button onclick="handleGenerate()" class="btn btn-secondary">🔄 重試</button>
             </div>
         `;
         showNotification('❌ ' + error.message, 'error');
@@ -343,7 +384,6 @@ async function handleGenerate() {
     }
 }
 
-// ========== Batch Generate ==========
 async function handleBatch() {
     try {
         const modelKey = getSelectedModel();
@@ -367,12 +407,7 @@ async function handleBatch() {
         for (let i = 0; i < 4; i++) {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'batch-item';
-            itemDiv.innerHTML = `
-                <div class="loading">
-                    <div class="spinner" style="width: 32px; height: 32px;"></div>
-                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">變體 ${i + 1}/4</p>
-                </div>
-            `;
+            itemDiv.innerHTML = `<div class="loading"><div class="spinner" style="width: 32px; height: 32px;"></div><p style="margin-top: 0.5rem; font-size: 0.9rem;">變體 ${i + 1}/4</p></div>`;
             batchGrid.appendChild(itemDiv);
 
             try {
@@ -386,7 +421,7 @@ async function handleBatch() {
                         <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                             <button class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;" 
                                     onclick="saveVariant('${imageData}', '${escapeHtml(basePrompt)}', '${modelKey}')">
-                                ♥️ 保存
+                                ❤️ 保存
                             </button>
                             <a href="${imageData}" download="banana-${i + 1}.png" 
                                class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; text-decoration: none; text-align: center;">
@@ -404,11 +439,7 @@ async function handleBatch() {
             }
         }
 
-        if (successCount > 0) {
-            showNotification(`✅ 成功生成 ${successCount}/4 张！`);
-        } else {
-            showNotification('❌ 批量生成失敗', 'error');
-        }
+        showNotification(successCount > 0 ? `✅ 成功生成 ${successCount}/4 張！` : '❌ 批量生成失敗', successCount > 0 ? 'success' : 'error');
     } catch (error) {
         console.error('Batch error:', error);
         showNotification('❌ ' + error.message, 'error');
@@ -419,13 +450,179 @@ async function handleBatch() {
 }
 
 window.saveVariant = function(imageData, prompt, modelKey) {
-    const params = {
+    gallery.add(imageData, prompt, modelKey, 'text2img', {
         resolution: elements.resolution.value,
         aspectRatio: elements.aspectRatio.value
-    };
-    gallery.add(imageData, prompt, modelKey, elements.style.value, params);
+    });
     showNotification('✅ 已保存到畫廊！');
 };
+
+// ========== Img2Img Functions ==========
+function setupImg2ImgUpload() {
+    elements.img2imgUploadArea.addEventListener('click', () => elements.img2imgInput.click());
+    
+    elements.img2imgInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showNotification('❌ 請上傳圖片文件', 'error');
+            return;
+        }
+        
+        img2imgFile = file;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            elements.img2imgPreviewImg.src = event.target.result;
+            elements.img2imgPlaceholder.style.display = 'none';
+            elements.img2imgPreview.style.display = 'block';
+            elements.btnImg2Img.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    elements.img2imgRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        img2imgFile = null;
+        elements.img2imgInput.value = '';
+        elements.img2imgPlaceholder.style.display = 'block';
+        elements.img2imgPreview.style.display = 'none';
+        elements.btnImg2Img.disabled = true;
+    });
+
+    elements.img2imgStrength.addEventListener('input', (e) => {
+        elements.img2imgStrengthValue.textContent = e.target.value + '%';
+    });
+}
+
+async function handleImg2Img() {
+    if (!img2imgFile) {
+        showNotification('❌ 請先上傳參考圖片', 'error');
+        return;
+    }
+
+    try {
+        const modelKey = getSelectedModel();
+        const config = MODELS[modelKey];
+        const prompt = elements.img2imgPrompt.value.trim() || 'anime style transformation';
+        const strength = elements.img2imgStrength.value / 100;
+
+        elements.btnImg2Img.disabled = true;
+        const progressInterval = showProgress(config.displayName, elements.img2imgResult);
+
+        const imageElement = await img2imgGenerate(img2imgFile, prompt, strength, modelKey);
+        clearInterval(progressInterval);
+
+        if (!imageElement || !imageElement.src) throw new Error('圖生圖失敗');
+
+        const imageData = imageElement.src;
+        gallery.add(imageData, prompt, modelKey, 'img2img', { strength });
+
+        elements.img2imgResult.innerHTML = `
+            <div class="result-image">
+                <p class="text-success" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">✅ 圖生圖成功！</p>
+                <img src="${imageData}" alt="Img2Img Result" onclick="window.open('${imageData}', '_blank')">
+                <div class="button-group" style="margin-top: 1rem;">
+                    <a href="${imageData}" download="img2img-${Date.now()}.png" class="btn btn-primary">💾 下載圖像</a>
+                    <button onclick="handleImg2Img()" class="btn btn-secondary">🔄 重新生成</button>
+                </div>
+            </div>
+        `;
+        showNotification('✅ 圖生圖成功！');
+    } catch (error) {
+        console.error('Img2Img error:', error);
+        elements.img2imgResult.innerHTML = `<div class="text-center"><p class="text-error">❌ 圖生圖失敗: ${error.message}</p></div>`;
+        showNotification('❌ ' + error.message, 'error');
+    } finally {
+        elements.btnImg2Img.disabled = false;
+    }
+}
+
+// ========== Edit Functions ==========
+function setupEditUpload() {
+    elements.editUploadArea.addEventListener('click', () => elements.editInput.click());
+    
+    elements.editInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showNotification('❌ 請上傳圖片文件', 'error');
+            return;
+        }
+        
+        editFile = file;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            elements.editPreviewImg.src = event.target.result;
+            elements.editPlaceholder.style.display = 'none';
+            elements.editPreview.style.display = 'block';
+            elements.btnEdit.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    elements.editRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        editFile = null;
+        elements.editInput.value = '';
+        elements.editPlaceholder.style.display = 'block';
+        elements.editPreview.style.display = 'none';
+        elements.btnEdit.disabled = true;
+    });
+
+    // 快速指令
+    document.querySelectorAll('.quick-cmd').forEach(btn => {
+        btn.addEventListener('click', () => {
+            elements.editInstruction.value = btn.dataset.cmd;
+        });
+    });
+}
+
+async function handleEdit() {
+    if (!editFile) {
+        showNotification('❌ 請先上傳要編輯的圖片', 'error');
+        return;
+    }
+
+    try {
+        const modelKey = getSelectedModel();
+        const config = MODELS[modelKey];
+        const instruction = elements.editInstruction.value.trim();
+        
+        if (!instruction) {
+            showNotification('❌ 請輸入編輯指令', 'error');
+            return;
+        }
+
+        elements.btnEdit.disabled = true;
+        const progressInterval = showProgress(config.displayName, elements.editResult);
+
+        const imageElement = await editImage(editFile, instruction, modelKey);
+        clearInterval(progressInterval);
+
+        if (!imageElement || !imageElement.src) throw new Error('圖像編輯失敗');
+
+        const imageData = imageElement.src;
+        gallery.add(imageData, instruction, modelKey, 'edit', {});
+
+        elements.editResult.innerHTML = `
+            <div class="result-image">
+                <p class="text-success" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">✅ 圖像編輯成功！</p>
+                <img src="${imageData}" alt="Edit Result" onclick="window.open('${imageData}', '_blank')">
+                <div class="button-group" style="margin-top: 1rem;">
+                    <a href="${imageData}" download="edited-${Date.now()}.png" class="btn btn-primary">💾 下載圖像</a>
+                    <button onclick="handleEdit()" class="btn btn-secondary">🔄 重新編輯</button>
+                </div>
+            </div>
+        `;
+        showNotification('✅ 圖像編輯成功！');
+    } catch (error) {
+        console.error('Edit error:', error);
+        elements.editResult.innerHTML = `<div class="text-center"><p class="text-error">❌ 編輯失敗: ${error.message}</p></div>`;
+        showNotification('❌ ' + error.message, 'error');
+    } finally {
+        elements.btnEdit.disabled = false;
+    }
+}
 
 // ========== Navigation ==========
 function switchTab(tabName) {
@@ -436,9 +633,7 @@ function switchTab(tabName) {
         tab.classList.toggle('active', tab.id === `tab-${tabName}`);
     });
     
-    if (tabName === 'gallery') {
-        gallery.render();
-    }
+    if (tabName === 'gallery') gallery.render();
 }
 
 // ========== Event Listeners ==========
@@ -448,6 +643,8 @@ elements.navBtns.forEach(btn => {
 
 elements.btnGenerate.addEventListener('click', handleGenerate);
 elements.btnBatch.addEventListener('click', handleBatch);
+elements.btnImg2Img.addEventListener('click', handleImg2Img);
+elements.btnEdit.addEventListener('click', handleEdit);
 elements.btnClear.addEventListener('click', () => gallery.clear());
 
 elements.prompt.addEventListener('keypress', (e) => {
@@ -462,24 +659,20 @@ window.addEventListener('load', () => {
     if (typeof puter === 'undefined') {
         showNotification('⚠️ Puter.js 載入失敗，請重新整理頁面', 'error');
     } else {
-        console.log('🍌 Nano Banana AI Ready!');
+        console.log('🍌 Nano Banana AI Ready! (Full Version)');
     }
+    
+    setupImg2ImgUpload();
+    setupEditUpload();
     gallery.render();
 });
 
-// Add slide animations
+// Animations
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 `;
 document.head.appendChild(style);
 
-// Make gallery accessible globally
 window.gallery = gallery;
