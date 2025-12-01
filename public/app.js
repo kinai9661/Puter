@@ -119,6 +119,103 @@ tabBtns.forEach(btn => {
     });
 });
 
+// 複製提示詞功能
+function copyPrompt(prompt) {
+    navigator.clipboard.writeText(prompt).then(() => {
+        showNotification('✅ 提示詞已複製!');
+    }).catch(err => {
+        console.error('複製失敗:', err);
+        showNotification('❌ 複製失敗', 'error');
+    });
+}
+
+// 通知提示
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? 'var(--success)' : 'var(--error)'};
+        color: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+        font-weight: 600;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+
+// 放大圖片功能
+function openImageModal(imageData, prompt, modelName) {
+    // 創建模態視窗
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" aria-label="關閉">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <img src="${imageData}" alt="${prompt}" />
+            <div class="modal-info">
+                <div class="modal-prompt">
+                    <strong>📝 提示詞:</strong>
+                    <p>${prompt}</p>
+                </div>
+                <div class="modal-meta">
+                    <span class="modal-model">🎨 ${modelName}</span>
+                    <div class="modal-actions">
+                        <button class="btn-modal-action" onclick="copyPrompt('${prompt.replace(/'/g, "\\'")}')、title="複製提示詞">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            複製提示詞
+                        </button>
+                        <a href="${imageData}" download="flux-${modelName}-${Date.now()}.png" class="btn-modal-action">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            下載圖片
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 添加關閉事件
+    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+    modal.querySelector('.modal-backdrop').addEventListener('click', () => modal.remove());
+    
+    // ESC 鍵關閉
+    const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', handleEsc);
+        }
+    };
+    document.addEventListener('keydown', handleEsc);
+}
+
 // 渲染圖片記錄
 function renderHistory() {
     const history = imageHistory.history;
@@ -144,7 +241,7 @@ function renderHistory() {
 
     historyGrid.innerHTML = history.map(item => `
         <div class="history-item" data-id="${item.id}">
-            <img src="${item.imageData}" alt="${item.prompt}" loading="lazy">
+            <img src="${item.imageData}" alt="${item.prompt}" loading="lazy" onclick="openImageModal('${item.imageData}', '${item.prompt.replace(/'/g, "\\'")}, '${item.modelName}')">
             <div class="history-overlay">
                 <div class="history-info">
                     <span class="history-model">${item.modelName}</span>
@@ -152,15 +249,26 @@ function renderHistory() {
                 </div>
                 <p class="history-prompt">${item.prompt.substring(0, 80)}${item.prompt.length > 80 ? '...' : ''}</p>
                 <div class="history-actions">
+                    <button class="btn-icon" onclick="copyPrompt('${item.prompt.replace(/'/g, "\\'")}')" title="複製提示詞">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                    </button>
+                    <button class="btn-icon" onclick="openImageModal('${item.imageData}', '${item.prompt.replace(/'/g, "\\'")}, '${item.modelName}')" title="放大查看">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                        </svg>
+                    </button>
                     <a href="${item.imageData}" download="flux-${item.modelName}-${item.id}.png" class="btn-icon" title="下載">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
                     </a>
                     <button class="btn-icon btn-delete" data-id="${item.id}" title="刪除">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                         </svg>
@@ -294,7 +402,8 @@ async function generateImage() {
         `;
         
         imageResult.appendChild(imageElement);
-        imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);';
+        imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); cursor: pointer;';
+        imageElement.onclick = () => openImageModal(imageData, prompt, modelName);
         
         // 下載按鈕
         const downloadDiv = document.createElement('div');
