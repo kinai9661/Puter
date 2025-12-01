@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍌 Nano Banana AI - 免費 Google Gemini 圖像生成</title>
+    <link rel="stylesheet" href="nano-banana.css">
+    <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+    <!-- 頂部導航 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">🍌</span>
+                <h1>Nano Banana AI</h1>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-tab="generate">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    生成
+                </button>
+                <button class="nav-btn" data-tab="gallery">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    畫廊 <span id="gallery-count" class="badge">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- 生成區 -->
+        <section id="tab-generate" class="tab-content active">
+            <div class="container">
+                <!-- Hero -->
+                <div class="hero">
+                    <h2>🎨 香蕉動力，無限創意</h2>
+                    <p>免費使用 Google Gemini 最新圖像生成模型 • 無需 API 金鑰 • 完全免費</p>
+                </div>
+
+                <!-- 主卡片 -->
+                <div class="card">
+                    <!-- 模型選擇 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                            AI 模型
+                        </label>
+                        <div class="model-selector">
+                            <label class="model-option">
+                                <input type="radio" name="model" value="gemini-3-pro" checked>
+                                <div class="model-card">
+                                    <div class="model-icon">🌟</div>
+                                    <div class="model-info">
+                                        <div class="model-name">Gemini 3 Pro Image</div>
+                                        <div class="model-desc">最強大 • 高品質</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="radio" name="model" value="flash">
+                                <div class="model-card">
+                                    <div class="model-icon">⚡</div>
+                                    <div class="model-info">
+                                        <div class="model-name">Gemini 2.5 Flash</div>
+                                        <div class="model-desc">快速生成 • 穩定</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 高級參數 -->
+                    <details class="advanced-panel" open>
+                        <summary>⚙️ 高級參數</summary>
+                        <div class="advanced-content">
+                            <div class="form-group">
+                                <label class="label">解析度</label>
+                                <select id="resolution" class="select">
+                                    <option value="1K">1K (1024px)</option>
+                                    <option value="2K" selected>2K (2048px) - 推薦</option>
+                                    <option value="4K">4K (4096px) - 超高清</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label">長寬比</label>
+                                <select id="aspect-ratio" class="select">
+                                    <option value="1:1" selected>1:1 (正方形)</option>
+                                    <option value="16:9">16:9 (橫版)</option>
+                                    <option value="9:16">9:16 (豎版)</option>
+                                    <option value="4:3">4:3 (經典)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- 風格選擇 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            圖像風格
+                        </label>
+                        <select id="style" class="select">
+                            <option value="">🍌 無 - 自由風格</option>
+                            <option value="photorealistic">📸 寫實攝影</option>
+                            <option value="anime">🌸 吉卜力動漫</option>
+                            <option value="digital-art">🖼️ 數位藝術</option>
+                            <option value="oil-painting">🎨 油畫風格</option>
+                            <option value="watercolor">🌊 水彩畫</option>
+                            <option value="3d-render">🎬 3D 渲染</option>
+                            <option value="cyberpunk">🤖 賽博龐克</option>
+                            <option value="fantasy">✨ 奇幻風格</option>
+                            <option value="minimalist">📍 極簡主義</option>
+                        </select>
+                    </div>
+
+                    <!-- 提示詞輸入 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                            </svg>
+                            描述你的想像
+                        </label>
+                        <textarea id="prompt" class="textarea" rows="3" placeholder="例如:
+• A cute banana character wearing sunglasses
+• Cyberpunk city at night with neon lights
+• Dragon flying over mountains at sunset">A cute banana character wearing sunglasses, dancing in a tropical paradise</textarea>
+                    </div>
+
+                    <!-- 生成按鈕 -->
+                    <div class="button-group">
+                        <button id="btn-generate" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                            🍌 單張生成
+                        </button>
+                        <button id="btn-batch" class="btn btn-success">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                            </svg>
+                            🎨 批量 4 張
+                        </button>
+                    </div>
+
+                    <!-- 結果容器 -->
+                    <div id="result" class="result-container"></div>
+                </div>
+
+                <!-- 特色卡片 -->
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🌟</div>
+                        <h3>Gemini 3 Pro</h3>
+                        <p>Google 最強圖像模型</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>快速生成</h3>
+                        <p>Flash 模型秒級響應</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3>批量生成</h3>
+                        <p>一次生成 4 張變體</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🆓</div>
+                        <h3>完全免費</h3>
+                        <p>無需 API 金鑰</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 畫廊區 -->
+        <section id="tab-gallery" class="tab-content">
+            <div class="container">
+                <div class="gallery-header">
+                    <h2>🖼️ 我的香蕉畫廊</h2>
+                    <button id="btn-clear" class="btn btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        清空畫廊
+                    </button>
+                </div>
+                <div id="gallery-grid" class="gallery-grid">
+                    <div class="empty-state">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                        <p>還沒有香蕉圖片</p>
+                        <small>開始創作你的第一張圖像吧！🍌</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🍌 Nano Banana AI | Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + <a href="https://ai.google.dev/" target="_blank">Google Gemini</a></p>
+            <p>
+                <a href="index.html">← FLUX.2 圖像生成</a> • 
+                <a href="https://github.com/kinai9661/Puter" target="_blank">GitHub</a> • 
+                MIT License
+            </p>
+        </div>
+    </footer>
+
+    <script src="nano-banana.js"></script>
+</body>
+</html>
