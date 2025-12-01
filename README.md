@@ -253,6 +253,6 @@ MIT License - 詳見 [LICENSE](LICENSE) 檔案
 
 ---
 
-**開發者**: kinai9661  
-**最後更新**: 2025-12-01  
-**版本**: 2.0.0 (FLUX.2 官方支持)
+<footer>
+  <p>由 <a href="https://github.com/kinai9661" target="_blank">kinai9661</a> 開發</p>
+</footer>
