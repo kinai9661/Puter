@@ -158,11 +158,29 @@ function showNotification(message, type = 'success') {
     }, 2000);
 }
 
+// 風格映射表 - 將風格名稱轉換為完整提示詞
+const stylePrompts = {
+    '': '',
+    'photorealistic': 'photorealistic, ultra realistic, 8k, highly detailed, professional photography',
+    'anime': 'anime style, in the style of Studio Ghibli, detailed anime art, vibrant colors',
+    'digital-art': 'digital art, concept art, trending on artstation, highly detailed',
+    'oil-painting': 'oil painting, fine art, masterpiece, classical painting style',
+    'watercolor': 'watercolor painting, soft colors, artistic, dreamy atmosphere',
+    'sketch': 'pencil sketch, hand-drawn, artistic sketch, detailed line art',
+    '3d-render': '3D render, octane render, unreal engine, photorealistic 3D',
+    'cyberpunk': 'cyberpunk style, neon lights, futuristic city, sci-fi, blade runner aesthetic',
+    'fantasy': 'fantasy art, magical, ethereal, epic fantasy illustration',
+    'minimalist': 'minimalist design, simple, clean, modern aesthetic',
+    'vintage': 'vintage style, retro, old photograph, nostalgic',
+    'comic': 'comic book style, pop art, vibrant colors, graphic novel',
+    'surreal': 'surrealist art, dreamlike, abstract, Salvador Dali inspired'
+};
+
 // 風格說明
 const styleDescriptions = {
     '': '無 - 自由風格，不添加額外風格提示詞',
-    'photorealistic': '📸 寫實風格 - 超高清收寫實效果，適合人物、風景、產品摩',
-    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細臻背景',
+    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品摄影',
+    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細臻動漫藝術',
     'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
     'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
     'watercolor': '🌊 水彩畫 - 柔和水彩效果，夢境感',
@@ -420,13 +438,15 @@ async function generateImage() {
         return;
     }
     
-    // 獲取風格選擇 (如果存在)
+    // 獲取風格選擇並轉換為完整提示詞
     let fullPrompt = basePrompt;
     if (styleSelect) {
-        const styleValue = styleSelect.value.trim();
-        if (styleValue) {
-            fullPrompt = `${basePrompt}, ${styleValue}`;
-            console.log('✅ 已添加風格:', styleValue);
+        const styleKey = styleSelect.value.trim();
+        const stylePromptText = stylePrompts[styleKey] || '';
+        
+        if (stylePromptText) {
+            fullPrompt = `${basePrompt}, ${stylePromptText}`;
+            console.log('✅ 已添加風格:', styleKey, '\n提示詞:', stylePromptText);
         }
     }
     
