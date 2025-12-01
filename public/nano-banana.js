@@ -1,4 +1,4 @@
-// Nano Banana AI - 完整功能版 (文生圖 + 圖生圖 + 圖像編輯 + 文字助手)
+// Nano Banana AI - 完整功能版 (文生圖 + 圖生圖 + 圖像編輯 + 圖像分析)
 // 結合官方 Free Gemini API 教學
 
 // ========== Configuration ==========
@@ -56,6 +56,8 @@ const MAX_IMAGES = 50;
 // ========== Global State ==========
 let img2imgFile = null;
 let editFile = null;
+let analyzeFile = null;
+let analyzeImageUrl = null;
 
 // ========== DOM Elements ==========
 const elements = {
@@ -66,6 +68,7 @@ const elements = {
     aspectRatio: document.getElementById('aspect-ratio'),
     style: document.getElementById('style'),
     prompt: document.getElementById('prompt'),
+    btnOptimize: document.getElementById('btn-optimize'),
     btnGenerate: document.getElementById('btn-generate'),
     btnBatch: document.getElementById('btn-batch'),
     result: document.getElementById('result'),
@@ -93,6 +96,18 @@ const elements = {
     editInstruction: document.getElementById('edit-instruction'),
     btnEdit: document.getElementById('btn-edit'),
     editResult: document.getElementById('edit-result'),
+    
+    // 圖像分析
+    analyzeInput: document.getElementById('analyze-input'),
+    analyzeUploadArea: document.getElementById('analyze-upload-area'),
+    analyzePlaceholder: document.getElementById('analyze-placeholder'),
+    analyzePreview: document.getElementById('analyze-preview'),
+    analyzePreviewImg: document.getElementById('analyze-preview-img'),
+    analyzeRemove: document.getElementById('analyze-remove'),
+    analyzeModel: document.getElementById('analyze-model'),
+    analyzeQuestion: document.getElementById('analyze-question'),
+    btnAnalyze: document.getElementById('btn-analyze'),
+    analyzeResult: document.getElementById('analyze-result'),
     
     galleryGrid: document.getElementById('gallery-grid'),
     galleryCount: document.getElementById('gallery-count'),
@@ -374,7 +389,7 @@ async function analyzeImage(prompt, imageUrl, chatModelKey = 'gemini-2.5-flash')
     const config = CHAT_MODELS[chatModelKey];
     if (!config) throw new Error(`未知的文字模型: ${chatModelKey}`);
 
-    console.log('🍌 Image Analysis API:', config.model);
+    console.log('🍌 Image Analysis API:', config.model, 'Image:', imageUrl);
     return await puter.ai.chat(prompt, imageUrl, { model: config.model });
 }
 
@@ -681,6 +696,119 @@ async function handleEdit() {
     }
 }
 
+// ========== Analyze Functions ==========
+function setupAnalyzeUpload() {
+    if (!elements.analyzeUploadArea) return;
+    
+    elements.analyzeUploadArea.addEventListener('click', () => elements.analyzeInput.click());
+    
+    elements.analyzeInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showNotification('❌ 請上傳圖片文件', 'error');
+            return;
+        }
+        
+        analyzeFile = file;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            analyzeImageUrl = event.target.result;
+            elements.analyzePreviewImg.src = analyzeImageUrl;
+            elements.analyzePlaceholder.style.display = 'none';
+            elements.analyzePreview.style.display = 'block';
+            elements.btnAnalyze.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    elements.analyzeRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        analyzeFile = null;
+        analyzeImageUrl = null;
+        elements.analyzeInput.value = '';
+        elements.analyzePlaceholder.style.display = 'block';
+        elements.analyzePreview.style.display = 'none';
+        elements.btnAnalyze.disabled = true;
+    });
+
+    // 快速問題
+    document.querySelectorAll('.quick-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+            elements.analyzeQuestion.value = btn.dataset.question;
+        });
+    });
+    
+    // 示例圖片
+    document.querySelectorAll('.example-item').forEach(item => {
+        item.addEventListener('click', async () => {
+            const url = item.dataset.url;
+            analyzeImageUrl = url;
+            analyzeFile = null;
+            elements.analyzePreviewImg.src = url;
+            elements.analyzePlaceholder.style.display = 'none';
+            elements.analyzePreview.style.display = 'block';
+            elements.btnAnalyze.disabled = false;
+            showNotification('✅ 已載入示例圖片');
+        });
+    });
+}
+
+async function handleAnalyze() {
+    if (!analyzeImageUrl) {
+        showNotification('❌ 請先上傳要分析的圖片', 'error');
+        return;
+    }
+
+    try {
+        const question = elements.analyzeQuestion.value.trim();
+        if (!question) {
+            showNotification('❌ 請輸入問題', 'error');
+            return;
+        }
+
+        const modelKey = elements.analyzeModel.value;
+        const config = CHAT_MODELS[modelKey];
+        
+        elements.btnAnalyze.disabled = true;
+        elements.analyzeResult.style.display = 'block';
+        elements.analyzeResult.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">🔍 AI 分析中...</p>
+                <p style="color: var(--text-secondary);">使用 ${config.displayName}</p>
+            </div>
+        `;
+
+        console.log('🔍 Starting analysis:', { question, modelKey, imageUrl: analyzeImageUrl });
+        const response = await analyzeImage(question, analyzeImageUrl, modelKey);
+        console.log('✅ Analysis complete:', response);
+
+        elements.analyzeResult.innerHTML = `
+            <div class="analysis-result">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">🌟 AI 分析結果（${config.displayName}）</p>
+                <p>${response.replace(/\n/g, '<br>')}</p>
+                <div class="button-group" style="margin-top: 1rem;">
+                    <button onclick="handleAnalyze()" class="btn btn-secondary">🔄 重新分析</button>
+                </div>
+            </div>
+        `;
+        showNotification('✅ 分析完成！');
+    } catch (error) {
+        console.error('Analyze error:', error);
+        elements.analyzeResult.innerHTML = `
+            <div class="text-center">
+                <p class="text-error" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">❌ 分析失敗</p>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">${error.message}</p>
+                <button onclick="handleAnalyze()" class="btn btn-secondary">🔄 重試</button>
+            </div>
+        `;
+        showNotification('❌ ' + error.message, 'error');
+    } finally {
+        elements.btnAnalyze.disabled = false;
+    }
+}
+
 // ========== Navigation ==========
 function switchTab(tabName) {
     elements.navBtns.forEach(btn => {
@@ -698,10 +826,39 @@ elements.navBtns.forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
+if (elements.btnOptimize) {
+    elements.btnOptimize.addEventListener('click', async () => {
+        const original = elements.prompt.value.trim();
+        if (!original) {
+            showNotification('❌ 請先輸入提示詞', 'error');
+            return;
+        }
+        
+        elements.btnOptimize.disabled = true;
+        elements.btnOptimize.textContent = '🤔 優化中...';
+        
+        try {
+            showNotification('✨ AI 優化提示詞中...', 'info');
+            const optimized = await optimizePrompt(original);
+            elements.prompt.value = optimized;
+            showNotification('✅ 提示詞已優化完成！生成效果將更好～');
+        } catch (error) {
+            console.error('Prompt 優化錯誤:', error);
+            showNotification(`❌ 優化失敗: ${error.message}`, 'error');
+        } finally {
+            elements.btnOptimize.disabled = false;
+            elements.btnOptimize.textContent = '✨ AI 優化提示詞';
+        }
+    });
+}
+
 elements.btnGenerate.addEventListener('click', handleGenerate);
 elements.btnBatch.addEventListener('click', handleBatch);
 elements.btnImg2Img.addEventListener('click', handleImg2Img);
 elements.btnEdit.addEventListener('click', handleEdit);
+if (elements.btnAnalyze) {
+    elements.btnAnalyze.addEventListener('click', handleAnalyze);
+}
 elements.btnClear.addEventListener('click', () => gallery.clear());
 
 elements.prompt.addEventListener('keypress', (e) => {
@@ -716,13 +873,14 @@ window.addEventListener('load', () => {
     if (typeof puter === 'undefined') {
         showNotification('⚠️ Puter.js 載入失敗，請重新整理頁面', 'error');
     } else {
-        console.log('🍌 Nano Banana AI Ready! (Full Version + Official Free Gemini API)');
+        console.log('🍌 Nano Banana AI Ready! (Full Version + Official Free Gemini API + Image Analysis)');
         console.log('📸 Image Models:', IMG_MODELS);
         console.log('💬 Chat Models:', CHAT_MODELS);
     }
     
     setupImg2ImgUpload();
     setupEditUpload();
+    setupAnalyzeUpload();
     gallery.render();
 });
 
@@ -739,3 +897,4 @@ window.gallery = gallery;
 window.callChat = callChat;
 window.analyzeImage = analyzeImage;
 window.optimizePrompt = optimizePrompt;
+window.handleAnalyze = handleAnalyze;
