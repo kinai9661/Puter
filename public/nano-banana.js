@@ -5,12 +5,12 @@
 
 // 圖片生成模型配置（用於 txt2img, img2img, edit）
 const IMG_MODELS = {
-    'gemini-3-pro-image': {
+    'google/gemini-3-pro-image': {
         model: 'google/gemini-3-pro-image',
         provider: 'together-ai',
         displayName: 'Gemini 3 Pro Image'
     },
-    'gemini-2.5-flash-image': {
+    'gemini-2.5-flash-image-preview': {
         model: 'gemini-2.5-flash-image-preview',
         provider: null,
         displayName: 'Gemini 2.5 Flash Image'
@@ -251,7 +251,7 @@ function escapeHtml(text) {
 
 function getSelectedModel() {
     const selected = document.querySelector('input[name="model"]:checked');
-    return selected ? selected.value : 'gemini-2.5-flash-image';
+    return selected ? selected.value : 'gemini-2.5-flash-image-preview';
 }
 
 function buildPrompt(basePrompt) {
