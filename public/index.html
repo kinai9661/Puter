@@ -117,6 +117,35 @@
                     <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染與提示詞遵循</span>
                 </div>
 
+                <!-- 風格選擇 -->
+                <div class="form-group">
+                    <label class="label-modern">🎨 圖像風格 (可選)</label>
+                    <select id="style-select" class="select-modern">
+                        <option value="">無 - 自由風格</option>
+                        <option value="photorealistic">📸 寫實風格</option>
+                        <option value="anime">🌸 日本動漫風格</option>
+                        <option value="digital-art">🖼️ 數位藝術</option>
+                        <option value="oil-painting">🎨 油畫風格</option>
+                        <option value="watercolor">🌊 水彩畫</option>
+                        <option value="sketch">✏️ 素描風格</option>
+                        <option value="3d-render">🎬 3D 渲染</option>
+                        <option value="cyberpunk">🤖 賽博龐克</option>
+                        <option value="fantasy">✨ 奇幻風格</option>
+                        <option value="minimalist">📍 極簡主義</option>
+                        <option value="vintage">📼 复古風格</option>
+                        <option value="comic">📖 漫畫風格</option>
+                        <option value="surreal">🌀 超現實主義</option>
+                    </select>
+                </div>
+
+                <div class="style-preview" id="style-preview">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span>選擇風格後，會自動加入到提示詞中</span>
+                </div>
+
                 <div class="form-group">
                     <label class="label-modern">圖像描述</label>
                     <textarea id="image-prompt" class="textarea-modern" rows="4" placeholder="詳細描述你想生成的圖像...
