@@ -1,4 +1,4 @@
-/* Nano Banana AI - Modern CSS with Image Upload & Edit */
+/* Nano Banana AI - Modern CSS with Image Upload & Edit + Analyze */
 
 :root {
     --primary: #4285F4;
@@ -414,14 +414,14 @@ body {
     color: var(--text-secondary);
 }
 
-/* Quick Commands */
-.quick-commands {
+/* Quick Commands & Questions */
+.quick-commands, .quick-question {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
 
-.quick-cmd {
+.quick-cmd, button.quick-question {
     padding: 0.5rem 1rem;
     border: 2px solid var(--border);
     border-radius: 20px;
@@ -432,16 +432,46 @@ body {
     transition: var(--transition);
 }
 
-.quick-cmd:hover {
+.quick-cmd:hover, button.quick-question:hover {
     border-color: var(--primary);
     background: var(--primary);
     color: white;
 }
 
+/* Example Images */
+.example-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.example-item {
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.example-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin-bottom: 0.5rem;
+}
+
+.example-item:hover img {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+.example-item .btn {
+    width: 100%;
+}
+
 /* Buttons */
 .button-group {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem;
     margin-top: 1.5rem;
 }
@@ -551,6 +581,20 @@ body {
 
 .result-image img:hover {
     transform: scale(1.02);
+}
+
+/* Analysis Result */
+.analysis-result {
+    background: var(--bg);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary);
+}
+
+.analysis-result p {
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
 }
 
 .batch-grid {
@@ -718,7 +762,8 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
     .hero h2 { font-size: 1.75rem; }
-    .model-selector, .advanced-content, .button-group, .batch-grid { grid-template-columns: 1fr; }
+    .model-selector, .advanced-content, .batch-grid { grid-template-columns: 1fr; }
+    .button-group { grid-template-columns: 1fr; }
     .features { grid-template-columns: repeat(2, 1fr); }
     .gallery-grid { grid-template-columns: 1fr; }
     .nav { gap: 0.25rem; }

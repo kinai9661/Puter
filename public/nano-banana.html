@@ -36,6 +36,13 @@
                     </svg>
                     圖像編輯
                 </button>
+                <button class="nav-btn" data-tab="analyze">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    圖像分析
+                </button>
                 <button class="nav-btn" data-tab="gallery">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -67,7 +74,7 @@
                         </label>
                         <div class="model-selector">
                             <label class="model-option">
-                                <input type="radio" name="model" value="gemini-3-pro" checked>
+                                <input type="radio" name="model" value="gemini-3-pro-image" checked>
                                 <div class="model-card">
                                     <div class="model-icon">🌟</div>
                                     <div class="model-info">
@@ -77,11 +84,11 @@
                                 </div>
                             </label>
                             <label class="model-option">
-                                <input type="radio" name="model" value="flash">
+                                <input type="radio" name="model" value="gemini-2.5-flash-image">
                                 <div class="model-card">
                                     <div class="model-icon">⚡</div>
                                     <div class="model-info">
-                                        <div class="model-name">Gemini 2.5 Flash</div>
+                                        <div class="model-name">Gemini 2.5 Flash Image</div>
                                         <div class="model-desc">快速生成 • 穩定</div>
                                     </div>
                                 </div>
@@ -148,6 +155,9 @@
                     </div>
 
                     <div class="button-group">
+                        <button id="btn-optimize" class="btn btn-secondary">
+                            ✨ AI 優化提示詞
+                        </button>
                         <button id="btn-generate" class="btn btn-primary">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
@@ -202,7 +212,6 @@
                 </div>
 
                 <div class="card">
-                    <!-- 上傳區域 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -228,7 +237,6 @@
                         </div>
                     </div>
 
-                    <!-- 參考強度 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -244,7 +252,6 @@
                         </div>
                     </div>
 
-                    <!-- 提示詞 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -282,7 +289,6 @@
                 </div>
 
                 <div class="card">
-                    <!-- 上傳區域 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -308,7 +314,6 @@
                         </div>
                     </div>
 
-                    <!-- 編輯指令 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -324,7 +329,6 @@
 • 將顏色改為冬季色調">將天空變成夕陽色調，添加柔和的雲彩</textarea>
                     </div>
 
-                    <!-- 快速指令模板 -->
                     <div class="form-group">
                         <label class="label">✨ 快速指令</label>
                         <div class="quick-commands">
@@ -347,6 +351,113 @@
                     </div>
 
                     <div id="edit-result" class="result-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 圖像分析區 -->
+        <section id="tab-analyze" class="tab-content">
+            <div class="container">
+                <div class="hero">
+                    <h2>🔍 AI 智能分析 - 官方 Gemini 圖像識別</h2>
+                    <p>上傳圖片 • 問任何問題 • AI 智能解答（完全遵循官方 Example 5）</p>
+                </div>
+
+                <div class="card">
+                    <!-- 上傳區域 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            上傳要分析的圖片
+                        </label>
+                        <div class="upload-area" id="analyze-upload-area">
+                            <input type="file" id="analyze-input" accept="image/*" style="display: none;">
+                            <div class="upload-placeholder" id="analyze-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                                <p>點擊或拖曳上傳圖片</p>
+                                <small>支持 PNG, JPEG, WebP, GIF</small>
+                            </div>
+                            <div class="upload-preview" id="analyze-preview" style="display: none;">
+                                <img id="analyze-preview-img" src="" alt="Preview">
+                                <button class="btn-remove" id="analyze-remove">×</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模型選擇 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                            分析模型（官方 Free Gemini API）
+                        </label>
+                        <select id="analyze-model" class="select">
+                            <option value="gemini-2.5-flash" selected>⚡ Gemini 2.5 Flash - 快速分析</option>
+                            <option value="gemini-3-pro-preview">🌟 Gemini 3 Pro Preview - 深度分析</option>
+                            <option value="gemini-2.5-flash-lite">🍂 Gemini 2.5 Flash Lite - 輕量級</option>
+                            <option value="gemini-2.5-pro">💎 Gemini 2.5 Pro - 頂級模型</option>
+                        </select>
+                    </div>
+
+                    <!-- 問題輸入 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            問關於這張圖片的問題
+                        </label>
+                        <textarea id="analyze-question" class="textarea" rows="3" placeholder="例如:
+• 這張圖片裡有什麼？
+• 請詳細描述這個場景
+• 圖中的人物在做什麼？
+• 分析這張圖片的色彩和構圖
+• 這是什麼風格的藝術作品？">這張圖片裡有什麼？請詳細描述。</textarea>
+                    </div>
+
+                    <!-- 快速問題 -->
+                    <div class="form-group">
+                        <label class="label">✨ 快速問題</label>
+                        <div class="quick-commands">
+                            <button class="quick-question" data-question="這張圖片裡有什麼？請詳細描述。">👀 描述內容</button>
+                            <button class="quick-question" data-question="分析這張圖片的色彩、光線和構圖。">🎨 分析風格</button>
+                            <button class="quick-question" data-question="圖中的人物或動物在做什麼？">👥 識別動作</button>
+                            <button class="quick-question" data-question="這張圖片的情緒和氛圍是什麼？">😊 情緒分析</button>
+                            <button class="quick-question" data-question="請提供這個物體/場景的相關信息。">📖 背景信息</button>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="btn-analyze" class="btn btn-primary" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            🔍 AI 分析圖片
+                        </button>
+                    </div>
+
+                    <div id="analyze-result" class="result-container"></div>
+                </div>
+
+                <!-- 示例圖片區 -->
+                <div class="card" style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎉 快速試用：官方示例圖片</h3>
+                    <div class="example-images">
+                        <div class="example-item" data-url="https://assets.puter.site/doge.jpeg">
+                            <img src="https://assets.puter.site/doge.jpeg" alt="Doge">
+                            <button class="btn btn-secondary">🐶 分析柴犬</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
