@@ -5,7 +5,9 @@ const sendBtn = document.getElementById('send-btn');
 const modelSelect = document.getElementById('model-select');
 
 const imageModelSelect = document.getElementById('image-model-select');
+const styleSelect = document.getElementById('style-select');
 const modelInfo = document.getElementById('model-info');
+const stylePreview = document.getElementById('style-preview');
 const imagePrompt = document.getElementById('image-prompt');
 const generateImgBtn = document.getElementById('generate-img-btn');
 const imageResult = document.getElementById('image-result');
@@ -154,6 +156,40 @@ function showNotification(message, type = 'success') {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => notification.remove(), 300);
     }, 2000);
+}
+
+// 風格說明
+const styleDescriptions = {
+    '': '無 - 自由風格，不添加額外風格提示詞',
+    'photorealistic': '📸 寫實風格 - 超高清收寫實效果，適合人物、風景、產品摩',
+    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細臻背景',
+    'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
+    'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
+    'watercolor': '🌊 水彩畫 - 柔和水彩效果，夢境感',
+    'sketch': '✏️ 素描風格 - 手繪素描效果，藝術草圖',
+    '3d-render': '🎬 3D 渲染 - 高品質 3D 建模效果',
+    'cyberpunk': '🤖 賽博龐克 - 未來科技、霸燈風格',
+    'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界，史詩感',
+    'minimalist': '📍 極簡主義 - 簡潔設計，留白美學',
+    'vintage': '📼 复古風格 - 老照片質感，復古色調',
+    'comic': '📖 漫畫風格 - 美式漫畫/漫畫風格',
+    'surreal': '🌀 超現實主義 - 超現實藝術，夢境感'
+};
+
+// 更新風格預覽
+function updateStylePreview() {
+    if (!styleSelect || !stylePreview) return;
+    
+    const selectedStyle = styleSelect.value;
+    const description = styleDescriptions[selectedStyle] || '選擇風格後，會自動加入到提示詞中';
+    
+    stylePreview.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <span>${description}</span>
+    `;
 }
 
 // 放大圖片功能
@@ -376,12 +412,22 @@ function addMessage(text, sender, isLoading = false) {
 
 // FLUX.2 圖像生成功能 (官方 API 格式)
 async function generateImage() {
-    const prompt = imagePrompt.value.trim();
+    const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
     
-    if (!prompt) {
+    if (!basePrompt) {
         imageResult.innerHTML = '<p class="error">⚠️ 請輸入圖像描述</p>';
         return;
+    }
+    
+    // 獲取風格選擇 (如果存在)
+    let fullPrompt = basePrompt;
+    if (styleSelect) {
+        const styleValue = styleSelect.value.trim();
+        if (styleValue) {
+            fullPrompt = `${basePrompt}, ${styleValue}`;
+            console.log('✅ 已添加風格:', styleValue);
+        }
     }
     
     generateImgBtn.disabled = true;
@@ -403,9 +449,9 @@ async function generateImage() {
             disable_safety_checker: true  // 關鍵:支持創意內容
         };
         
-        console.log('生成參數:', { prompt, ...options });
+        console.log('生成參數:', { prompt: fullPrompt, ...options });
         
-        const imageElement = await puter.ai.txt2img(prompt, options);
+        const imageElement = await puter.ai.txt2img(fullPrompt, options);
         
         if (!imageElement || !imageElement.src) {
             throw new Error('圖像生成失敗:無效的回應');
@@ -413,8 +459,8 @@ async function generateImage() {
         
         const imageData = imageElement.src;
         
-        // 保存到記錄
-        imageHistory.addImage(imageData, prompt, selectedModel);
+        // 保存到記錄 (保存完整提示詞包括風格)
+        imageHistory.addImage(imageData, fullPrompt, selectedModel);
         
         // 顯示成功結果
         imageResult.innerHTML = `
@@ -434,7 +480,7 @@ async function generateImage() {
         
         imageResult.appendChild(imageElement);
         imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); cursor: pointer;';
-        imageElement.addEventListener('click', () => openImageModal(imageData, prompt, modelName));
+        imageElement.addEventListener('click', () => openImageModal(imageData, fullPrompt, modelName));
         
         // 下載按鈕
         const downloadDiv = document.createElement('div');
@@ -535,9 +581,15 @@ imagePrompt.addEventListener('keypress', (e) => {
     }
 });
 
+// 風格選擇監聽器
+if (styleSelect) {
+    styleSelect.addEventListener('change', updateStylePreview);
+}
+
 ocrBtn.addEventListener('click', extractText);
 
 // 初始化
 addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
 updateModelInfo();
+if (styleSelect) updateStylePreview();
 renderHistory();
