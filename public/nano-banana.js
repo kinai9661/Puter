@@ -8,7 +8,6 @@ const styleSelect = document.getElementById('nb-style-select');
 const stylePreview = document.getElementById('nb-style-preview');
 const promptInput = document.getElementById('nb-prompt-input');
 const generateBtn = document.getElementById('nb-generate-btn');
-const enhanceBtn = document.getElementById('nb-enhance-btn');
 const batchBtn = document.getElementById('nb-batch-btn');
 const resultContainer = document.getElementById('nb-result-container');
 const resolutionSelect = document.getElementById('nb-resolution');
@@ -62,15 +61,15 @@ const styleDescriptions = {
     'surreal': '🌀 超現實'
 };
 
-// 修復後的正確模型名稱映射
+// 更新後的模型名稱映射
 const modelNames = {
-    'gemini-3-pro-image-preview': 'google/gemini-3-pro-image',
-    'gemini-2.5-flash-image': 'google/gemini-2.5-flash-image-preview'
+    'gemini-3-pro-preview': 'gemini-3-pro-preview',
+    'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite'
 };
 
 const modelDisplayNames = {
-    'gemini-3-pro-image-preview': 'Gemini 3 Pro Image',
-    'gemini-2.5-flash-image': 'Gemini 2.5 Flash Image'
+    'gemini-3-pro-preview': 'Gemini 3 Pro Preview',
+    'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite'
 };
 
 // Gallery class
@@ -156,7 +155,7 @@ function showNotification(message, type = 'success') {
 
 function updateStylePreview() {
     const selectedStyle = styleSelect.value;
-    const description = styleDescriptions[selectedStyle] || '選擇風格後會自動優化提示詞';
+    const description = styleDescriptions[selectedStyle] || '選擇風格後會自動帶入相關描述';
     stylePreview.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
@@ -166,42 +165,7 @@ function updateStylePreview() {
     `;
 }
 
-// Feature 1: AI Enhance Prompt
-async function enhancePrompt() {
-    const userPrompt = promptInput.value.trim();
-    if (!userPrompt) {
-        showNotification('⚠️ 請先輸入提示詞', 'error');
-        return;
-    }
-    
-    enhanceBtn.disabled = true;
-    enhanceBtn.innerHTML = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-width="4" stroke-dasharray="32" /></svg> 優化中...';
-    
-    try {
-        showNotification('🧠 AI 正在優化提示詞...', 'info');
-        
-        // 確保 Puter.js 已初始化
-        if (typeof puter === 'undefined' || !puter.ai) {
-            throw new Error('Puter.js 尚未初始化,請重新整理頁面');
-        }
-        
-        const enhanced = await puter.ai.chat(
-            `You are an expert AI image generation prompt engineer. Enhance this prompt with vivid details, composition, lighting, and quality markers. Keep it under 100 words.\n\nPrompt: "${userPrompt}"\n\nReturn ONLY the enhanced English prompt.`,
-            { model: 'gpt-4o' }
-        );
-        
-        promptInput.value = enhanced.trim();
-        showNotification('✅ 提示詞已優化!');
-    } catch (error) {
-        console.error('Enhance error:', error);
-        showNotification('❌ 優化失敗: ' + error.message, 'error');
-    } finally {
-        enhanceBtn.disabled = false;
-        enhanceBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ✨ AI 智能優化提示詞';
-    }
-}
-
-// Feature 2: Batch Generate
+// Batch Generate
 async function generateBatch() {
     const basePrompt = promptInput.value.trim();
     if (!basePrompt) {
@@ -293,14 +257,14 @@ window.saveVariant = function(imageData, prompt, modelKey, style) {
     showNotification('✅ 已保存到畫廊!');
 };
 
-// Feature 3: Advanced Parameters
+// Advanced Parameters
 if (creativitySlider && creativityValue) {
     creativitySlider.addEventListener('input', (e) => {
         creativityValue.textContent = e.target.value + '%';
     });
 }
 
-// Feature 4: Progress Bar
+// Progress Bar
 function showProgressBar(container, modelDisplayName) {
     let progress = 0;
     const startTime = Date.now();
@@ -373,7 +337,6 @@ async function generateImage() {
     const progressInterval = showProgressBar(resultContainer, modelDisplayName);
     
     try {
-        // 確保 Puter.js 已初始化
         if (typeof puter === 'undefined' || !puter.ai) {
             throw new Error('Puter.js 尚未初始化,請重新整理頁面');
         }
@@ -450,7 +413,7 @@ function renderGallery() {
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
                 <p>還沒有香蕉圖片</p>
-                <small>開始創作你的第一張圖像吧! 🍌</small>
+                <small>開始創作你的第一张圖像吧! 🍌</small>
             </div>
         `;
         return;
@@ -546,7 +509,6 @@ navBtns.forEach(btn => {
 // Event Listeners
 styleSelect.addEventListener('change', updateStylePreview);
 generateBtn.addEventListener('click', generateImage);
-if (enhanceBtn) enhanceBtn.addEventListener('click', enhancePrompt);
 if (batchBtn) batchBtn.addEventListener('click', generateBatch);
 promptInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
