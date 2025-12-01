@@ -249,7 +249,7 @@ body {
 
 .textarea-modern {
     resize: vertical;
-    min-height: 100px;
+    min-height: 120px;
     font-family: inherit;
     line-height: 1.6;
 }
@@ -275,126 +275,6 @@ body {
 .input-container {
     display: flex;
     gap: 0.75rem;
-}
-
-/* Aspect Ratio Grid */
-.aspect-ratio-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.75rem;
-}
-
-.aspect-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: var(--bg-light);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.aspect-btn:hover {
-    border-color: var(--primary);
-    background: white;
-    transform: translateY(-2px);
-}
-
-.aspect-btn.active {
-    border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    box-shadow: var(--shadow);
-}
-
-.aspect-btn svg {
-    stroke: var(--text-secondary);
-}
-
-.aspect-btn.active svg {
-    stroke: var(--primary);
-}
-
-.aspect-btn span {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.aspect-btn small {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-/* Custom Dimensions */
-.custom-dimensions {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: var(--bg-light);
-    border-radius: 12px;
-}
-
-.dimension-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.input-wrapper label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.input-wrapper input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.95rem;
-}
-
-/* Advanced Section */
-.advanced-section {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background: var(--bg-light);
-    border-radius: 12px;
-}
-
-.advanced-section summary {
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-primary);
-    user-select: none;
-    list-style: none;
-    padding: 0.5rem;
-}
-
-.advanced-section summary::-webkit-details-marker {
-    display: none;
-}
-
-.advanced-section[open] summary {
-    margin-bottom: 1rem;
-}
-
-.advanced-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.advanced-section small {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
 }
 
 /* Buttons */
@@ -625,17 +505,5 @@ body {
 
     .input-container {
         flex-direction: column;
-    }
-    
-    .aspect-ratio-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .dimension-inputs {
-        grid-template-columns: 1fr;
-    }
-    
-    .advanced-grid {
-        grid-template-columns: 1fr;
     }
 }
