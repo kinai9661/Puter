@@ -18,7 +18,7 @@
 
 訪問應用時,會自動彈出 Puter.com 登入視窗:
 
-![Puter 登入介面](https://i.imgur.com/example.png)
+![Puter 登入介面]()
 
 **步驟**:
 1. **點擊「Create Free Account」** (創建免費帳號)
