@@ -8,7 +8,6 @@
     <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
-    <!-- Header -->
     <header class="nb-header">
         <div class="nb-container">
             <div class="nb-logo">
@@ -47,16 +46,14 @@
     </header>
 
     <main class="nb-main">
-        <!-- 圖像生成區 -->
         <section id="nb-generator" class="nb-section active">
             <div class="nb-container">
                 <div class="nb-hero">
                     <h2 class="nb-hero-title">🍌 香蕉動力,無限創意</h2>
-                    <p class="nb-hero-subtitle">免費 Google Gemini 圖像生成 • AI智能優化 • 批量生成 • 雲端同步</p>
+                    <p class="nb-hero-subtitle">免費 Google Gemini 圖像生成 • 批量生成 • 雲端同步</p>
                 </div>
 
                 <div class="nb-card">
-                    <!-- 模型選擇 -->
                     <div class="nb-form-group">
                         <label class="nb-label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -70,7 +67,6 @@
                         </select>
                     </div>
 
-                    <!-- 模型說明 -->
                     <div class="nb-style-preview" style="background: linear-gradient(135deg, rgba(66, 133, 244, 0.15), rgba(234, 67, 53, 0.15)); border-color: #4285F4; margin-bottom: 1.5rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <circle cx="12" cy="12" r="10"/>
@@ -79,7 +75,6 @@
                         <span><strong>🌟 Gemini 3 Pro Image</strong> 是Google 最強大的圖像生成模型,完全免費無限使用!</span>
                     </div>
 
-                    <!-- 高級參數 -->
                     <details class="nb-advanced-panel" open>
                         <summary style="cursor: pointer; font-weight: 600; padding: 1rem; background: linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(234, 67, 53, 0.1)); border-radius: 12px; margin-bottom: 1rem;">
                             ⚙️ 高級參數設置
@@ -109,7 +104,6 @@
                         </div>
                     </details>
 
-                    <!-- 風格選擇 -->
                     <div class="nb-form-group">
                         <label class="nb-label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -140,10 +134,9 @@
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 16v-4M12 8h.01"/>
                         </svg>
-                        <span>選擇風格後會自動優化提示詞</span>
+                        <span>選擇風格後會自動帶入相關描述</span>
                     </div>
 
-                    <!-- 提示詞輸入 -->
                     <div class="nb-form-group">
                         <label class="nb-label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -152,21 +145,12 @@
                             </svg>
                             描述你的想像
                         </label>
-                        <textarea id="nb-prompt-input" class="nb-textarea" rows="3" placeholder="輸入簡短描述,AI會自動優化:
+                        <textarea id="nb-prompt-input" class="nb-textarea" rows="3" placeholder="輸入簡短描述:
 • A cute banana character
 • Dragon on mountain
 • Cyberpunk city">A cute banana character wearing sunglasses, dancing in a tropical paradise</textarea>
                     </div>
 
-                    <!-- AI優化按鈕 -->
-                    <button id="nb-enhance-btn" class="nb-btn-secondary" style="width: 100%; margin-bottom: 1rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        ✨ AI 智能優化提示詞
-                    </button>
-
-                    <!-- 生成按鈕組 -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <button id="nb-generate-btn" class="nb-btn-primary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -185,21 +169,14 @@
                         </button>
                     </div>
 
-                    <!-- 結果區 -->
                     <div id="nb-result-container" class="nb-result-container"></div>
                 </div>
 
-                <!-- 特色卡片 -->
                 <div class="nb-features">
                     <div class="nb-feature-card">
                         <div class="nb-feature-icon">🌟</div>
                         <h3>Gemini 3 Pro</h3>
                         <p>Google 最強模型</p>
-                    </div>
-                    <div class="nb-feature-card">
-                        <div class="nb-feature-icon">✨</div>
-                        <h3>AI 優化</h3>
-                        <p>自動增強提示詞</p>
                     </div>
                     <div class="nb-feature-card">
                         <div class="nb-feature-icon">🎨</div>
@@ -215,7 +192,6 @@
             </div>
         </section>
 
-        <!-- 畫廊區 -->
         <section id="nb-gallery" class="nb-section">
             <div class="nb-container">
                 <div class="nb-gallery-header">
@@ -245,7 +221,6 @@
             </div>
         </section>
 
-        <!-- AI聊天區 -->
         <section id="nb-chat" class="nb-section">
             <div class="nb-container">
                 <div class="nb-chat-header">
@@ -277,7 +252,6 @@
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="nb-footer">
         <div class="nb-container">
             <p>🍌 Nano Banana AI | Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + <a href="https://ai.google.dev/" target="_blank">Google Gemini</a></p>
