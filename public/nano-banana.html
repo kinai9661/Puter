@@ -16,11 +16,25 @@
                 <h1>Nano Banana AI</h1>
             </div>
             <nav class="nav">
-                <button class="nav-btn active" data-tab="generate">
+                <button class="nav-btn active" data-tab="text2img">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    生成
+                    文生圖
+                </button>
+                <button class="nav-btn" data-tab="img2img">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M21 15l-3.5-3.5L12 17l-4-4-5 5"/>
+                    </svg>
+                    圖生圖
+                </button>
+                <button class="nav-btn" data-tab="edit">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    圖像編輯
                 </button>
                 <button class="nav-btn" data-tab="gallery">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -35,18 +49,15 @@
     </header>
 
     <main class="main">
-        <!-- 生成區 -->
-        <section id="tab-generate" class="tab-content active">
+        <!-- 文生圖區 -->
+        <section id="tab-text2img" class="tab-content active">
             <div class="container">
-                <!-- Hero -->
                 <div class="hero">
                     <h2>🎨 香蕉動力，無限創意</h2>
                     <p>免費使用 Google Gemini 最新圖像生成模型 • 無需 API 金鑰 • 完全免費</p>
                 </div>
 
-                <!-- 主卡片 -->
                 <div class="card">
-                    <!-- 模型選擇 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -78,7 +89,6 @@
                         </div>
                     </div>
 
-                    <!-- 高級參數 -->
                     <details class="advanced-panel" open>
                         <summary>⚙️ 高級參數</summary>
                         <div class="advanced-content">
@@ -102,7 +112,6 @@
                         </div>
                     </details>
 
-                    <!-- 風格選擇 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -124,7 +133,6 @@
                         </select>
                     </div>
 
-                    <!-- 提示詞輸入 -->
                     <div class="form-group">
                         <label class="label">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -139,7 +147,6 @@
 • Dragon flying over mountains at sunset">A cute banana character wearing sunglasses, dancing in a tropical paradise</textarea>
                     </div>
 
-                    <!-- 生成按鈕 -->
                     <div class="button-group">
                         <button id="btn-generate" class="btn btn-primary">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -158,11 +165,9 @@
                         </button>
                     </div>
 
-                    <!-- 結果容器 -->
                     <div id="result" class="result-container"></div>
                 </div>
 
-                <!-- 特色卡片 -->
                 <div class="features">
                     <div class="feature-card">
                         <div class="feature-icon">🌟</div>
@@ -184,6 +189,164 @@
                         <h3>完全免費</h3>
                         <p>無需 API 金鑰</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 圖生圖區 -->
+        <section id="tab-img2img" class="tab-content">
+            <div class="container">
+                <div class="hero">
+                    <h2>🖼️ 圖生圖 - 風格轉換</h2>
+                    <p>上傳參考圖片 • 結合文字描述 • 生成風格相似的新圖像</p>
+                </div>
+
+                <div class="card">
+                    <!-- 上傳區域 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            上傳參考圖片
+                        </label>
+                        <div class="upload-area" id="img2img-upload-area">
+                            <input type="file" id="img2img-input" accept="image/*" style="display: none;">
+                            <div class="upload-placeholder" id="img2img-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                                <p>點擊或拖曳上傳圖片</p>
+                                <small>支持 PNG, JPEG, WebP</small>
+                            </div>
+                            <div class="upload-preview" id="img2img-preview" style="display: none;">
+                                <img id="img2img-preview-img" src="" alt="Preview">
+                                <button class="btn-remove" id="img2img-remove">×</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 參考強度 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            參考強度: <span id="img2img-strength-value">75%</span>
+                        </label>
+                        <input type="range" id="img2img-strength" class="slider" min="0" max="100" value="75">
+                        <div class="slider-labels">
+                            <span>較大變化</span>
+                            <span>忠於原圖</span>
+                        </div>
+                    </div>
+
+                    <!-- 提示詞 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                            </svg>
+                            描述想要的風格/變化
+                        </label>
+                        <textarea id="img2img-prompt" class="textarea" rows="3" placeholder="例如:
+• Convert to anime style
+• Make it look like a watercolor painting
+• Transform into cyberpunk aesthetic">anime style, Studio Ghibli aesthetic</textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="btn-img2img" class="btn btn-primary" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                            🇼 生成新圖
+                        </button>
+                    </div>
+
+                    <div id="img2img-result" class="result-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 圖像編輯區 -->
+        <section id="tab-edit" class="tab-content">
+            <div class="container">
+                <div class="hero">
+                    <h2>✏️ 智能編輯 - 自然語言修改</h2>
+                    <p>上傳圖片 • 描述想要的修改 • AI 精準編輯</p>
+                </div>
+
+                <div class="card">
+                    <!-- 上傳區域 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            上傳要編輯的圖片
+                        </label>
+                        <div class="upload-area" id="edit-upload-area">
+                            <input type="file" id="edit-input" accept="image/*" style="display: none;">
+                            <div class="upload-placeholder" id="edit-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                                <p>點擊或拖曳上傳圖片</p>
+                                <small>支持 PNG, JPEG, WebP</small>
+                            </div>
+                            <div class="upload-preview" id="edit-preview" style="display: none;">
+                                <img id="edit-preview-img" src="" alt="Preview">
+                                <button class="btn-remove" id="edit-remove">×</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 編輯指令 -->
+                    <div class="form-group">
+                        <label class="label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            編輯指令（自然語言）
+                        </label>
+                        <textarea id="edit-instruction" class="textarea" rows="3" placeholder="用自然語言描述想要的修改，例如:
+• 將天空變成日落色調
+• 在前景添加一隻貓
+• 移除背景人物
+• 將顏色改為冬季色調">將天空變成夕陽色調，添加柔和的雲彩</textarea>
+                    </div>
+
+                    <!-- 快速指令模板 -->
+                    <div class="form-group">
+                        <label class="label">✨ 快速指令</label>
+                        <div class="quick-commands">
+                            <button class="quick-cmd" data-cmd="將天空變成夜空，添加星星">🌃 夜空</button>
+                            <button class="quick-cmd" data-cmd="添加一隻可愛的小狗">🐶 加寵物</button>
+                            <button class="quick-cmd" data-cmd="移除所有人物">🚫 移除人</button>
+                            <button class="quick-cmd" data-cmd="變成黑白照片風格">⚫ 黑白</button>
+                            <button class="quick-cmd" data-cmd="增強顏色飽和度和對比度">🌈 增強色彩</button>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="btn-edit" class="btn btn-primary" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            ✏️ 執行編輯
+                        </button>
+                    </div>
+
+                    <div id="edit-result" class="result-container"></div>
                 </div>
             </div>
         </section>
