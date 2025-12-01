@@ -1,16 +1,39 @@
-// Nano Banana AI - 完整功能版 (文生圖 + 圖生圖 + 圖像編輯)
+// Nano Banana AI - 完整功能版 (文生圖 + 圖生圖 + 圖像編輯 + 文字助手)
+// 結合官方 Free Gemini API 教學
 
 // ========== Configuration ==========
-const MODELS = {
-    'gemini-3-pro': {
+
+// 圖片生成模型配置（用於 txt2img, img2img, edit）
+const IMG_MODELS = {
+    'gemini-3-pro-image': {
         model: 'google/gemini-3-pro-image',
         provider: 'together-ai',
         displayName: 'Gemini 3 Pro Image'
     },
-    'flash': {
+    'gemini-2.5-flash-image': {
         model: 'gemini-2.5-flash-image-preview',
         provider: null,
         displayName: 'Gemini 2.5 Flash Image'
+    }
+};
+
+// 文字/分析模型配置（完全遵循官方 Free Gemini API）
+const CHAT_MODELS = {
+    'gemini-3-pro-preview': {
+        model: 'gemini-3-pro-preview',
+        displayName: 'Gemini 3 Pro Preview'
+    },
+    'gemini-2.5-flash': {
+        model: 'gemini-2.5-flash',
+        displayName: 'Gemini 2.5 Flash'
+    },
+    'gemini-2.5-flash-lite': {
+        model: 'gemini-2.5-flash-lite',
+        displayName: 'Gemini 2.5 Flash Lite'
+    },
+    'gemini-2.5-pro': {
+        model: 'gemini-2.5-pro',
+        displayName: 'Gemini 2.5 Pro'
     }
 };
 
@@ -103,7 +126,7 @@ class Gallery {
     }
 
     add(imageData, prompt, modelKey, type = 'text2img', params = {}) {
-        const config = MODELS[modelKey];
+        const config = IMG_MODELS[modelKey];
         const image = {
             id: Date.now(),
             timestamp: new Date().toISOString(),
@@ -215,7 +238,7 @@ function escapeHtml(text) {
 
 function getSelectedModel() {
     const selected = document.querySelector('input[name="model"]:checked');
-    return selected ? selected.value : 'flash';
+    return selected ? selected.value : 'gemini-2.5-flash-image';
 }
 
 function buildPrompt(basePrompt) {
@@ -264,9 +287,11 @@ function showProgress(modelName, container) {
 }
 
 // ========== API Functions ==========
+
+// 圖片生成 API（使用 IMG_MODELS）
 async function generateImage(prompt, modelKey) {
-    const config = MODELS[modelKey];
-    if (!config) throw new Error(`未知的模型: ${modelKey}`);
+    const config = IMG_MODELS[modelKey];
+    if (!config) throw new Error(`未知的圖片模型: ${modelKey}`);
 
     const options = { model: config.model, disable_safety_checker: true };
     if (config.provider) options.provider = config.provider;
@@ -275,9 +300,10 @@ async function generateImage(prompt, modelKey) {
     return await puter.ai.txt2img(prompt, options);
 }
 
+// 圖生圖 API（使用 IMG_MODELS）
 async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
-    const config = MODELS[modelKey];
-    if (!config) throw new Error(`未知的模型: ${modelKey}`);
+    const config = IMG_MODELS[modelKey];
+    if (!config) throw new Error(`未知的圖片模型: ${modelKey}`);
 
     const options = {
         model: config.model,
@@ -290,14 +316,10 @@ async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
 
     console.log('🍌 Img2Img API:', options);
     
-    // 注意: Puter.js 可能需要特定的 API 調用方式
-    // 這裡使用模擬的 img2img 調用，實際需要根據 Puter.js 文檔調整
     try {
-        // 如果 Puter 支持 img2img
         if (puter.ai.img2img) {
             return await puter.ai.img2img(options);
         } else {
-            // 降級方案：使用 txt2img 但提示包含風格信息
             return await puter.ai.txt2img(prompt + ' (style transfer)', options);
         }
     } catch (error) {
@@ -306,9 +328,10 @@ async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
     }
 }
 
+// 圖像編輯 API（使用 IMG_MODELS）
 async function editImage(imageFile, instruction, modelKey) {
-    const config = MODELS[modelKey];
-    if (!config) throw new Error(`未知的模型: ${modelKey}`);
+    const config = IMG_MODELS[modelKey];
+    if (!config) throw new Error(`未知的圖片模型: ${modelKey}`);
 
     const options = {
         model: config.model,
@@ -320,12 +343,10 @@ async function editImage(imageFile, instruction, modelKey) {
 
     console.log('🍌 Edit API:', options);
     
-    // 注意: 實際 API 調用需要根據 Puter.js 支持的方法調整
     try {
         if (puter.ai.editImage) {
             return await puter.ai.editImage(options);
         } else {
-            // 降級方案：使用文生圖模擬編輯效果
             return await puter.ai.txt2img(instruction, options);
         }
     } catch (error) {
@@ -334,11 +355,47 @@ async function editImage(imageFile, instruction, modelKey) {
     }
 }
 
+// 文字對話 API（使用 CHAT_MODELS - 完全遵循官方）
+async function callChat(prompt, chatModelKey = 'gemini-2.5-flash', extraOptions = {}) {
+    const config = CHAT_MODELS[chatModelKey];
+    if (!config) throw new Error(`未知的文字模型: ${chatModelKey}`);
+
+    const options = {
+        model: config.model,
+        ...extraOptions
+    };
+
+    console.log('🍌 Chat API:', options);
+    return await puter.ai.chat(prompt, options);
+}
+
+// 圖像分析 API（使用 CHAT_MODELS - 官方 Example 5）
+async function analyzeImage(prompt, imageUrl, chatModelKey = 'gemini-2.5-flash') {
+    const config = CHAT_MODELS[chatModelKey];
+    if (!config) throw new Error(`未知的文字模型: ${chatModelKey}`);
+
+    console.log('🍌 Image Analysis API:', config.model);
+    return await puter.ai.chat(prompt, imageUrl, { model: config.model });
+}
+
+// Prompt 優化（使用文字模型）
+async function optimizePrompt(userPrompt) {
+    const systemPrompt = `You are a professional AI image prompt engineer. Enhance the following prompt to generate better images. Make it more detailed, vivid, and specific. Return only the enhanced prompt without explanations.\n\nUser prompt: ${userPrompt}`;
+    
+    try {
+        const response = await callChat(systemPrompt, 'gemini-3-pro-preview');
+        return response.trim();
+    } catch (error) {
+        console.error('Prompt optimization failed:', error);
+        return userPrompt; // 失敗則返回原提示詞
+    }
+}
+
 // ========== Text2Img Functions ==========
 async function handleGenerate() {
     try {
         const modelKey = getSelectedModel();
-        const config = MODELS[modelKey];
+        const config = IMG_MODELS[modelKey];
         const prompt = buildPrompt();
 
         elements.btnGenerate.disabled = true;
@@ -387,7 +444,7 @@ async function handleGenerate() {
 async function handleBatch() {
     try {
         const modelKey = getSelectedModel();
-        const config = MODELS[modelKey];
+        const config = IMG_MODELS[modelKey];
         const basePrompt = buildPrompt();
 
         elements.btnGenerate.disabled = true;
@@ -502,7 +559,7 @@ async function handleImg2Img() {
 
     try {
         const modelKey = getSelectedModel();
-        const config = MODELS[modelKey];
+        const config = IMG_MODELS[modelKey];
         const prompt = elements.img2imgPrompt.value.trim() || 'anime style transformation';
         const strength = elements.img2imgStrength.value / 100;
 
@@ -585,7 +642,7 @@ async function handleEdit() {
 
     try {
         const modelKey = getSelectedModel();
-        const config = MODELS[modelKey];
+        const config = IMG_MODELS[modelKey];
         const instruction = elements.editInstruction.value.trim();
         
         if (!instruction) {
@@ -659,8 +716,9 @@ window.addEventListener('load', () => {
     if (typeof puter === 'undefined') {
         showNotification('⚠️ Puter.js 載入失敗，請重新整理頁面', 'error');
     } else {
-        console.log('🍌 Nano Banana AI Ready! (Full Version)');
-        console.log('🔧 Models:', MODELS);
+        console.log('🍌 Nano Banana AI Ready! (Full Version + Official Free Gemini API)');
+        console.log('📸 Image Models:', IMG_MODELS);
+        console.log('💬 Chat Models:', CHAT_MODELS);
     }
     
     setupImg2ImgUpload();
@@ -676,4 +734,8 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// Global exports
 window.gallery = gallery;
+window.callChat = callChat;
+window.analyzeImage = analyzeImage;
+window.optimizePrompt = optimizePrompt;
