@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana AI - 免費 FLUX.2 圖像生成</title>
+    <link rel="stylesheet" href="nano-banana.css">
+    <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="nb-header">
+        <div class="nb-container">
+            <div class="nb-logo">
+                <span class="nb-logo-icon">🍌</span>
+                <h1>Nano Banana AI</h1>
+            </div>
+            <nav class="nb-nav">
+                <button class="nb-nav-btn active" data-section="generator">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    圖像生成
+                </button>
+                <button class="nb-nav-btn" data-section="gallery">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    畫廊
+                </button>
+                <button class="nb-nav-btn" data-section="chat">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    AI 聊天
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="nb-main">
+        <!-- 圖像生成區 -->
+        <section id="nb-generator" class="nb-section active">
+            <div class="nb-container">
+                <div class="nb-hero">
+                    <h2 class="nb-hero-title">🍌 香蕉動力,無限創意</h2>
+                    <p class="nb-hero-subtitle">免費 FLUX.2 Pro 圖像生成 • 13種專業風格 • 雲端同步</p>
+                </div>
+
+                <div class="nb-card">
+                    <!-- 模型選擇 -->
+                    <div class="nb-form-group">
+                        <label class="nb-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                            AI 模型
+                        </label>
+                        <select id="nb-model-select" class="nb-select">
+                            <option value="black-forest-labs/FLUX.2-pro" selected>🏆 FLUX.2 Pro - 最高品質</option>
+                            <option value="black-forest-labs/FLUX.2-flex">🔄 FLUX.2 Flex - 快速</option>
+                            <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2 Dev - 開發</option>
+                            <option value="gpt-image-1">🤖 GPT Image-1</option>
+                            <option value="dall-e-3">✨ DALL-E 3</option>
+                        </select>
+                    </div>
+
+                    <!-- 風格選擇 -->
+                    <div class="nb-form-group">
+                        <label class="nb-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            圖像風格
+                        </label>
+                        <select id="nb-style-select" class="nb-select">
+                            <option value="">🍌 無 - 自由風格</option>
+                            <option value="photorealistic">📸 寫實攝影</option>
+                            <option value="anime">🌸 吉卜力動漫</option>
+                            <option value="digital-art">🖼️ 數位藝術</option>
+                            <option value="oil-painting">🎨 油畫風格</option>
+                            <option value="watercolor">🌊 水彩畫</option>
+                            <option value="sketch">✏️ 素描風格</option>
+                            <option value="3d-render">🎬 3D 渲染</option>
+                            <option value="cyberpunk">🤖 賽博龐克</option>
+                            <option value="fantasy">✨ 奇幻風格</option>
+                            <option value="minimalist">📍 極簡主義</option>
+                            <option value="vintage">📼 復古風格</option>
+                            <option value="comic">📖 漫畫風格</option>
+                            <option value="surreal">🌀 超現實</option>
+                        </select>
+                    </div>
+
+                    <div id="nb-style-preview" class="nb-style-preview">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>選擇風格後會自動優化提示詞</span>
+                    </div>
+
+                    <!-- 提示詞輸入 -->
+                    <div class="nb-form-group">
+                        <label class="nb-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                            </svg>
+                            描述你的想像
+                        </label>
+                        <textarea id="nb-prompt-input" class="nb-textarea" rows="4" placeholder="例如：
+A cute banana character with sunglasses dancing
+A majestic dragon on a mountain peak at sunset
+A futuristic city with neon lights and flying cars"></textarea>
+                    </div>
+
+                    <!-- 生成按鈕 -->
+                    <button id="nb-generate-btn" class="nb-btn-primary nb-btn-large">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                        <span>🍌 生成香蕉圖像</span>
+                    </button>
+
+                    <!-- 結果區 -->
+                    <div id="nb-result-container" class="nb-result-container"></div>
+                </div>
+
+                <!-- 特色卡片 -->
+                <div class="nb-features">
+                    <div class="nb-feature-card">
+                        <div class="nb-feature-icon">⚡</div>
+                        <h3>FLUX.2 Pro</h3>
+                        <p>最高品質生成</p>
+                    </div>
+                    <div class="nb-feature-card">
+                        <div class="nb-feature-icon">🎨</div>
+                        <h3>13種風格</h3>
+                        <p>自動優化提示詞</p>
+                    </div>
+                    <div class="nb-feature-card">
+                        <div class="nb-feature-icon">🍌</div>
+                        <h3>香蕉主題</h3>
+                        <p>可愛有趣設計</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 畫廊區 -->
+        <section id="nb-gallery" class="nb-section">
+            <div class="nb-container">
+                <div class="nb-gallery-header">
+                    <h2>🖼️ 我的香蕉畫廊</h2>
+                    <div class="nb-gallery-stats">
+                        <span class="nb-stat">總生成: <strong id="nb-total-count">0</strong></span>
+                        <button id="nb-clear-btn" class="nb-btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            清空
+                        </button>
+                    </div>
+                </div>
+                <div id="nb-gallery-grid" class="nb-gallery-grid">
+                    <div class="nb-empty-state">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                        <p>還沒有香蕉圖片</p>
+                        <small>開始創作你的第一張圖像吧! 🍌</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI聊天區 -->
+        <section id="nb-chat" class="nb-section">
+            <div class="nb-container">
+                <div class="nb-chat-header">
+                    <h2>🤖 香蕉AI助手</h2>
+                    <select id="nb-chat-model-select" class="nb-select-small">
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="claude-3.5-sonnet">Claude 3.5</option>
+                        <option value="gpt-5-nano">GPT-5 Nano</option>
+                    </select>
+                </div>
+                <div id="nb-chat-messages" class="nb-chat-messages">
+                    <div class="nb-message nb-ai-message">
+                        <div class="nb-message-avatar">🍌</div>
+                        <div class="nb-message-content">
+                            <p>你好!我是 Nano Banana AI 助手,有什麼可以幫你的嗎?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="nb-chat-input-container">
+                    <input type="text" id="nb-chat-input" class="nb-chat-input" placeholder="輸入你的訊息..." />
+                    <button id="nb-send-btn" class="nb-btn-send">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="nb-footer">
+        <div class="nb-container">
+            <p>🍌 Nano Banana AI | Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + <a href="https://blackforestlabs.ai" target="_blank">FLUX.2</a></p>
+            <p><a href="index.html">← 返回主頁面</a> • <a href="https://github.com/kinai9661/Puter" target="_blank">GitHub</a> • MIT License</p>
+        </div>
+    </footer>
+
+    <script src="nano-banana.js"></script>
+</body>
+</html>
