@@ -62,9 +62,10 @@ const styleDescriptions = {
     'surreal': '🌀 超現實'
 };
 
+// 修復模型名稱映射
 const modelNames = {
-    'google/gemini-3-pro-image': 'Gemini 3 Pro Image',
-    'gemini-2.5-flash-image-preview': 'Gemini 2.5 Flash Image'
+    'gemini-3-pro-image-preview': 'Gemini 3 Pro Image',
+    'gemini-2.5-flash-image': 'Gemini 2.5 Flash Image'
 };
 
 // Gallery class
@@ -207,7 +208,7 @@ async function generateBatch() {
     resultContainer.style.display = 'block';
     resultContainer.innerHTML = `
         <div style="text-align: center; padding: 1rem;">
-            <h3>🍌 批量生成4張變體</h3>
+            <h3>🍌 批量生成4张變體</h3>
             <div id="batch-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;"></div>
         </div>
     `;
@@ -243,7 +244,7 @@ async function generateBatch() {
                 itemDiv.appendChild(actions);
             }
         }
-        showNotification('✅ 成功生成4張變體!');
+        showNotification('✅ 成功生成4张變體!');
     } catch (error) {
         showNotification('❌ 部分變體生成失敗', 'error');
     } finally {
@@ -405,7 +406,7 @@ function renderGallery() {
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
                 <p>還沒有香蕉圖片</p>
-                <small>開始創作你的第一張圖像吧! 🍌</small>
+                <small>開始創作你的第一张圖像吧! 🍌</small>
             </div>
         `;
         return;
