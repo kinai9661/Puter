@@ -4,6 +4,14 @@
 
 [![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com)
 
+> ⚠️ **重要提示**: 建議自行建設部署，因官方 API 存在潛在限制  
+> 免費用戶享有慷慨額度適合一般使用，但高頻或長請求可能觸發：  
+> - 🚫 速率限制 (Rate Limiting)  
+> - 🚫 防濾用機制 (如 IP 連線過多)  
+> - ✅ 自行部署可完全掌控使用體驗
+
+---
+
 ## ✨ 功能特色
 
 ### ⚡ FLUX.2 圖像生成
