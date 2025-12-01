@@ -10,9 +10,89 @@ const imagePrompt = document.getElementById('image-prompt');
 const generateImgBtn = document.getElementById('generate-img-btn');
 const imageResult = document.getElementById('image-result');
 
+const historyGrid = document.getElementById('history-grid');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+const totalCountEl = document.getElementById('total-count');
+const storageSizeEl = document.getElementById('storage-size');
+
 const imageUrl = document.getElementById('image-url');
 const ocrBtn = document.getElementById('ocr-btn');
 const ocrResult = document.getElementById('ocr-result');
+
+// 圖片記錄管理
+const HISTORY_KEY = 'puter_ai_image_history';
+const MAX_HISTORY = 50; // 最多保存50張圖片
+
+class ImageHistory {
+    constructor() {
+        this.history = this.loadHistory();
+    }
+
+    loadHistory() {
+        try {
+            const data = localStorage.getItem(HISTORY_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error('載入記錄失敗:', error);
+            return [];
+        }
+    }
+
+    saveHistory() {
+        try {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
+        } catch (error) {
+            console.error('保存記錄失敗:', error);
+            // 如果存儲空間不足,刪除最舊的記錄
+            if (this.history.length > 10) {
+                this.history = this.history.slice(-10);
+                this.saveHistory();
+            }
+        }
+    }
+
+    addImage(imageData, prompt, model) {
+        const record = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            imageData,
+            prompt,
+            model,
+            modelName: model.split('/').pop() || model
+        };
+
+        this.history.unshift(record);
+        
+        // 限制記錄數量
+        if (this.history.length > MAX_HISTORY) {
+            this.history = this.history.slice(0, MAX_HISTORY);
+        }
+
+        this.saveHistory();
+        return record;
+    }
+
+    deleteImage(id) {
+        this.history = this.history.filter(item => item.id !== id);
+        this.saveHistory();
+    }
+
+    clearAll() {
+        this.history = [];
+        this.saveHistory();
+    }
+
+    getStorageSize() {
+        try {
+            const data = localStorage.getItem(HISTORY_KEY);
+            return data ? (new Blob([data]).size / 1024).toFixed(2) : 0;
+        } catch (error) {
+            return 0;
+        }
+    }
+}
+
+const imageHistory = new ImageHistory();
 
 // Tab 切換
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -31,7 +111,84 @@ tabBtns.forEach(btn => {
                 section.classList.add('active');
             }
         });
+
+        // 切換到記錄頁時更新顯示
+        if (targetTab === 'history') {
+            renderHistory();
+        }
     });
+});
+
+// 渲染圖片記錄
+function renderHistory() {
+    const history = imageHistory.history;
+    
+    // 更新統計信息
+    totalCountEl.textContent = history.length;
+    storageSizeEl.textContent = `${imageHistory.getStorageSize()} KB`;
+
+    if (history.length === 0) {
+        historyGrid.innerHTML = `
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <p>尚無生成記錄</p>
+                <small>開始生成圖片後,記錄會自動保存在這裡</small>
+            </div>
+        `;
+        return;
+    }
+
+    historyGrid.innerHTML = history.map(item => `
+        <div class="history-item" data-id="${item.id}">
+            <img src="${item.imageData}" alt="${item.prompt}" loading="lazy">
+            <div class="history-overlay">
+                <div class="history-info">
+                    <span class="history-model">${item.modelName}</span>
+                    <span class="history-date">${new Date(item.timestamp).toLocaleString('zh-TW')}</span>
+                </div>
+                <p class="history-prompt">${item.prompt.substring(0, 80)}${item.prompt.length > 80 ? '...' : ''}</p>
+                <div class="history-actions">
+                    <a href="${item.imageData}" download="flux-${item.modelName}-${item.id}.png" class="btn-icon" title="下載">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </a>
+                    <button class="btn-icon btn-delete" data-id="${item.id}" title="刪除">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    // 綁定刪除事件
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            if (confirm('確定要刪除這張圖片嗎?')) {
+                imageHistory.deleteImage(id);
+                renderHistory();
+            }
+        });
+    });
+}
+
+// 清空記錄
+clearHistoryBtn.addEventListener('click', () => {
+    if (confirm('確定要清空所有圖片記錄嗎?此操作無法撤銷!')) {
+        imageHistory.clearAll();
+        renderHistory();
+    }
 });
 
 // 模型資訊
@@ -117,6 +274,9 @@ async function generateImage() {
         
         const imageData = imageElement.src;
         
+        // 保存到記錄
+        imageHistory.addImage(imageData, prompt, selectedModel);
+        
         // 顯示成功結果
         imageResult.innerHTML = `
             <div class="success-header">
@@ -125,7 +285,7 @@ async function generateImage() {
                     <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
                 <div>
-                    <p class="success">✅ 圖像生成成功!</p>
+                    <p class="success">✅ 圖像生成成功! (已保存到記錄)</p>
                     <p style="color: var(--text-secondary); font-size: 0.85rem;">
                         模型: ${selectedModel} • FLUX.2 官方 API
                     </p>
@@ -240,3 +400,4 @@ ocrBtn.addEventListener('click', extractText);
 // 初始化
 addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
 updateModelInfo();
+renderHistory();
