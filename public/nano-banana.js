@@ -4,16 +4,19 @@
 // ========== Configuration ==========
 
 // 圖片生成模型配置（用於 txt2img, img2img, edit）
+// 根據 Puter.js 官方文檔: https://docs.puter.com/AI/txt2img/
 const IMG_MODELS = {
-    'google/gemini-3-pro-image': {
-        model: 'google/gemini-3-pro-image',
-        provider: 'together-ai',
-        displayName: 'Gemini 3 Pro Image'
-    },
     'gemini-2.5-flash-image-preview': {
         model: 'gemini-2.5-flash-image-preview',
-        provider: null,
         displayName: 'Gemini 2.5 Flash Image'
+    },
+    'gpt-image-1': {
+        model: 'gpt-image-1',
+        displayName: 'GPT Image 1'
+    },
+    'dall-e-3': {
+        model: 'dall-e-3',
+        displayName: 'DALL-E 3'
     }
 };
 
@@ -293,8 +296,7 @@ async function generateImage(prompt, modelKey) {
     const config = IMG_MODELS[modelKey];
     if (!config) throw new Error(`未知的圖片模型: ${modelKey}`);
 
-    const options = { model: config.model, disable_safety_checker: true };
-    if (config.provider) options.provider = config.provider;
+    const options = { model: config.model };
 
     console.log('🍌 Text2Img API:', options);
     const result = await puter.ai.txt2img(prompt, options);
@@ -314,21 +316,24 @@ async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
     const config = IMG_MODELS[modelKey];
     if (!config) throw new Error(`未知的圖片模型: ${modelKey}`);
 
+    // 轉換為 base64
+    const reader = new FileReader();
+    const base64 = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+    });
+
     const options = {
         model: config.model,
-        image: imageFile,
-        prompt: prompt,
-        strength: strength,
-        disable_safety_checker: true
+        input_image: base64,
+        input_image_mime_type: imageFile.type
     };
-    if (config.provider) options.provider = config.provider;
 
     console.log('🍌 Img2Img API:', options);
     
     try {
-        const result = puter.ai.img2img 
-            ? await puter.ai.img2img(options)
-            : await puter.ai.txt2img(prompt + ' (style transfer)', options);
+        const result = await puter.ai.txt2img(prompt, options);
         
         if (result && result.success === false) {
             const errorMsg = extractErrorMessage(result);
@@ -343,37 +348,9 @@ async function img2imgGenerate(imageFile, prompt, strength, modelKey) {
     }
 }
 
-// 圖像編輯 API（使用 IMG_MODELS）
+// 圖像編輯 API（同 img2img）
 async function editImage(imageFile, instruction, modelKey) {
-    const config = IMG_MODELS[modelKey];
-    if (!config) throw new Error(`未知的圖片模型: ${modelKey}`);
-
-    const options = {
-        model: config.model,
-        image: imageFile,
-        instruction: instruction,
-        disable_safety_checker: true
-    };
-    if (config.provider) options.provider = config.provider;
-
-    console.log('🍌 Edit API:', options);
-    
-    try {
-        const result = puter.ai.editImage
-            ? await puter.ai.editImage(options)
-            : await puter.ai.txt2img(instruction, options);
-        
-        if (result && result.success === false) {
-            const errorMsg = extractErrorMessage(result);
-            console.error('❌ API Error:', result);
-            throw new Error(`API 錯誤: ${errorMsg}`);
-        }
-        
-        return result;
-    } catch (error) {
-        console.error('Edit error:', error);
-        throw error;
-    }
+    return await img2imgGenerate(imageFile, instruction, 0.8, modelKey);
 }
 
 // 文字對話 API（使用 CHAT_MODELS - 完全遵循官方）
