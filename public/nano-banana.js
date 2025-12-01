@@ -1,4 +1,4 @@
-// Nano Banana AI - Fixed Production Version
+// Nano Banana AI - Official Configuration (Plan A)
 
 // DOM Elements
 const navBtns = document.querySelectorAll('.nb-nav-btn');
@@ -61,15 +61,18 @@ const styleDescriptions = {
     'surreal': '🌀 超現實'
 };
 
-// 更新後的模型名稱映射
-const modelNames = {
-    'gemini-3-pro-preview': 'gemini-3-pro-preview',
-    'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite'
-};
-
-const modelDisplayNames = {
-    'gemini-3-pro-preview': 'Gemini 3 Pro Preview',
-    'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite'
+// 官方標準模型配置 (Plan A)
+const modelConfigs = {
+    'gemini-3-pro': {
+        model: 'google/gemini-3-pro-image',
+        provider: 'together-ai',
+        displayName: 'Gemini 3 Pro Image'
+    },
+    'gemini-2.5-flash': {
+        model: 'gemini-2.5-flash-image-preview',
+        provider: null, // 不需要 provider
+        displayName: 'Gemini 2.5 Flash Image'
+    }
 };
 
 // Gallery class
@@ -97,6 +100,7 @@ class BananaGallery {
     }
 
     add(imageData, prompt, modelKey, style, params = {}) {
+        const config = modelConfigs[modelKey];
         const image = {
             id: Date.now(),
             timestamp: new Date().toISOString(),
@@ -105,7 +109,7 @@ class BananaGallery {
             model: modelKey,
             style,
             params,
-            modelName: modelDisplayNames[modelKey] || modelKey
+            modelName: config ? config.displayName : modelKey
         };
 
         this.images.unshift(image);
@@ -165,6 +169,27 @@ function updateStylePreview() {
     `;
 }
 
+// 根據模型配置生成圖像
+async function callTxt2Img(prompt, selectedModelKey) {
+    const config = modelConfigs[selectedModelKey];
+    if (!config) {
+        throw new Error(`未知的模型: ${selectedModelKey}`);
+    }
+
+    const options = {
+        model: config.model,
+        disable_safety_checker: true
+    };
+
+    // Gemini 3 Pro Image 需要 provider 參數
+    if (config.provider) {
+        options.provider = config.provider;
+    }
+
+    console.log('🍌 API 調用參數:', options);
+    return await puter.ai.txt2img(prompt, options);
+}
+
 // Batch Generate
 async function generateBatch() {
     const basePrompt = promptInput.value.trim();
@@ -174,7 +199,7 @@ async function generateBatch() {
     }
     
     const selectedModelKey = modelSelect.value;
-    const actualModel = modelNames[selectedModelKey] || selectedModelKey;
+    const config = modelConfigs[selectedModelKey];
     const styleKey = styleSelect.value.trim();
     let fullPrompt = basePrompt;
     const stylePromptText = stylePrompts[styleKey] || '';
@@ -186,7 +211,7 @@ async function generateBatch() {
     resultContainer.style.display = 'block';
     resultContainer.innerHTML = `
         <div style="text-align: center; padding: 1rem;">
-            <h3>🍌 批量生成4張變體</h3>
+            <h3>🍌 批量生成4张變體</h3>
             <div id="batch-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;"></div>
         </div>
     `;
@@ -203,10 +228,7 @@ async function generateBatch() {
             
             try {
                 const variantPrompt = `${fullPrompt}, variation ${i + 1}`;
-                const imageElement = await puter.ai.txt2img(variantPrompt, {
-                    model: actualModel,
-                    disable_safety_checker: true
-                });
+                const imageElement = await callTxt2Img(variantPrompt, selectedModelKey);
                 
                 if (imageElement && imageElement.src) {
                     const imageData = imageElement.src;
@@ -234,7 +256,7 @@ async function generateBatch() {
         }
         
         if (successCount > 0) {
-            showNotification(`✅ 成功生成 ${successCount}/4 張變體!`);
+            showNotification(`✅ 成功生成 ${successCount}/4 张變體!`);
         } else {
             showNotification('❌ 批量生成失敗', 'error');
         }
@@ -316,8 +338,7 @@ async function generateImage() {
     }
     
     const selectedModelKey = modelSelect.value;
-    const actualModel = modelNames[selectedModelKey] || selectedModelKey;
-    const modelDisplayName = modelDisplayNames[selectedModelKey] || selectedModelKey;
+    const config = modelConfigs[selectedModelKey];
     const styleKey = styleSelect.value.trim();
     let fullPrompt = basePrompt;
     const stylePromptText = stylePrompts[styleKey] || '';
@@ -334,18 +355,15 @@ async function generateImage() {
     batchBtn.disabled = true;
     
     resultContainer.style.display = 'block';
-    const progressInterval = showProgressBar(resultContainer, modelDisplayName);
+    const progressInterval = showProgressBar(resultContainer, config.displayName);
     
     try {
         if (typeof puter === 'undefined' || !puter.ai) {
             throw new Error('Puter.js 尚未初始化,請重新整理頁面');
         }
         
-        console.log('使用模型:', actualModel);
-        const imageElement = await puter.ai.txt2img(fullPrompt, {
-            model: actualModel,
-            disable_safety_checker: true
-        });
+        console.log('🍌 使用模型:', config.model, config.provider ? `(provider: ${config.provider})` : '');
+        const imageElement = await callTxt2Img(fullPrompt, selectedModelKey);
         
         clearInterval(progressInterval);
         
@@ -358,7 +376,7 @@ async function generateImage() {
         resultContainer.innerHTML = `
             <div style="text-align: center;">
                 <p style="color: var(--nb-success); font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">✅ 香蕉圖像生成成功!</p>
-                <p style="color: var(--nb-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">模型: ${modelDisplayName} | 風格: ${styleDescriptions[styleKey] || '無'} | 解析度: ${resolution}</p>
+                <p style="color: var(--nb-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">模型: ${config.displayName} | 風格: ${styleDescriptions[styleKey] || '無'} | 解析度: ${resolution}</p>
             </div>
         `;
         
@@ -546,6 +564,6 @@ window.addEventListener('load', () => {
     if (typeof puter === 'undefined') {
         showNotification('⚠️ Puter.js 載入失敗,請重新整理頁面', 'error');
     } else {
-        console.log('Nano Banana AI 已就緒 🍌');
+        console.log('🍌 Nano Banana AI 已就緒 (官方配置)');
     }
 });
