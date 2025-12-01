@@ -64,8 +64,6 @@ const elements = {
     navBtns: document.querySelectorAll('.nav-btn'),
     tabs: document.querySelectorAll('.tab-content'),
     modelRadios: document.querySelectorAll('input[name="model"]'),
-    resolution: document.getElementById('resolution'),
-    aspectRatio: document.getElementById('aspect-ratio'),
     style: document.getElementById('style'),
     prompt: document.getElementById('prompt'),
     btnOptimize: document.getElementById('btn-optimize'),
@@ -264,41 +262,19 @@ function buildPrompt(basePrompt) {
     const styleText = STYLES[styleKey] || '';
     if (styleText) prompt = `${prompt}, ${styleText}`;
 
-    const resolution = elements.resolution.value;
-    if (resolution === '4K') prompt += ', 4K ultra high resolution';
-    else if (resolution === '2K') prompt += ', 2K high quality';
-
     return prompt;
 }
 
-function showProgress(modelName, container) {
+function showLoading(modelName, container) {
     container.style.display = 'block';
     container.innerHTML = `
         <div class="loading">
             <div class="spinner"></div>
-            <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">🍌 香蕉動力生成中...</p>
+            <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">🍌 AI 生成中...</p>
             <p style="color: var(--text-secondary);">使用 ${modelName}</p>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
-            </div>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                <span id="progress-text">0%</span> • 預計 25 秒
-            </p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">預計 20-30 秒</p>
         </div>
     `;
-
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(95, (elapsed / 25000) * 100);
-        const fill = document.getElementById('progress-fill');
-        const text = document.getElementById('progress-text');
-        if (fill) fill.style.width = progress + '%';
-        if (text) text.textContent = Math.floor(progress) + '%';
-        if (progress >= 95) clearInterval(interval);
-    }, 100);
-
-    return interval;
 }
 
 // ========== API Functions ==========
@@ -416,16 +392,13 @@ async function handleGenerate() {
         elements.btnGenerate.disabled = true;
         elements.btnBatch.disabled = true;
 
-        const progressInterval = showProgress(config.displayName, elements.result);
+        showLoading(config.displayName, elements.result);
         const imageElement = await generateImage(prompt, modelKey);
-        clearInterval(progressInterval);
 
         if (!imageElement || !imageElement.src) throw new Error('生成失敗: 未返回圖像');
 
         const imageData = imageElement.src;
         gallery.add(imageData, prompt, modelKey, 'text2img', {
-            resolution: elements.resolution.value,
-            aspectRatio: elements.aspectRatio.value,
             style: elements.style.value
         });
 
@@ -523,8 +496,7 @@ async function handleBatch() {
 
 window.saveVariant = function(imageData, prompt, modelKey) {
     gallery.add(imageData, prompt, modelKey, 'text2img', {
-        resolution: elements.resolution.value,
-        aspectRatio: elements.aspectRatio.value
+        style: elements.style.value
     });
     showNotification('✅ 已保存到畫廊！');
 };
@@ -579,10 +551,9 @@ async function handleImg2Img() {
         const strength = elements.img2imgStrength.value / 100;
 
         elements.btnImg2Img.disabled = true;
-        const progressInterval = showProgress(config.displayName, elements.img2imgResult);
+        showLoading(config.displayName, elements.img2imgResult);
 
         const imageElement = await img2imgGenerate(img2imgFile, prompt, strength, modelKey);
-        clearInterval(progressInterval);
 
         if (!imageElement || !imageElement.src) throw new Error('圖生圖失敗');
 
@@ -666,10 +637,9 @@ async function handleEdit() {
         }
 
         elements.btnEdit.disabled = true;
-        const progressInterval = showProgress(config.displayName, elements.editResult);
+        showLoading(config.displayName, elements.editResult);
 
         const imageElement = await editImage(editFile, instruction, modelKey);
-        clearInterval(progressInterval);
 
         if (!imageElement || !imageElement.src) throw new Error('圖像編輯失敗');
 
@@ -873,7 +843,7 @@ window.addEventListener('load', () => {
     if (typeof puter === 'undefined') {
         showNotification('⚠️ Puter.js 載入失敗，請重新整理頁面', 'error');
     } else {
-        console.log('🍌 Nano Banana AI Ready! (Full Version + Official Free Gemini API + Image Analysis)');
+        console.log('🍌 Nano Banana AI Ready! (簡化版)');
         console.log('📸 Image Models:', IMG_MODELS);
         console.log('💬 Chat Models:', CHAT_MODELS);
     }
