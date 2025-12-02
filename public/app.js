@@ -56,14 +56,15 @@ class ImageHistory {
         }
     }
 
-    addImage(imageData, prompt, model) {
+    addImage(imageData, prompt, model, aspectRatio = '1024x1024') {
         const record = {
             id: Date.now() + Math.random(), // 確保唯一性
             timestamp: new Date().toISOString(),
             imageData,
             prompt,
             model,
-            modelName: model.split('/').pop() || model
+            modelName: model.split('/').pop() || model,
+            aspectRatio // ✅ 新增比例信息
         };
 
         this.history.unshift(record);
@@ -128,7 +129,7 @@ function copyPrompt(prompt) {
         showNotification('✅ 提示詞已複製!');
     }).catch(err => {
         console.error('複製失敗:', err);
-        showNotification('❌ 複袽失敗', 'error');
+        showNotification('❌ 複製失敗', 'error');
     });
 }
 
@@ -181,13 +182,13 @@ const stylePrompts = {
 const styleDescriptions = {
     '': '無 - 自由風格，不添加額外風格提示詞',
     'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品攝影',
-    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細緻動漫藝術',
+    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細綻動漫藝術',
     'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
     'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
     'watercolor': '🌊 水彩畫 - 柔和水彩效果，夢境感',
     'sketch': '✏️ 素描風格 - 手繪素描效果，藝術草圖',
     '3d-render': '🎬 3D 渲染 - 高品質 3D 建模效果',
-    'cyberpunk': '🤖 賽博龐克 - 未來科技、霓燈風格',
+    'cyberpunk': '🤖 賽博龐克 - 未來科技、霜燈風格',
     'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界，史詩感',
     'minimalist': '📍 極簡主義 - 簡潔設計，留白美學',
     'vintage': '📼 復古風格 - 老照片質感，復古色調',
@@ -270,7 +271,7 @@ function updateBatchCountPreview() {
 }
 
 // 放大圖片功能
-function openImageModal(imageData, prompt, modelName) {
+function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024') {
     const modal = document.createElement('div');
     modal.className = 'image-modal';
     
@@ -293,6 +294,7 @@ function openImageModal(imageData, prompt, modelName) {
                 </div>
                 <div class="modal-meta">
                     <span class="modal-model">🎨 ${modelName}</span>
+                    <span class="modal-size">📐 ${aspectRatio}</span>
                     <div class="modal-actions">
                         <button class="btn-modal-action btn-copy-prompt" title="複製提示詞">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -301,7 +303,7 @@ function openImageModal(imageData, prompt, modelName) {
                             </svg>
                             複製提示詞
                         </button>
-                        <a href="${imageData}" download="flux-${modelName}-${Date.now()}.png" class="btn-modal-action">
+                        <a href="${imageData}" download="flux-${modelName}-${aspectRatio.replace('x', '-')}-${Date.now()}.png" class="btn-modal-action">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
@@ -363,12 +365,14 @@ function renderHistory() {
         historyItem.dataset.id = item.id;
         
         const truncatedPrompt = item.prompt.substring(0, 80) + (item.prompt.length > 80 ? '...' : '');
+        const aspectRatio = item.aspectRatio || '1024x1024'; // 兼容舊記錄
         
         historyItem.innerHTML = `
             <img src="${item.imageData}" alt="${truncatedPrompt}" loading="lazy">
             <div class="history-overlay">
                 <div class="history-info">
                     <span class="history-model">${item.modelName}</span>
+                    <span class="history-size">📐 ${aspectRatio}</span>
                     <span class="history-date">${new Date(item.timestamp).toLocaleString('zh-TW')}</span>
                 </div>
                 <p class="history-prompt">${truncatedPrompt}</p>
@@ -384,7 +388,7 @@ function renderHistory() {
                             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
                         </svg>
                     </button>
-                    <a href="${item.imageData}" download="flux-${item.modelName}-${item.id}.png" class="btn-icon" title="下載">
+                    <a href="${item.imageData}" download="flux-${item.modelName}-${aspectRatio.replace('x', '-')}-${item.id}.png" class="btn-icon" title="下載">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
@@ -406,14 +410,14 @@ function renderHistory() {
         const btnZoom = historyItem.querySelector('.btn-zoom');
         const btnDelete = historyItem.querySelector('.btn-delete');
         
-        img.addEventListener('click', () => openImageModal(item.imageData, item.prompt, item.modelName));
+        img.addEventListener('click', () => openImageModal(item.imageData, item.prompt, item.modelName, aspectRatio));
         btnCopy.addEventListener('click', (e) => {
             e.stopPropagation();
             copyPrompt(item.prompt);
         });
         btnZoom.addEventListener('click', (e) => {
             e.stopPropagation();
-            openImageModal(item.imageData, item.prompt, item.modelName);
+            openImageModal(item.imageData, item.prompt, item.modelName, aspectRatio);
         });
         btnDelete.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -503,6 +507,12 @@ async function generateImage() {
     
     const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
     
+    // ✅ 獲取圖像比例
+    let aspectRatio = '1024x1024';
+    if (!isPro && aspectRatioSelect) {
+        aspectRatio = aspectRatioSelect.value;
+    }
+    
     generateImgBtn.disabled = true;
     const modelName = selectedModel.split('/').pop() || selectedModel;
     
@@ -513,7 +523,7 @@ async function generateImage() {
             <div class="loading-spinner"></div>
             <p class="loading">⚡ 正在使用 ${modelName} 並行生成 ${countText}...</p>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                ${isPro ? '專業級品質 • 1024x1024' : 'FLUX.2 官方 API'} • 預計 ${batchCount * 20}-${batchCount * 40} 秒
+                ${isPro ? '專業級品質 • 1024x1024' : `FLUX.2 官方 API • ${aspectRatio}`} • 預計 ${batchCount * 20}-${batchCount * 40} 秒
             </p>
             <div id="batch-progress" style="margin-top: 1rem;"></div>
         </div>
@@ -531,7 +541,7 @@ async function generateImage() {
             progressItem.innerHTML = `🔄 圖片 ${i + 1}/${batchCount}: 正在生成...`;
             batchProgress.appendChild(progressItem);
             
-            const promise = generateSingleImage(fullPrompt, selectedModel, isPro, i + 1)
+            const promise = generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, i + 1)
                 .then(result => {
                     progressItem.innerHTML = `✅ 圖片 ${i + 1}/${batchCount}: 生成成功!`;
                     progressItem.style.background = 'rgba(16, 185, 129, 0.1)';
@@ -554,7 +564,7 @@ async function generateImage() {
         }
         
         // 顯示成功結果
-        const sizeInfo = isPro ? '1024x1024 (官方預設)' : aspectRatioSelect.value;
+        const sizeInfo = isPro ? '1024x1024 (官方預設)' : aspectRatio;
         imageResult.innerHTML = `
             <div class="success-header">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -578,7 +588,7 @@ async function generateImage() {
             container.style.cssText = 'position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);';
             
             result.imageElement.style.cssText = 'width: 100%; height: auto; display: block; cursor: pointer;';
-            result.imageElement.addEventListener('click', () => openImageModal(result.imageData, fullPrompt, modelName));
+            result.imageElement.addEventListener('click', () => openImageModal(result.imageData, fullPrompt, modelName, aspectRatio));
             
             const badge = document.createElement('div');
             badge.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;';
@@ -586,7 +596,7 @@ async function generateImage() {
             
             const downloadBtn = document.createElement('a');
             downloadBtn.href = result.imageData;
-            downloadBtn.download = `flux2-${modelName}-${index + 1}-${Date.now()}.png`;
+            downloadBtn.download = `flux2-${modelName}-${aspectRatio.replace('x', '-')}-${index + 1}-${Date.now()}.png`;
             downloadBtn.style.cssText = 'position: absolute; bottom: 10px; right: 10px; background: rgba(102, 126, 234, 0.9); color: white; padding: 0.5rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 600;';
             downloadBtn.innerHTML = `
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -630,7 +640,7 @@ async function generateImage() {
 }
 
 // 單張圖片生成函數
-async function generateSingleImage(fullPrompt, selectedModel, isPro, index) {
+async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     let imageElement;
     
     if (isPro) {
@@ -643,9 +653,8 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, index) {
         // FLUX.2 Flex/Dev: 完整參數格式
         let width = 1024;
         let height = 1024;
-        if (aspectRatioSelect) {
-            const sizeValue = aspectRatioSelect.value;
-            const [w, h] = sizeValue.split('x').map(Number);
+        if (aspectRatio) {
+            const [w, h] = aspectRatio.split('x').map(Number);
             if (w && h) {
                 width = w;
                 height = h;
@@ -668,8 +677,8 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, index) {
     
     const imageData = imageElement.src;
     
-    // 保存到記錄
-    imageHistory.addImage(imageData, fullPrompt, selectedModel);
+    // ✅ 保存到記錄（包含比例信息）
+    imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
     
     return { imageElement, imageData };
 }
