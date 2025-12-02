@@ -6,8 +6,10 @@ const modelSelect = document.getElementById('model-select');
 
 const imageModelSelect = document.getElementById('image-model-select');
 const styleSelect = document.getElementById('style-select');
+const aspectRatioSelect = document.getElementById('aspect-ratio-select');
 const modelInfo = document.getElementById('model-info');
 const stylePreview = document.getElementById('style-preview');
+const aspectRatioPreview = document.getElementById('aspect-ratio-preview');
 const imagePrompt = document.getElementById('image-prompt');
 const generateImgBtn = document.getElementById('generate-img-btn');
 const imageResult = document.getElementById('image-result');
@@ -179,7 +181,7 @@ const stylePrompts = {
 // 風格說明
 const styleDescriptions = {
     '': '無 - 自由風格，不添加額外風格提示詞',
-    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品摄影',
+    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品摂影',
     'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細臻動漫藝術',
     'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
     'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
@@ -189,7 +191,7 @@ const styleDescriptions = {
     'cyberpunk': '🤖 賽博龐克 - 未來科技、霸燈風格',
     'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界，史詩感',
     'minimalist': '📍 極簡主義 - 簡潔設計，留白美學',
-    'vintage': '📼 复古風格 - 老照片質感，復古色調',
+    'vintage': '📼 復古風格 - 老照片質感，復古色調',
     'comic': '📖 漫畫風格 - 美式漫畫/漫畫風格',
     'surreal': '🌀 超現實主義 - 超現實藝術，夢境感'
 };
@@ -207,6 +209,20 @@ function updateStylePreview() {
             <path d="M12 16v-4M12 8h.01"/>
         </svg>
         <span>${description}</span>
+    `;
+}
+
+// 更新尺寸預覽
+function updateAspectRatioPreview() {
+    if (!aspectRatioSelect || !aspectRatioPreview) return;
+    
+    const selectedSize = aspectRatioSelect.value;
+    
+    aspectRatioPreview.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+        </svg>
+        <span style="font-size: 0.85rem; color: #667eea;">✅ 選擇的尺寸: ${selectedSize} px</span>
     `;
 }
 
@@ -428,7 +444,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// FLUX.2 圖像生成功能 (官方 API 格式)
+// FLUX.2 圖像生成功能 (官方 API 格式 + 尺寸支持)
 async function generateImage() {
     const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
@@ -450,6 +466,18 @@ async function generateImage() {
         }
     }
     
+    // 解析尺寸選擇 (width x height)
+    let width = 1024;
+    let height = 1024;
+    if (aspectRatioSelect) {
+        const sizeValue = aspectRatioSelect.value;
+        const [w, h] = sizeValue.split('x').map(Number);
+        if (w && h) {
+            width = w;
+            height = h;
+        }
+    }
+    
     generateImgBtn.disabled = true;
     const modelName = selectedModel.split('/').pop() || selectedModel;
     imageResult.innerHTML = `
@@ -457,19 +485,23 @@ async function generateImage() {
             <div class="loading-spinner"></div>
             <p class="loading">⚡ 正在使用 ${modelName} 生成圖像...</p>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                FLUX.2 官方 API • 約 15-30 秒
+                FLUX.2 官方 API • 尺寸: ${width}x${height} • 約 15-30 秒
             </p>
         </div>
     `;
     
     try {
-        // ✅ Puter.js 官方 FLUX.2 API 格式
+        // ✅ Puter.js 官方 FLUX.2 API 格式 (支持 width, height, steps, seed)
         const options = {
             model: selectedModel,
+            width: width,
+            height: height,
+            steps: 30,  // 精細度 (官方建議值)
+            seed: Math.floor(Math.random() * 1000000),  // 隨機種子
             disable_safety_checker: true  // 關鍵:支持創意內容
         };
         
-        console.log('生成參數:', { prompt: fullPrompt, ...options });
+        console.log('✅ 生成參數:', { prompt: fullPrompt, ...options });
         
         const imageElement = await puter.ai.txt2img(fullPrompt, options);
         
@@ -492,7 +524,7 @@ async function generateImage() {
                 <div>
                     <p class="success">✅ 圖像生成成功! (已保存到記錄)</p>
                     <p style="color: var(--text-secondary); font-size: 0.85rem;">
-                        模型: ${selectedModel} • FLUX.2 官方 API
+                        模型: ${selectedModel} • 尺寸: ${width}x${height} • FLUX.2 官方 API
                     </p>
                 </div>
             </div>
@@ -506,7 +538,7 @@ async function generateImage() {
         const downloadDiv = document.createElement('div');
         downloadDiv.style.marginTop = '1rem';
         downloadDiv.innerHTML = `
-            <a href="${imageData}" download="flux2-${modelName}-${Date.now()}.png" class="download-btn">
+            <a href="${imageData}" download="flux2-${modelName}-${width}x${height}-${Date.now()}.png" class="download-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -606,10 +638,16 @@ if (styleSelect) {
     styleSelect.addEventListener('change', updateStylePreview);
 }
 
+// 尺寸選擇監聽器
+if (aspectRatioSelect) {
+    aspectRatioSelect.addEventListener('change', updateAspectRatioPreview);
+}
+
 ocrBtn.addEventListener('click', extractText);
 
 // 初始化
 addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
 updateModelInfo();
 if (styleSelect) updateStylePreview();
+if (aspectRatioSelect) updateAspectRatioPreview();
 renderHistory();
