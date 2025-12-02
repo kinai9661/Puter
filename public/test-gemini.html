@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍌 Nano Banana Pro - Gemini 3 Pro Image 測試</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-left: 4px solid #667eea;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .prompt-box {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            resize: vertical;
+        }
+
+        .prompt-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.loading {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-left: 4px solid #10b981;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-left: 4px solid #ef4444;
+        }
+
+        .result {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .error-detail {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-left: 4px solid #ef4444;
+        }
+
+        .error-detail strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+
+        .error-detail ul {
+            list-style: none;
+            margin: 1rem 0;
+            padding-left: 0;
+        }
+
+        .error-detail ul li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .error-detail ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .error-detail a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .error-detail a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .api-info {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-family: monospace;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍌 Nano Banana Pro Image Generation</h1>
+        
+        <div class="info-card">
+            <strong>📝 測試說明</strong><br>
+            此頁面用於測試 Google Gemini 3 Pro Image 模型通過 Puter.js API 生成圖像。<br>
+            模型：<code>google/gemini-3-pro-image</code><br>
+            提供商：<code>together-ai</code>
+        </div>
+
+        <textarea 
+            id="promptInput" 
+            class="prompt-box" 
+            placeholder="輸入圖像描述...
+
+範例：
+A vintage movie poster for 'The Last Voyage', featuring bold art deco typography with the tagline 'An Adventure Beyond Time' and 'Coming Soon 2024' at the bottom">A vintage movie poster for 'The Last Voyage', featuring bold art deco typography with the tagline 'An Adventure Beyond Time' and 'Coming Soon 2024' at the bottom</textarea>
+
+        <button id="generateBtn" class="btn">🎨 生成圖像</button>
+
+        <div id="status" class="status"></div>
+        <div id="result" class="result"></div>
+    </div>
+
+    <a href="/nano-banana.html" class="back-link">← 返回 Nano Banana 完整版</a>
+
+    <script>
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status show ${type}`;
+        }
+
+        function hideStatus() {
+            statusDiv.className = 'status';
+        }
+
+        function showError(error) {
+            let errorHTML = '';
+            
+            if (error.error && error.error.code === 'insufficient_funds') {
+                errorHTML = `
+                    <div class="error-detail">
+                        <strong>💰 Puter 免費額度已用完</strong>
+                        <p>😔 抱歉，Puter.js 的免費額度暫時不足</p>
+                        <p>這個測試依賴 Puter.js 提供的免費 AI 服務額度。</p>
+                        <br>
+                        <strong>💡 建議解決方案：</strong>
+                        <ul>
+                            <li>🔄 稍後再試（額度可能會重置）</li>
+                            <li>⚡ 使用 <a href="/">FLUX.2 圖像生成頁面</a>（不同的額度池）</li>
+                            <li>🔑 前往 <a href="https://puter.com" target="_blank">Puter.com</a> 註冊帳號獲取更多額度</li>
+                        </ul>
+                        <div class="api-info">
+                            錯誤代碼: ${error.error.code}<br>
+                            HTTP 狀態: ${error.error.status || 402}
+                        </div>
+                    </div>
+                `;
+            } else {
+                errorHTML = `
+                    <div class="error-detail">
+                        <strong>❌ 生成失敗</strong>
+                        <p>${error.error?.message || error.message || '未知錯誤'}</p>
+                        ${error.error?.code ? `
+                            <div class="api-info">
+                                錯誤代碼: ${error.error.code}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            resultDiv.innerHTML = errorHTML;
+            resultDiv.className = 'result show';
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            const prompt = promptInput.value.trim();
+            
+            if (!prompt) {
+                showStatus('❌ 請輸入圖像描述！', 'error');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            showStatus('🎨 生成中...', 'loading');
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '';
+
+            const startTime = Date.now();
+
+            try {
+                console.log('開始生成圖片...', {
+                    prompt,
+                    model: 'google/gemini-3-pro-image',
+                    provider: 'together-ai'
+                });
+
+                const imageElement = await puter.ai.txt2img(prompt, { 
+                    model: "google/gemini-3-pro-image", 
+                    provider: "together-ai", 
+                    disable_safety_checker: true
+                });
+
+                const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+                
+                resultDiv.innerHTML = `
+                    <strong style="display: block; margin-bottom: 1rem;">✅ 生成成功！（耗時 ${duration}s）</strong>
+                `;
+                resultDiv.appendChild(imageElement);
+                resultDiv.className = 'result show';
+
+                showStatus(`✅ 生成成功！耗時 ${duration} 秒`, 'success');
+                console.log('生成成功！', { duration: `${duration}s` });
+
+            } catch (error) {
+                console.error('生成失敗:', error);
+                showStatus('❌ 生成失敗', 'error');
+                showError(error);
+            } finally {
+                generateBtn.disabled = false;
+            }
+        });
+
+        // 支持 Enter 鍵（Ctrl/Cmd + Enter）提交
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                generateBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
