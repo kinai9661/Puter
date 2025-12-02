@@ -209,18 +209,44 @@ function updateStylePreview() {
     `;
 }
 
-// 更新尺寸預覽
+// 更新尺寸預覽和限制
 function updateAspectRatioPreview() {
-    if (!aspectRatioSelect || !aspectRatioPreview) return;
+    if (!aspectRatioSelect || !aspectRatioPreview || !imageModelSelect) return;
     
+    const selectedModel = imageModelSelect.value;
     const selectedSize = aspectRatioSelect.value;
+    const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
     
-    aspectRatioPreview.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-        </svg>
-        <span style="font-size: 0.85rem; color: #667eea;">✅ 選擇的尺寸: ${selectedSize} px</span>
-    `;
+    // FLUX.2 Pro 限制
+    if (isPro) {
+        // 禁用所有非 1024x1024 的選項
+        Array.from(aspectRatioSelect.options).forEach(option => {
+            if (option.value !== '1024x1024') {
+                option.disabled = true;
+            }
+        });
+        // 強制選擇 1024x1024
+        aspectRatioSelect.value = '1024x1024';
+        
+        aspectRatioPreview.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+            </svg>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024（官方限制）</span>
+        `;
+    } else {
+        // 其他模型：解除限制
+        Array.from(aspectRatioSelect.options).forEach(option => {
+            option.disabled = false;
+        });
+        
+        aspectRatioPreview.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+            </svg>
+            <span style="font-size: 0.85rem; color: #667eea;">✅ 選擇的尺寸: ${selectedSize} px</span>
+        `;
+    }
 }
 
 // 放大圖片功能
@@ -390,7 +416,7 @@ clearHistoryBtn.addEventListener('click', () => {
 
 // 模型資訊
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染與提示詞遵循',
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）',
     'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支援自定義參數',
     'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
     'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
@@ -432,7 +458,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ FLUX.2 圖像生成 - 官方 API 格式
+// ✅ FLUX.2 圖像生成 - 官方API格式（Pro用簡化版）
 async function generateImage() {
     const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
@@ -454,47 +480,90 @@ async function generateImage() {
         }
     }
     
-    // 解析尺寸選擇
-    let width = 1024;
-    let height = 1024;
-    if (aspectRatioSelect) {
-        const sizeValue = aspectRatioSelect.value;
-        const [w, h] = sizeValue.split('x').map(Number);
-        if (w && h) {
-            width = w;
-            height = h;
-        }
-    }
+    const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
     
     generateImgBtn.disabled = true;
     const modelName = selectedModel.split('/').pop() || selectedModel;
-    imageResult.innerHTML = `
-        <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <p class="loading">⚡ 正在使用 ${modelName} 生成圖像...</p>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                FLUX.2 官方 API • 尺寸: ${width}x${height} • 約 15-30 秒
-            </p>
-        </div>
-    `;
+    
+    // 生成提示信息
+    if (isPro) {
+        imageResult.innerHTML = `
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="loading">⚡ 正在使用 FLUX.2 Pro 生成圖像...</p>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                    專業級品質 • 1024x1024 • 約 20-40 秒
+                </p>
+            </div>
+        `;
+    } else {
+        // 解析尺寸選擇
+        let width = 1024;
+        let height = 1024;
+        if (aspectRatioSelect) {
+            const sizeValue = aspectRatioSelect.value;
+            const [w, h] = sizeValue.split('x').map(Number);
+            if (w && h) {
+                width = w;
+                height = h;
+            }
+        }
+        
+        imageResult.innerHTML = `
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="loading">⚡ 正在使用 ${modelName} 生成圖像...</p>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                    FLUX.2 官方 API • 尺寸: ${width}x${height} • 約 15-30 秒
+                </p>
+            </div>
+        `;
+    }
     
     try {
-        // ✅ 官方 FLUX.2 API 參數格式
-        const options = {
-            model: selectedModel,
-            width: width,
-            height: height,
-            steps: 30,
-            seed: 42,
-            disable_safety_checker: true
-        };
+        let imageElement;
         
-        console.log('🚀 FLUX.2 生成參數:', {
-            prompt: fullPrompt.substring(0, 100) + '...',
-            ...options
-        });
-        
-        const imageElement = await puter.ai.txt2img(fullPrompt, options);
+        if (isPro) {
+            // ✅ FLUX.2 Pro: 官方簡化格式（無需 width/height/steps/seed）
+            console.log('🚀 FLUX.2 Pro 生成（官方簡化格式）:', {
+                prompt: fullPrompt.substring(0, 100) + '...',
+                model: selectedModel
+            });
+            
+            imageElement = await puter.ai.txt2img(fullPrompt, {
+                model: selectedModel,
+                disable_safety_checker: true
+            });
+            
+        } else {
+            // ✅ FLUX.2 Flex/Dev: 完整參數格式
+            let width = 1024;
+            let height = 1024;
+            if (aspectRatioSelect) {
+                const sizeValue = aspectRatioSelect.value;
+                const [w, h] = sizeValue.split('x').map(Number);
+                if (w && h) {
+                    width = w;
+                    height = h;
+                }
+            }
+            
+            const options = {
+                model: selectedModel,
+                width: width,
+                height: height,
+                steps: 30,
+                seed: 42,
+                disable_safety_checker: true
+            };
+            
+            console.log('🚀 FLUX.2 Flex/Dev 生成參數:', {
+                prompt: fullPrompt.substring(0, 100) + '...',
+                ...options
+            });
+            
+            imageElement = await puter.ai.txt2img(fullPrompt, options);
+        }
         
         if (!imageElement || !imageElement.src) {
             throw new Error('圖像生成失敗:無效的回應');
@@ -506,6 +575,7 @@ async function generateImage() {
         imageHistory.addImage(imageData, fullPrompt, selectedModel);
         
         // 顯示成功結果
+        const sizeInfo = isPro ? '1024x1024 (官方預設)' : aspectRatioSelect.value;
         imageResult.innerHTML = `
             <div class="success-header">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -515,7 +585,7 @@ async function generateImage() {
                 <div>
                     <p class="success">✅ 圖像生成成功! (已保存到記錄)</p>
                     <p style="color: var(--text-secondary); font-size: 0.85rem;">
-                        模型: ${selectedModel} • 尺寸: ${width}x${height} • Steps: 30 • Seed: 42
+                        模型: ${selectedModel} • 尺寸: ${sizeInfo}
                     </p>
                 </div>
             </div>
@@ -529,13 +599,13 @@ async function generateImage() {
         const downloadDiv = document.createElement('div');
         downloadDiv.style.marginTop = '1rem';
         downloadDiv.innerHTML = `
-            <a href="${imageData}" download="flux2-${modelName}-${width}x${height}-${Date.now()}.png" class="download-btn">
+            <a href="${imageData}" download="flux2-${modelName}-${Date.now()}.png" class="download-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                下載圖像 (${width}x${height})
+                下載圖像
             </a>
         `;
         imageResult.appendChild(downloadDiv);
@@ -607,6 +677,9 @@ function updateModelInfo() {
         </svg>
         <span>${description}</span>
     `;
+    
+    // 更新尺寸限制
+    updateAspectRatioPreview();
 }
 
 // 事件監聽器
