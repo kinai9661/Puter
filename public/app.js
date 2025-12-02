@@ -25,7 +25,7 @@ const ocrResult = document.getElementById('ocr-result');
 
 // 圖片記錄管理
 const HISTORY_KEY = 'puter_ai_image_history';
-const MAX_HISTORY = 50; // 最多保存50張圖片
+const MAX_HISTORY = 50;
 
 class ImageHistory {
     constructor() {
@@ -47,7 +47,6 @@ class ImageHistory {
             localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
         } catch (error) {
             console.error('保存記錄失敗:', error);
-            // 如果存儲空間不足,刪除最舊的記錄
             if (this.history.length > 10) {
                 this.history = this.history.slice(-10);
                 this.saveHistory();
@@ -67,7 +66,6 @@ class ImageHistory {
 
         this.history.unshift(record);
         
-        // 限制記錄數量
         if (this.history.length > MAX_HISTORY) {
             this.history = this.history.slice(0, MAX_HISTORY);
         }
@@ -116,7 +114,6 @@ tabBtns.forEach(btn => {
             }
         });
 
-        // 切換到記錄頁時更新顯示
         if (targetTab === 'history') {
             renderHistory();
         }
@@ -160,7 +157,7 @@ function showNotification(message, type = 'success') {
     }, 2000);
 }
 
-// 風格映射表 - 將風格名稱轉換為完整提示詞
+// 風格映射表
 const stylePrompts = {
     '': '',
     'photorealistic': 'photorealistic, ultra realistic, 8k, highly detailed, professional photography',
@@ -181,14 +178,14 @@ const stylePrompts = {
 // 風格說明
 const styleDescriptions = {
     '': '無 - 自由風格，不添加額外風格提示詞',
-    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品摂影',
-    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細臻動漫藝術',
+    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品攝影',
+    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細緻動漫藝術',
     'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
     'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
     'watercolor': '🌊 水彩畫 - 柔和水彩效果，夢境感',
     'sketch': '✏️ 素描風格 - 手繪素描效果，藝術草圖',
     '3d-render': '🎬 3D 渲染 - 高品質 3D 建模效果',
-    'cyberpunk': '🤖 賽博龐克 - 未來科技、霸燈風格',
+    'cyberpunk': '🤖 賽博龐克 - 未來科技、霓燈風格',
     'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界，史詩感',
     'minimalist': '📍 極簡主義 - 簡潔設計，留白美學',
     'vintage': '📼 復古風格 - 老照片質感，復古色調',
@@ -228,13 +225,10 @@ function updateAspectRatioPreview() {
 
 // 放大圖片功能
 function openImageModal(imageData, prompt, modelName) {
-    // 創建模態視窗
     const modal = document.createElement('div');
     modal.className = 'image-modal';
     
-    // 處理提示詞，避免 HTML 和 JS 注入
     const safePrompt = prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const jsPrompt = prompt.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
     
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
@@ -277,16 +271,13 @@ function openImageModal(imageData, prompt, modelName) {
     
     document.body.appendChild(modal);
     
-    // 添加複製事件
     modal.querySelector('.btn-copy-prompt').addEventListener('click', () => {
         copyPrompt(prompt);
     });
     
-    // 添加關閉事件
     modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
     modal.querySelector('.modal-backdrop').addEventListener('click', () => modal.remove());
     
-    // ESC 鍵關閉
     const handleEsc = (e) => {
         if (e.key === 'Escape') {
             modal.remove();
@@ -300,7 +291,6 @@ function openImageModal(imageData, prompt, modelName) {
 function renderHistory() {
     const history = imageHistory.history;
     
-    // 更新統計信息
     totalCountEl.textContent = history.length;
     storageSizeEl.textContent = `${imageHistory.getStorageSize()} KB`;
 
@@ -365,7 +355,6 @@ function renderHistory() {
             </div>
         `;
         
-        // 綁定事件
         const img = historyItem.querySelector('img');
         const btnCopy = historyItem.querySelector('.btn-copy');
         const btnZoom = historyItem.querySelector('.btn-zoom');
@@ -392,7 +381,6 @@ function renderHistory() {
     });
 }
 
-// 清空記錄
 clearHistoryBtn.addEventListener('click', () => {
     if (confirm('確定要清空所有圖片記錄嗎?此操作無法撤銷!')) {
         imageHistory.clearAll();
@@ -403,7 +391,7 @@ clearHistoryBtn.addEventListener('click', () => {
 // 模型資訊
 const modelDescriptions = {
     'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染與提示詞遵循',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支援自定義參數',
     'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
     'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
     'dall-e-3': '✨ DALL-E 3: OpenAI 經典圖像生成模型'
@@ -444,7 +432,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// FLUX.2 圖像生成功能 (官方 API 格式 + 尺寸支持)
+// ✅ FLUX.2 圖像生成 - 官方 API 格式
 async function generateImage() {
     const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
@@ -454,7 +442,7 @@ async function generateImage() {
         return;
     }
     
-    // 獲取風格選擇並轉換為完整提示詞
+    // 獲取風格並組合提示詞
     let fullPrompt = basePrompt;
     if (styleSelect) {
         const styleKey = styleSelect.value.trim();
@@ -462,11 +450,11 @@ async function generateImage() {
         
         if (stylePromptText) {
             fullPrompt = `${basePrompt}, ${stylePromptText}`;
-            console.log('✅ 已添加風格:', styleKey, '\n提示詞:', stylePromptText);
+            console.log('✅ 已添加風格:', styleKey);
         }
     }
     
-    // 解析尺寸選擇 (width x height)
+    // 解析尺寸選擇
     let width = 1024;
     let height = 1024;
     if (aspectRatioSelect) {
@@ -491,17 +479,20 @@ async function generateImage() {
     `;
     
     try {
-        // ✅ Puter.js 官方 FLUX.2 API 格式 (支持 width, height, steps, seed)
+        // ✅ 官方 FLUX.2 API 參數格式
         const options = {
             model: selectedModel,
             width: width,
             height: height,
-            steps: 30,  // 精細度 (官方建議值)
-            seed: Math.floor(Math.random() * 1000000),  // 隨機種子
-            disable_safety_checker: true  // 關鍵:支持創意內容
+            steps: 30,
+            seed: 42,
+            disable_safety_checker: true
         };
         
-        console.log('✅ 生成參數:', { prompt: fullPrompt, ...options });
+        console.log('🚀 FLUX.2 生成參數:', {
+            prompt: fullPrompt.substring(0, 100) + '...',
+            ...options
+        });
         
         const imageElement = await puter.ai.txt2img(fullPrompt, options);
         
@@ -511,7 +502,7 @@ async function generateImage() {
         
         const imageData = imageElement.src;
         
-        // 保存到記錄 (保存完整提示詞包括風格)
+        // 保存到記錄
         imageHistory.addImage(imageData, fullPrompt, selectedModel);
         
         // 顯示成功結果
@@ -524,7 +515,7 @@ async function generateImage() {
                 <div>
                     <p class="success">✅ 圖像生成成功! (已保存到記錄)</p>
                     <p style="color: var(--text-secondary); font-size: 0.85rem;">
-                        模型: ${selectedModel} • 尺寸: ${width}x${height} • FLUX.2 官方 API
+                        模型: ${selectedModel} • 尺寸: ${width}x${height} • Steps: 30 • Seed: 42
                     </p>
                 </div>
             </div>
@@ -544,13 +535,13 @@ async function generateImage() {
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                下載圖像
+                下載圖像 (${width}x${height})
             </a>
         `;
         imageResult.appendChild(downloadDiv);
         
     } catch (error) {
-        console.error('圖像生成錯誤:', error);
+        console.error('❌ 圖像生成錯誤:', error);
         imageResult.innerHTML = `
             <div class="error-container">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -633,12 +624,10 @@ imagePrompt.addEventListener('keypress', (e) => {
     }
 });
 
-// 風格選擇監聽器
 if (styleSelect) {
     styleSelect.addEventListener('change', updateStylePreview);
 }
 
-// 尺寸選擇監聽器
 if (aspectRatioSelect) {
     aspectRatioSelect.addEventListener('change', updateAspectRatioPreview);
 }
