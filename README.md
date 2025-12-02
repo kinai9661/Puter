@@ -49,6 +49,34 @@
 
 ---
 
+### 📋 Changelog
+
+#### v1.3.0 (2025-12-02)
+- 🎨 **UI Fix**: Restored complete CSS styles, fixed display issues
+- 📝 **Documentation**: Added bilingual README (English + Chinese)
+- ✨ **Version History**: Added changelog section
+
+#### v1.2.0 (2025-12-02)
+- 🔢 **Batch Generation**: Generate 1-4 images at once with parallel processing
+- 📊 **Progress Display**: Real-time generation progress (Completed X/Y)
+- 🎨 **Grid Layout**: Display multiple images in responsive grid
+- 💾 **Auto Save**: All generated images saved to history
+
+#### v1.1.0 (2025-12-02)
+- 🎨 **Style Selector**: 13 professional style presets
+- 📐 **Aspect Ratios**: 7 preset image ratios (1:1 to 16:9)
+- ⚙️ **Advanced Parameters**: Steps and seed control for Flex/Dev models
+- ⚠️ **FLUX.2 Pro Limitation**: Auto-lock to 1024x1024 with notification
+
+#### v1.0.0 (2025-12-01)
+- 🚀 **Initial Release**: FLUX.2 Pro/Flex/Dev support
+- 🤖 **AI Chat**: GPT-4o, Claude Sonnet 3.5, GPT-5 Nano
+- 📝 **OCR**: Image-to-text recognition
+- 🖼️ **History Management**: LocalStorage-based image history
+- 🆓 **Free Deployment**: Zeabur one-click deploy
+
+---
+
 ### 🚀 Quick Deployment
 
 #### Zeabur One-Click Deploy (Recommended)
@@ -225,6 +253,34 @@ MIT License - See [LICENSE](LICENSE) file for details
 - 無需 API 金鑰
 - 無需後端配置
 - 一鍵部署
+
+---
+
+### 📋 版本更新記錄
+
+#### v1.3.0 (2025-12-02)
+- 🎨 **UI 修復**: 恢復完整 CSS 樣式,修復顯示問題
+- 📝 **文檔更新**: 添加雙語 README (中英文)
+- ✨ **版本歷史**: 新增版本更新記錄章節
+
+#### v1.2.0 (2025-12-02)
+- 🔢 **批量生成**: 支持一次生成 1-4 張圖片,並行處理
+- 📊 **進度顯示**: 實時顯示生成進度 (已完成 X/Y)
+- 🎨 **網格佈局**: 響應式網格展示多張圖片
+- 💾 **自動保存**: 所有生成圖片自動保存到歷史記錄
+
+#### v1.1.0 (2025-12-02)
+- 🎨 **風格選擇**: 13 種專業風格預設
+- 📐 **圖像比例**: 7 種預設圖像比例 (1:1 到 16:9)
+- ⚙️ **進階參數**: Flex/Dev 模型支持步數和種子控制
+- ⚠️ **FLUX.2 Pro 限制**: 自動鎖定 1024x1024 並提示
+
+#### v1.0.0 (2025-12-01)
+- 🚀 **初始版本**: FLUX.2 Pro/Flex/Dev 支持
+- 🤖 **AI 聊天**: GPT-4o、Claude Sonnet 3.5、GPT-5 Nano
+- 📝 **OCR 識別**: 圖像轉文字功能
+- 🖼️ **歷史管理**: 基於 LocalStorage 的圖片記錄
+- 🆓 **免費部署**: Zeabur 一鍵部署
 
 ---
 
