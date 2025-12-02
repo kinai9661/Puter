@@ -1,3 +1,4 @@
+/* 原始 CSS 內容 + 錯誤詳情樣式 */
 /* ===== 全局樣式 ===== */
 * {
     margin: 0;
@@ -420,6 +421,63 @@ body {
     border-left: 4px solid var(--warning);
 }
 
+/* 錯誤詳情卡片 */
+.error-detail {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-top: 1rem;
+    border-left: 4px solid var(--error);
+    animation: slideIn 0.3s ease;
+}
+
+.error-detail p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.error-detail strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.error-detail ul {
+    list-style: none;
+    margin: 1rem 0;
+    padding-left: 0;
+}
+
+.error-detail ul li {
+    padding: 0.75rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-primary);
+}
+
+.error-detail ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+.error-detail a {
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.error-detail a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
 /* 提示框 */
 .alert {
     padding: 0.875rem 1.25rem;
@@ -507,7 +565,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* 結果容器 - 修復顯示問題 */
+/* 結果容器 */
 .result-container {
     margin-top: 2rem;
 }
