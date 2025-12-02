@@ -3,6 +3,15 @@ let currentModel = 'google/gemini-3-pro-image';
 let uploadedImageData = null;
 let generationHistory = JSON.parse(localStorage.getItem('nanoBananaHistory') || '[]');
 
+// 模型資訊對照表
+const MODEL_INFO = {
+    'google/gemini-3-pro-image': '🍌 Nano Banana Pro: 最高品質文字渲染，完美支持複雜排版和資訊圖',
+    'gemini-2.5-flash-image-preview': '⚡ Nano Banana Flash: 快速生成，支持圖生圖功能，靈活高效',
+    'gpt-image-1': '🎨 GPT Image-1: 通用型圖像生成模型，快速響應',
+    'dall-e-3': '🖼️ DALL-E 3: OpenAI 經典模型，藝術風格突出',
+    'dall-e-2': '🖼️ DALL-E 2: 穩定可靠的圖像生成選擇'
+};
+
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
     initModelSelector();
@@ -12,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHistory();
     initTabs();
     initExamples();
+    updateCharCount();
 });
 
 // ===== Tab 切換 =====
@@ -45,19 +55,34 @@ function initExamples() {
 
 // ===== 模型選擇器 =====
 function initModelSelector() {
-    document.querySelectorAll('input[name="model"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            currentModel = e.target.value;
-            
-            const isFlash = currentModel === 'gemini-2.5-flash-image-preview';
-            const img2imgBtn = document.getElementById('img2imgBtn');
+    const modelSelect = document.getElementById('model-select');
+    if (!modelSelect) return;
+
+    currentModel = modelSelect.value;
+    updateModelInfo(currentModel);
+
+    modelSelect.addEventListener('change', (e) => {
+        currentModel = e.target.value;
+        updateModelInfo(currentModel);
+        
+        const isFlash = currentModel === 'gemini-2.5-flash-image-preview';
+        const img2imgBtn = document.getElementById('img2imgBtn');
+        
+        if (img2imgBtn) {
             img2imgBtn.disabled = !isFlash || !uploadedImageData;
-            
-            if (!isFlash && document.querySelector('.tab[data-tab="img2img"]').classList.contains('active')) {
-                showStatus('img2imgStatus', '⚠️ 圖生圖功能僅支持 Nano Banana Flash 模型', 'warning');
-            }
-        });
+        }
+        
+        if (!isFlash && document.querySelector('.tab[data-tab="img2img"]').classList.contains('active')) {
+            showStatus('img2imgStatus', '⚠️ 圖生圖功能僅支持 Nano Banana Flash 模型', 'warning');
+        }
     });
+}
+
+function updateModelInfo(model) {
+    const infoText = document.getElementById('model-info-text');
+    if (infoText && MODEL_INFO[model]) {
+        infoText.textContent = MODEL_INFO[model];
+    }
 }
 
 // ===== 文生圖功能 =====
@@ -74,18 +99,6 @@ function initTextToImage() {
         }
 
         await generateImage(prompt, currentModel, 'textResults', 'textStatus');
-    });
-    
-    document.getElementById('randomBtn').addEventListener('click', () => {
-        const prompts = [
-            "A vintage movie poster for 'The Last Voyage', featuring bold art deco typography",
-            "A serene Japanese garden with cherry blossoms in full bloom, koi pond, stone lanterns",
-            "A cyberpunk street scene with neon lights, flying cars, rain-soaked streets",
-            "A majestic dragon perched on a mountain peak at sunset",
-            "An underwater city with bioluminescent creatures and ancient ruins"
-        ];
-        textPrompt.value = prompts[Math.floor(Math.random() * prompts.length)];
-        updateCharCount();
     });
 }
 
@@ -106,16 +119,16 @@ function initImageToImage() {
     
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
-        uploadArea.style.borderColor = 'var(--primary-color)';
+        uploadArea.style.borderColor = 'var(--primary)';
     });
     
     uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.borderColor = 'var(--border-color)';
+        uploadArea.style.borderColor = 'var(--border)';
     });
     
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadArea.style.borderColor = 'var(--border-color)';
+        uploadArea.style.borderColor = 'var(--border)';
         const file = e.dataTransfer.files[0];
         if (file) handleImageFile(file);
     });
@@ -212,6 +225,7 @@ async function generateImage(prompt, model, resultsId, statusId, isComparison = 
 
     if (!isComparison) {
         showStatus(statusId, '🎨 生成中...', 'loading');
+        resultsDiv.innerHTML = '';
     }
 
     try {
@@ -240,6 +254,7 @@ async function generateImage(prompt, model, resultsId, statusId, isComparison = 
 
 async function generateImageToImage(prompt, imageData, resultsId, statusId) {
     showStatus(statusId, '🖌️ 轉換中...', 'loading');
+    document.getElementById(resultsId).innerHTML = '';
 
     try {
         const imageElement = await puter.ai.txt2img(prompt, {
@@ -264,10 +279,10 @@ async function generateImageToImage(prompt, imageData, resultsId, statusId) {
 // ===== 顯示結果 =====
 function displayResult(imageElement, prompt, model, container, isComparison) {
     const resultCard = document.createElement('div');
-    resultCard.className = 'result-card';
+    resultCard.className = isComparison ? 'result-card' : 'result-card-single';
     
     const modelName = getModelDisplayName(model);
-    const imageId = Date.now();
+    const imageId = Date.now() + Math.random();
     
     resultCard.innerHTML = `
         <div class="result-header">
@@ -275,9 +290,6 @@ function displayResult(imageElement, prompt, model, container, isComparison) {
             <div class="result-actions">
                 <button class="icon-btn" onclick="downloadImage('${imageId}')" title="下載">
                     💾
-                </button>
-                <button class="icon-btn" onclick="copyPrompt('${escapeHtml(prompt)}')" title="複製提示詞">
-                    📋
                 </button>
             </div>
         </div>
@@ -289,7 +301,8 @@ function displayResult(imageElement, prompt, model, container, isComparison) {
     if (isComparison) {
         container.appendChild(resultCard);
     } else {
-        container.insertBefore(resultCard, container.firstChild);
+        container.innerHTML = '';
+        container.appendChild(resultCard);
     }
     
     document.getElementById(`img-${imageId}`).appendChild(imageElement);
@@ -321,6 +334,7 @@ function getModelDisplayName(model) {
 
 function showStatus(elementId, message, type) {
     const statusDiv = document.getElementById(elementId);
+    if (!statusDiv) return;
     statusDiv.textContent = message;
     statusDiv.className = `status-bar show status-${type}`;
 }
@@ -337,19 +351,9 @@ window.downloadImage = function(imageId) {
     if (imgElement) {
         const link = document.createElement('a');
         link.href = imgElement.src;
-        link.download = `nano-banana-${imageId}.png`;
+        link.download = `nano-banana-${Date.now()}.png`;
         link.click();
     }
-};
-
-window.copyPrompt = function(prompt) {
-    const textarea = document.createElement('textarea');
-    textarea.value = prompt;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    alert('✅ 提示詞已複製！');
 };
 
 // ===== 歷史記錄 =====
