@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍌 Nano Banana AI - Gemini 圖像生成</title>
+    <link rel="stylesheet" href="nano-banana-style.css">
+    <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <span class="brand-icon">⚡</span>
+                <span>FLUX.2</span>
+            </a>
+            <div class="nav-title">
+                <span class="banana-icon">🍌</span>
+                <h1>Nano Banana AI</h1>
+            </div>
+            <div class="nav-info">
+                <span class="powered-by">Powered by Puter.js</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 側邊欄 - 模型選擇 -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">🎨 選擇模型</h2>
+                <div class="model-list">
+                    <label class="model-option">
+                        <input type="radio" name="model" value="google/gemini-3-pro-image" checked>
+                        <div class="model-card">
+                            <div class="model-icon">🍌</div>
+                            <div class="model-info">
+                                <h3>Nano Banana Pro</h3>
+                                <p class="model-subtitle">Gemini 3 Pro Image</p>
+                                <ul class="model-features">
+                                    <li>✨ 最高品質</li>
+                                    <li>📝 完美文字渲染</li>
+                                    <li>🎯 精準提示詞</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="model-option">
+                        <input type="radio" name="model" value="gemini-2.5-flash-image-preview">
+                        <div class="model-card">
+                            <div class="model-icon">⚡</div>
+                            <div class="model-info">
+                                <h3>Nano Banana Flash</h3>
+                                <p class="model-subtitle">Gemini 2.5 Flash</p>
+                                <ul class="model-features">
+                                    <li>🚀 快速生成</li>
+                                    <li>🖼️ 支持圖生圖</li>
+                                    <li>💡 靈活彈性</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="model-option">
+                        <input type="radio" name="model" value="gpt-image-1">
+                        <div class="model-card">
+                            <div class="model-icon">🎨</div>
+                            <div class="model-info">
+                                <h3>GPT Image</h3>
+                                <p class="model-subtitle">OpenAI GPT Image</p>
+                                <ul class="model-features">
+                                    <li>🌟 通用生成</li>
+                                    <li>⚡ 快速響應</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="model-option">
+                        <input type="radio" name="model" value="dall-e-3">
+                        <div class="model-card">
+                            <div class="model-icon">🖼️</div>
+                            <div class="model-info">
+                                <h3>DALL-E 3</h3>
+                                <p class="model-subtitle">OpenAI Classic</p>
+                                <ul class="model-features">
+                                    <li>🎭 經典品質</li>
+                                    <li>🎪 藝術風格</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 快速示例 -->
+            <div class="sidebar-section examples-section">
+                <h3 class="sidebar-title">💡 快速示例</h3>
+                <div class="example-chips">
+                    <button class="example-chip" data-prompt="A vintage movie poster for 'The Last Voyage', featuring bold art deco typography">
+                        🎬 電影海報
+                    </button>
+                    <button class="example-chip" data-prompt="A serene Japanese garden with cherry blossoms in full bloom, koi pond, stone lanterns">
+                        🌸 日式庭園
+                    </button>
+                    <button class="example-chip" data-prompt="A cyberpunk street scene with neon lights, flying cars, rain-soaked streets">
+                        🌃 賽博龐克
+                    </button>
+                    <button class="example-chip" data-prompt="A watercolor painting of a mountain landscape with autumn colors">
+                        🏔️ 水彩風景
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主內容區 -->
+        <main class="content">
+            <!-- Tab 切換 -->
+            <div class="tabs">
+                <button class="tab active" data-tab="text2img">
+                    <span class="tab-icon">📝</span>
+                    文生圖
+                </button>
+                <button class="tab" data-tab="img2img">
+                    <span class="tab-icon">🖼️</span>
+                    圖生圖
+                </button>
+                <button class="tab" data-tab="compare">
+                    <span class="tab-icon">🔍</span>
+                    模型對比
+                </button>
+            </div>
+
+            <!-- 文生圖面板 -->
+            <div class="tab-panel active" id="text2img-panel">
+                <div class="generator-card">
+                    <div class="input-section">
+                        <label class="input-label">
+                            <span class="label-text">✍️ 圖像描述</span>
+                            <span class="label-hint">詳細描述你想生成的圖像</span>
+                        </label>
+                        <textarea 
+                            id="textPrompt" 
+                            class="prompt-textarea"
+                            rows="5" 
+                            placeholder="例如：A vintage movie poster for 'The Last Voyage', featuring bold art deco typography with the tagline 'An Adventure Beyond Time' and 'Coming Soon 2024' at the bottom"
+                        ></textarea>
+                        <div class="char-count">
+                            <span id="charCount">0</span> / 1000
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="generateBtn" class="btn btn-primary">
+                            <span class="btn-icon">🎨</span>
+                            <span class="btn-text">生成圖像</span>
+                        </button>
+                        <button id="randomBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🎲</span>
+                            <span class="btn-text">隨機提示詞</span>
+                        </button>
+                    </div>
+
+                    <div id="textStatus" class="status-bar"></div>
+                </div>
+
+                <div id="textResults" class="results-container"></div>
+            </div>
+
+            <!-- 圖生圖面板 -->
+            <div class="tab-panel" id="img2img-panel">
+                <div class="alert alert-info">
+                    ⚠️ 圖生圖功能僅支持 <strong>Nano Banana Flash</strong> 模型
+                </div>
+
+                <div class="generator-card">
+                    <div class="upload-section">
+                        <label class="upload-area" id="uploadArea">
+                            <input type="file" id="imageFile" accept="image/png,image/jpeg,image/jpg,image/webp" hidden>
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <div class="upload-icon">📤</div>
+                                <p class="upload-text">點擊或拖曳上傳圖片</p>
+                                <p class="upload-hint">支持 PNG、JPG、JPEG、WebP</p>
+                            </div>
+                            <div id="imagePreview" class="image-preview"></div>
+                        </label>
+                    </div>
+
+                    <div class="input-section">
+                        <label class="input-label">
+                            <span class="label-text">🖌️ 轉換描述</span>
+                        </label>
+                        <textarea 
+                            id="img2imgPrompt" 
+                            class="prompt-textarea"
+                            rows="3" 
+                            placeholder="例如：Turn this image into a watercolor painting&#10;或：Convert to anime style with vibrant colors"
+                        ></textarea>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="img2imgBtn" class="btn btn-primary" disabled>
+                            <span class="btn-icon">🖌️</span>
+                            <span class="btn-text">轉換圖像</span>
+                        </button>
+                    </div>
+
+                    <div id="img2imgStatus" class="status-bar"></div>
+                </div>
+
+                <div id="img2imgResults" class="results-container"></div>
+            </div>
+
+            <!-- 模型對比面板 -->
+            <div class="tab-panel" id="compare-panel">
+                <div class="generator-card">
+                    <div class="input-section">
+                        <label class="input-label">
+                            <span class="label-text">🔍 對比提示詞</span>
+                        </label>
+                        <textarea 
+                            id="comparePrompt" 
+                            class="prompt-textarea"
+                            rows="4" 
+                            placeholder="輸入提示詞，將同時用 3 個模型生成圖像進行對比"
+                        ></textarea>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="compareBtn" class="btn btn-primary">
+                            <span class="btn-icon">🔍</span>
+                            <span class="btn-text">開始對比</span>
+                        </button>
+                    </div>
+
+                    <div id="compareStatus" class="status-bar"></div>
+                </div>
+
+                <div id="compareResults" class="comparison-grid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 歷史記錄浮動按鈕 -->
+    <button class="fab" id="historyFab">
+        <span class="fab-icon">📚</span>
+    </button>
+
+    <!-- 歷史記錄側邊欄 -->
+    <div class="history-drawer" id="historyDrawer">
+        <div class="drawer-header">
+            <h2>生成歷史</h2>
+            <button class="close-btn" id="closeHistoryBtn">✕</button>
+        </div>
+        <div class="drawer-actions">
+            <button id="clearHistoryBtn" class="btn btn-danger btn-sm">
+                <span class="btn-icon">🗑️</span>
+                清空歷史
+            </button>
+            <span class="history-count">共 <span id="historyCount">0</span> 張</span>
+        </div>
+        <div id="historyGrid" class="history-grid"></div>
+    </div>
+
+    <!-- 遮罩層 -->
+    <div class="overlay" id="overlay"></div>
+
+    <script src="nano-banana.js"></script>
+</body>
+</html>
