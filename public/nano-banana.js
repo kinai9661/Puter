@@ -1,424 +1,427 @@
-// ===== 全局變量 =====
-let currentModel = 'google/gemini-3-pro-image';
-let uploadedImageData = null;
-let generationHistory = JSON.parse(localStorage.getItem('nanoBananaHistory') || '[]');
+// Nano Banana AI - JavaScript
 
-// 模型資訊對照表
-const MODEL_INFO = {
-    'google/gemini-3-pro-image': '🍌 Nano Banana Pro: 最高品質文字渲染，完美支持複雜排版和資訊圖',
-    'gemini-2.5-flash-image-preview': '⚡ Nano Banana Flash: 快速生成，支持圖生圖功能，靈活高效',
-    'gpt-image-1': '🎨 GPT Image-1: 通用型圖像生成模型，快速響應',
-    'dall-e-3': '🖼️ DALL-E 3: OpenAI 經典模型，藝術風格突出',
-    'dall-e-2': '🖼️ DALL-E 2: 穩定可靠的圖像生成選擇'
+// DOM 元素
+const navBtns = document.querySelectorAll('.nb-nav-btn');
+const sections = document.querySelectorAll('.nb-section');
+
+// 圖像生成
+const modelSelect = document.getElementById('nb-model-select');
+const styleSelect = document.getElementById('nb-style-select');
+const stylePreview = document.getElementById('nb-style-preview');
+const promptInput = document.getElementById('nb-prompt-input');
+const generateBtn = document.getElementById('nb-generate-btn');
+const resultContainer = document.getElementById('nb-result-container');
+
+// 畫廊
+const galleryGrid = document.getElementById('nb-gallery-grid');
+const totalCount = document.getElementById('nb-total-count');
+const clearBtn = document.getElementById('nb-clear-btn');
+
+// 聊天
+const chatMessages = document.getElementById('nb-chat-messages');
+const chatInput = document.getElementById('nb-chat-input');
+const sendBtn = document.getElementById('nb-send-btn');
+const chatModelSelect = document.getElementById('nb-chat-model-select');
+
+// 常量
+const STORAGE_KEY = 'nano_banana_gallery';
+const MAX_IMAGES = 50;
+
+// 風格映射表
+const stylePrompts = {
+    '': '',
+    'photorealistic': 'photorealistic, ultra realistic, 8k, highly detailed, professional photography',
+    'anime': 'anime style, in the style of Studio Ghibli, detailed anime art, vibrant colors',
+    'digital-art': 'digital art, concept art, trending on artstation, highly detailed',
+    'oil-painting': 'oil painting, fine art, masterpiece, classical painting style',
+    'watercolor': 'watercolor painting, soft colors, artistic, dreamy atmosphere',
+    'sketch': 'pencil sketch, hand-drawn, artistic sketch, detailed line art',
+    '3d-render': '3D render, octane render, unreal engine, photorealistic 3D',
+    'cyberpunk': 'cyberpunk style, neon lights, futuristic city, sci-fi, blade runner aesthetic',
+    'fantasy': 'fantasy art, magical, ethereal, epic fantasy illustration',
+    'minimalist': 'minimalist design, simple, clean, modern aesthetic',
+    'vintage': 'vintage style, retro, old photograph, nostalgic',
+    'comic': 'comic book style, pop art, vibrant colors, graphic novel',
+    'surreal': 'surrealist art, dreamlike, abstract, Salvador Dali inspired'
 };
 
-// ===== 初始化 =====
-document.addEventListener('DOMContentLoaded', () => {
-    initModelSelector();
-    initTextToImage();
-    initImageToImage();
-    initCompare();
-    initHistory();
-    initTabs();
-    initExamples();
-    updateCharCount();
+// 風格說明
+const styleDescriptions = {
+    '': '🍌 無 - 自由風格，不添加額外提示詞',
+    'photorealistic': '📸 寫實攝影 - 超高清寫實效果',
+    'anime': '🌸 吉卜力動漫 - 日本動漫風格',
+    'digital-art': '🖼️ 數位藝術 - 現代數位繪畫',
+    'oil-painting': '🎨 油畫風格 - 經典油畫質感',
+    'watercolor': '🌊 水彩畫 - 柔和水彩效果',
+    'sketch': '✏️ 素描風格 - 手繪素描',
+    '3d-render': '🎬 3D 渲染 - 高品質 3D 效果',
+    'cyberpunk': '🤖 賽博龐克 - 未來科技風',
+    'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界',
+    'minimalist': '📍 極簡主義 - 簡潔設計',
+    'vintage': '📼 復古風格 - 老照片質感',
+    'comic': '📖 漫畫風格 - 漫畫風格',
+    'surreal': '🌀 超現實 - 超現實藝術'
+};
+
+// 圖片管理類
+class BananaGallery {
+    constructor() {
+        this.images = this.load();
+    }
+
+    load() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error('載入失敗:', error);
+            return [];
+        }
+    }
+
+    save() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(this.images));
+        } catch (error) {
+            console.error('保存失敗:', error);
+            if (this.images.length > 10) {
+                this.images = this.images.slice(-10);
+                this.save();
+            }
+        }
+    }
+
+    add(imageData, prompt, model, style) {
+        const image = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            imageData,
+            prompt,
+            model,
+            style,
+            modelName: model.split('/').pop() || model
+        };
+
+        this.images.unshift(image);
+        
+        if (this.images.length > MAX_IMAGES) {
+            this.images = this.images.slice(0, MAX_IMAGES);
+        }
+
+        this.save();
+        return image;
+    }
+
+    delete(id) {
+        this.images = this.images.filter(img => img.id !== id);
+        this.save();
+    }
+
+    clear() {
+        this.images = [];
+        this.save();
+    }
+}
+
+const gallery = new BananaGallery();
+
+// 工具函數
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+        font-weight: 600;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+
+function updateStylePreview() {
+    const selectedStyle = styleSelect.value;
+    const description = styleDescriptions[selectedStyle] || '選擇風格後會自動優化提示詞';
+    
+    stylePreview.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <span>${description}</span>
+    `;
+}
+
+// 切換 Section
+navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetSection = btn.dataset.section;
+        
+        navBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        sections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === `nb-${targetSection}`) {
+                section.classList.add('active');
+            }
+        });
+
+        if (targetSection === 'gallery') {
+            renderGallery();
+        }
+    });
 });
 
-// ===== Tab 切換 =====
-function initTabs() {
-    const tabs = document.querySelectorAll('.tab');
-    const panels = document.querySelectorAll('.tab-panel');
+// 圖像生成
+async function generateImage() {
+    const basePrompt = promptInput.value.trim();
+    const selectedModel = modelSelect.value;
+    const styleKey = styleSelect.value.trim();
     
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const targetTab = tab.dataset.tab;
-            
-            tabs.forEach(t => t.classList.remove('active'));
-            panels.forEach(p => p.classList.remove('active'));
-            
-            tab.classList.add('active');
-            document.getElementById(`${targetTab}-panel`).classList.add('active');
-        });
-    });
-}
-
-// ===== 快速示例 =====
-function initExamples() {
-    document.querySelectorAll('.example-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const prompt = chip.dataset.prompt;
-            document.getElementById('textPrompt').value = prompt;
-            updateCharCount();
-        });
-    });
-}
-
-// ===== 模型選擇器 =====
-function initModelSelector() {
-    const modelSelect = document.getElementById('model-select');
-    if (!modelSelect) return;
-
-    currentModel = modelSelect.value;
-    updateModelInfo(currentModel);
-
-    modelSelect.addEventListener('change', (e) => {
-        currentModel = e.target.value;
-        updateModelInfo(currentModel);
-        
-        const isFlash = currentModel === 'gemini-2.5-flash-image-preview';
-        const img2imgBtn = document.getElementById('img2imgBtn');
-        
-        if (img2imgBtn) {
-            img2imgBtn.disabled = !isFlash || !uploadedImageData;
-        }
-        
-        if (!isFlash && document.querySelector('.tab[data-tab="img2img"]').classList.contains('active')) {
-            showStatus('img2imgStatus', '⚠️ 圖生圖功能僅支持 Nano Banana Flash 模型', 'warning');
-        }
-    });
-}
-
-function updateModelInfo(model) {
-    const infoText = document.getElementById('model-info-text');
-    if (infoText && MODEL_INFO[model]) {
-        infoText.textContent = MODEL_INFO[model];
-    }
-}
-
-// ===== 文生圖功能 =====
-function initTextToImage() {
-    const textPrompt = document.getElementById('textPrompt');
-    textPrompt.addEventListener('input', updateCharCount);
-    
-    document.getElementById('generateBtn').addEventListener('click', async () => {
-        const prompt = textPrompt.value.trim();
-        
-        if (!prompt) {
-            showStatus('textStatus', '❌ 請輸入圖像描述！', 'error');
-            return;
-        }
-
-        await generateImage(prompt, currentModel, 'textResults', 'textStatus');
-    });
-}
-
-function updateCharCount() {
-    const text = document.getElementById('textPrompt').value;
-    document.getElementById('charCount').textContent = text.length;
-}
-
-// ===== 圖生圖功能 =====
-function initImageToImage() {
-    const fileInput = document.getElementById('imageFile');
-    const uploadArea = document.getElementById('uploadArea');
-    const previewDiv = document.getElementById('imagePreview');
-    const placeholderDiv = document.getElementById('uploadPlaceholder');
-    const img2imgBtn = document.getElementById('img2imgBtn');
-
-    uploadArea.addEventListener('click', () => fileInput.click());
-    
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = 'var(--primary)';
-    });
-    
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.borderColor = 'var(--border)';
-    });
-    
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = 'var(--border)';
-        const file = e.dataTransfer.files[0];
-        if (file) handleImageFile(file);
-    });
-
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) handleImageFile(file);
-    });
-
-    async function handleImageFile(file) {
-        if (!file.type.match(/^image\/(png|jpeg|jpg|webp)$/)) {
-            showStatus('img2imgStatus', '❌ 僅支持 PNG、JPEG、JPG、WebP 格式', 'error');
-            return;
-        }
-
-        try {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                placeholderDiv.style.display = 'none';
-                previewDiv.innerHTML = `
-                    <img src="${event.target.result}" alt="預覽">
-                    <p class="file-info">${file.name} (${(file.size / 1024).toFixed(2)} KB)</p>
-                `;
-                previewDiv.classList.add('show');
-            };
-            reader.readAsDataURL(file);
-
-            uploadedImageData = {
-                base64: await fileToBase64(file),
-                mimeType: file.type
-            };
-
-            const isFlash = currentModel === 'gemini-2.5-flash-image-preview';
-            img2imgBtn.disabled = !isFlash;
-
-            if (isFlash) {
-                showStatus('img2imgStatus', '✅ 圖片已上傳，可以開始轉換', 'success');
-            } else {
-                showStatus('img2imgStatus', '⚠️ 請選擇 Nano Banana Flash 模型', 'warning');
-            }
-
-        } catch (error) {
-            showStatus('img2imgStatus', `❌ 圖片處理失敗：${error.message}`, 'error');
-        }
-    }
-
-    document.getElementById('img2imgBtn').addEventListener('click', async () => {
-        const prompt = document.getElementById('img2imgPrompt').value.trim();
-
-        if (!prompt) {
-            showStatus('img2imgStatus', '❌ 請輸入轉換描述！', 'error');
-            return;
-        }
-
-        if (!uploadedImageData) {
-            showStatus('img2imgStatus', '❌ 請先上傳圖片！', 'error');
-            return;
-        }
-
-        await generateImageToImage(prompt, uploadedImageData, 'img2imgResults', 'img2imgStatus');
-    });
-}
-
-// ===== 模型對比 =====
-function initCompare() {
-    document.getElementById('compareBtn').addEventListener('click', async () => {
-        const prompt = document.getElementById('comparePrompt').value.trim();
-        
-        if (!prompt) {
-            showStatus('compareStatus', '❌ 請輸入提示詞！', 'error');
-            return;
-        }
-
-        const models = [
-            'google/gemini-3-pro-image',
-            'gemini-2.5-flash-image-preview',
-            'gpt-image-1'
-        ];
-
-        showStatus('compareStatus', '🔄 對比生成中...', 'loading');
-        document.getElementById('compareResults').innerHTML = '';
-
-        for (const model of models) {
-            await generateImage(prompt, model, 'compareResults', 'compareStatus', true);
-        }
-
-        showStatus('compareStatus', '✅ 對比完成！', 'success');
-    });
-}
-
-// ===== 核心生成函數 =====
-async function generateImage(prompt, model, resultsId, statusId, isComparison = false) {
-    const resultsDiv = document.getElementById(resultsId);
-
-    if (!isComparison) {
-        showStatus(statusId, '🎨 生成中...', 'loading');
-        resultsDiv.innerHTML = '';
-    }
-
-    try {
-        const options = { model };
-        
-        if (model === 'google/gemini-3-pro-image') {
-            options.provider = 'together-ai';
-        }
-        
-        options.disable_safety_checker = true;
-
-        const imageElement = await puter.ai.txt2img(prompt, options);
-        
-        displayResult(imageElement, prompt, model, resultsDiv, isComparison);
-        saveToHistory(imageElement.src, prompt, model, 'text2img');
-
-        if (!isComparison) {
-            showStatus(statusId, '✅ 生成成功！', 'success');
-        }
-
-    } catch (error) {
-        console.error('生成失敗:', error);
-        showStatus(statusId, `❌ 生成失敗：${error.message}`, 'error');
-    }
-}
-
-async function generateImageToImage(prompt, imageData, resultsId, statusId) {
-    showStatus(statusId, '🖌️ 轉換中...', 'loading');
-    document.getElementById(resultsId).innerHTML = '';
-
-    try {
-        const imageElement = await puter.ai.txt2img(prompt, {
-            model: 'gemini-2.5-flash-image-preview',
-            input_image: imageData.base64,
-            input_image_mime_type: imageData.mimeType,
-            disable_safety_checker: true
-        });
-
-        displayResult(imageElement, prompt, 'gemini-2.5-flash-image-preview (Image-to-Image)', 
-                     document.getElementById(resultsId), false);
-        
-        saveToHistory(imageElement.src, prompt, 'gemini-2.5-flash-image-preview', 'img2img');
-        showStatus(statusId, '✅ 轉換成功！', 'success');
-
-    } catch (error) {
-        console.error('轉換失敗:', error);
-        showStatus(statusId, `❌ 轉換失敗：${error.message}`, 'error');
-    }
-}
-
-// ===== 顯示結果 =====
-function displayResult(imageElement, prompt, model, container, isComparison) {
-    const resultCard = document.createElement('div');
-    resultCard.className = isComparison ? 'result-card' : 'result-card-single';
-    
-    const modelName = getModelDisplayName(model);
-    const imageId = Date.now() + Math.random();
-    
-    resultCard.innerHTML = `
-        <div class="result-header">
-            <h3>${modelName}</h3>
-            <div class="result-actions">
-                <button class="icon-btn" onclick="downloadImage('${imageId}')" title="下載">
-                    💾
-                </button>
-            </div>
-        </div>
-        <div class="result-image" id="img-${imageId}">
-        </div>
-        <p class="result-prompt">${escapeHtml(prompt)}</p>
-    `;
-
-    if (isComparison) {
-        container.appendChild(resultCard);
-    } else {
-        container.innerHTML = '';
-        container.appendChild(resultCard);
-    }
-    
-    document.getElementById(`img-${imageId}`).appendChild(imageElement);
-}
-
-// ===== 工具函數 =====
-async function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-function getModelDisplayName(model) {
-    const names = {
-        'google/gemini-3-pro-image': '🍌 Nano Banana Pro',
-        'gemini-2.5-flash-image-preview': '⚡ Nano Banana Flash',
-        'gpt-image-1': '🎨 GPT Image',
-        'dall-e-3': '🖼️ DALL-E 3',
-        'dall-e-2': '🖼️ DALL-E 2'
-    };
-    return names[model] || model;
-}
-
-function showStatus(elementId, message, type) {
-    const statusDiv = document.getElementById(elementId);
-    if (!statusDiv) return;
-    statusDiv.textContent = message;
-    statusDiv.className = `status-bar show status-${type}`;
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ===== 全局函數 =====
-window.downloadImage = function(imageId) {
-    const imgElement = document.querySelector(`#img-${imageId} img`);
-    if (imgElement) {
-        const link = document.createElement('a');
-        link.href = imgElement.src;
-        link.download = `nano-banana-${Date.now()}.png`;
-        link.click();
-    }
-};
-
-// ===== 歷史記錄 =====
-function saveToHistory(imageSrc, prompt, model, type) {
-    generationHistory.unshift({
-        id: Date.now(),
-        imageSrc,
-        prompt,
-        model,
-        type,
-        timestamp: new Date().toISOString()
-    });
-
-    if (generationHistory.length > 50) {
-        generationHistory = generationHistory.slice(0, 50);
-    }
-
-    localStorage.setItem('nanoBananaHistory', JSON.stringify(generationHistory));
-    renderHistory();
-}
-
-function initHistory() {
-    renderHistory();
-    
-    document.getElementById('historyFab').addEventListener('click', () => {
-        document.getElementById('historyDrawer').classList.add('open');
-        document.getElementById('overlay').classList.add('show');
-    });
-    
-    document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
-    document.getElementById('overlay').addEventListener('click', closeHistory);
-    
-    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-        if (confirm('確定要清空所有歷史記錄嗎？')) {
-            generationHistory = [];
-            localStorage.removeItem('nanoBananaHistory');
-            renderHistory();
-        }
-    });
-}
-
-function closeHistory() {
-    document.getElementById('historyDrawer').classList.remove('open');
-    document.getElementById('overlay').classList.remove('show');
-}
-
-function renderHistory() {
-    const historyGrid = document.getElementById('historyGrid');
-    const historyCount = document.getElementById('historyCount');
-    
-    historyCount.textContent = generationHistory.length;
-    
-    if (generationHistory.length === 0) {
-        historyGrid.innerHTML = '<p class="empty-msg">暫無生成記錄</p>';
+    if (!basePrompt) {
+        showNotification('⚠️ 請輸入圖像描述', 'error');
         return;
     }
-
-    historyGrid.innerHTML = generationHistory.map(item => `
-        <div class="history-card">
-            <img src="${item.imageSrc}" alt="${escapeHtml(item.prompt)}">
-            <div class="history-info">
-                <span class="model-badge">${getModelDisplayName(item.model)}</span>
-                <p class="history-prompt">${escapeHtml(item.prompt)}</p>
-                <small>${new Date(item.timestamp).toLocaleString('zh-TW')}</small>
-            </div>
+    
+    // 組合完整提示詞
+    let fullPrompt = basePrompt;
+    const stylePromptText = stylePrompts[styleKey] || '';
+    if (stylePromptText) {
+        fullPrompt = `${basePrompt}, ${stylePromptText}`;
+        console.log('✅ 風格:', styleKey, '\n提示詞:', stylePromptText);
+    }
+    
+    generateBtn.disabled = true;
+    const modelName = selectedModel.split('/').pop() || selectedModel;
+    
+    resultContainer.style.display = 'block';
+    resultContainer.innerHTML = `
+        <div class="nb-loading">
+            <div class="nb-loading-spinner"></div>
+            <p>🍌 香蕉動力生成中... (使用 ${modelName})</p>
+            <small style="color: var(--nb-text-secondary);">FLUX.2 官方 API • 預計 15-30 秒</small>
         </div>
-    `).join('');
+    `;
+    
+    try {
+        const imageElement = await puter.ai.txt2img(fullPrompt, {
+            model: selectedModel,
+            disable_safety_checker: true
+        });
+        
+        if (!imageElement || !imageElement.src) {
+            throw new Error('圖像生成失敗');
+        }
+        
+        const imageData = imageElement.src;
+        
+        // 保存到畫廊
+        gallery.add(imageData, fullPrompt, selectedModel, styleKey);
+        
+        // 顯示結果
+        resultContainer.innerHTML = `
+            <div style="text-align: center;">
+                <p style="color: var(--nb-success); font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">
+                    ✅ 香蕉圖像生成成功!
+                </p>
+                <p style="color: var(--nb-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                    模型: ${selectedModel} | 風格: ${styleDescriptions[styleKey] || '無'}
+                </p>
+            </div>
+        `;
+        
+        imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; box-shadow: var(--nb-shadow-lg); cursor: pointer;';
+        imageElement.addEventListener('click', () => window.open(imageData, '_blank'));
+        resultContainer.appendChild(imageElement);
+        
+        // 下載按鈕
+        const downloadBtn = document.createElement('a');
+        downloadBtn.href = imageData;
+        downloadBtn.download = `banana-${modelName}-${Date.now()}.png`;
+        downloadBtn.className = 'nb-btn-primary';
+        downloadBtn.style.marginTop = '1rem';
+        downloadBtn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            🍌 下載香蕉圖像
+        `;
+        resultContainer.appendChild(downloadBtn);
+        
+        showNotification('✅ 圖像生成成功!');
+        
+    } catch (error) {
+        console.error('生成錯誤:', error);
+        resultContainer.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <p style="color: var(--nb-error); font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">
+                    ❌ 生成失敗: ${error.message}
+                </p>
+                <p style="color: var(--nb-text-secondary); font-size: 0.9rem;">
+                    嘗試切換模型或簡化提示詞
+                </p>
+            </div>
+        `;
+        showNotification('❌ 生成失敗', 'error');
+    } finally {
+        generateBtn.disabled = false;
+    }
 }
+
+// 渲染畫廊
+function renderGallery() {
+    const images = gallery.images;
+    totalCount.textContent = images.length;
+    
+    if (images.length === 0) {
+        galleryGrid.innerHTML = `
+            <div class="nb-empty-state">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <p>還沒有香蕉圖片</p>
+                <small>開始創作你的第一張圖像吧! 🍌</small>
+            </div>
+        `;
+        return;
+    }
+    
+    galleryGrid.innerHTML = '';
+    
+    images.forEach(img => {
+        const item = document.createElement('div');
+        item.className = 'nb-gallery-item';
+        item.innerHTML = `
+            <img src="${img.imageData}" alt="${img.prompt.substring(0, 50)}..." />
+            <div style="padding: 1rem; background: white;">
+                <p style="font-size: 0.85rem; color: var(--nb-text-secondary); margin-bottom: 0.5rem;">
+                    ${img.prompt.substring(0, 60)}${img.prompt.length > 60 ? '...' : ''}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--nb-primary-dark); font-weight: 600;">
+                        ${img.modelName}
+                    </span>
+                    <button class="nb-btn-secondary" style="padding: 0.5rem; font-size: 0.75rem;" onclick="deleteImage(${img.id})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        item.querySelector('img').addEventListener('click', () => {
+            window.open(img.imageData, '_blank');
+        });
+        
+        galleryGrid.appendChild(item);
+    });
+}
+
+function deleteImage(id) {
+    if (confirm('確定要刪除這張香蕉圖片嗎?')) {
+        gallery.delete(id);
+        renderGallery();
+        showNotification('✅ 已刪除');
+    }
+}
+
+// AI 聊天
+async function sendMessage() {
+    const message = chatInput.value.trim();
+    const model = chatModelSelect.value;
+    
+    if (!message) return;
+    
+    // 顯示用戶消息
+    const userMsg = document.createElement('div');
+    userMsg.className = 'nb-message nb-user-message';
+    userMsg.innerHTML = `
+        <div class="nb-message-avatar">👤</div>
+        <div class="nb-message-content"><p>${message}</p></div>
+    `;
+    chatMessages.appendChild(userMsg);
+    chatInput.value = '';
+    
+    // 顯示加載
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'nb-message nb-ai-message';
+    loadingMsg.innerHTML = `
+        <div class="nb-message-avatar">🍌</div>
+        <div class="nb-message-content"><p>思考中...</p></div>
+    `;
+    chatMessages.appendChild(loadingMsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    try {
+        const response = await puter.ai.chat(message, { model });
+        loadingMsg.remove();
+        
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'nb-message nb-ai-message';
+        aiMsg.innerHTML = `
+            <div class="nb-message-avatar">🍌</div>
+            <div class="nb-message-content"><p>${response}</p></div>
+        `;
+        chatMessages.appendChild(aiMsg);
+    } catch (error) {
+        loadingMsg.remove();
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'nb-message nb-ai-message';
+        errorMsg.innerHTML = `
+            <div class="nb-message-avatar">🍌</div>
+            <div class="nb-message-content"><p style="color: var(--nb-error);">錯誤: ${error.message}</p></div>
+        `;
+        chatMessages.appendChild(errorMsg);
+    }
+    
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// 事件監聽
+styleSelect.addEventListener('change', updateStylePreview);
+generateBtn.addEventListener('click', generateImage);
+promptInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        generateImage();
+    }
+});
+
+clearBtn.addEventListener('click', () => {
+    if (confirm('確定要清空所有香蕉圖片嗎?此操作無法撤銷!')) {
+        gallery.clear();
+        renderGallery();
+        showNotification('✅ 已清空畫廊');
+    }
+});
+
+sendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+// 初始化
+updateStylePreview();
+renderGallery();
+
+// 暴露全局函數
+window.deleteImage = deleteImage;
