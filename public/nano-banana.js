@@ -237,7 +237,6 @@ async function generateImage(prompt, model, resultsId, statusId, isComparison = 
         
         options.disable_safety_checker = true;
 
-        console.log('開始生成圖片...', { prompt, model, options });
         const imageElement = await puter.ai.txt2img(prompt, options);
         
         displayResult(imageElement, prompt, model, resultsDiv, isComparison);
@@ -249,7 +248,7 @@ async function generateImage(prompt, model, resultsId, statusId, isComparison = 
 
     } catch (error) {
         console.error('生成失敗:', error);
-        handleGenerationError(error, statusId, resultsDiv, isComparison);
+        showStatus(statusId, `❌ 生成失敗：${error.message}`, 'error');
     }
 }
 
@@ -273,48 +272,7 @@ async function generateImageToImage(prompt, imageData, resultsId, statusId) {
 
     } catch (error) {
         console.error('轉換失敗:', error);
-        handleGenerationError(error, statusId, document.getElementById(resultsId), false);
-    }
-}
-
-// ===== 錯誤處理 =====
-function handleGenerationError(error, statusId, resultsDiv, isComparison) {
-    let errorMessage = '';
-    let errorDetail = '';
-    
-    // 檢查是否為額度不足錯誤
-    if (error.error && error.error.code === 'insufficient_funds') {
-        errorMessage = '💰 Puter 免費額度已用完';
-        errorDetail = `
-            <div class="error-detail">
-                <p><strong>😔 抱歉，Puter.js 的免費額度暫時不足</strong></p>
-                <p>這個應用依賴 Puter.js 提供的免費 AI 服務額度。</p>
-                <br>
-                <p><strong>💡 建議解決方案：</strong></p>
-                <ul>
-                    <li>🔄 稍後再試（額度可能會重置）</li>
-                    <li>⚡ 使用 <a href="/" style="color: var(--primary); font-weight: 600;">FLUX.2 圖像生成頁面</a>（不同的額度池）</li>
-                    <li>🔑 前往 <a href="https://puter.com" target="_blank" style="color: var(--primary); font-weight: 600;">Puter.com</a> 註冊賬號獲取更多額度</li>
-                </ul>
-                <br>
-                <p style="font-size: 0.85rem; color: var(--text-secondary);">錯誤代碼: ${error.error.code}</p>
-            </div>
-        `;
-    } else {
-        errorMessage = `❌ 生成失敗：${error.message || error.error?.message || '未知錯誤'}`;
-        errorDetail = `
-            <div class="error-detail">
-                <p><strong>發生錯誤</strong></p>
-                <p>${error.error?.message || error.message || '請稍後重試'}</p>
-                ${error.error?.code ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">錯誤代碼: ${error.error.code}</p>` : ''}
-            </div>
-        `;
-    }
-    
-    showStatus(statusId, errorMessage, 'error');
-    
-    if (!isComparison) {
-        resultsDiv.innerHTML = errorDetail;
+        showStatus(statusId, `❌ 轉換失敗：${error.message}`, 'error');
     }
 }
 
