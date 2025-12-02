@@ -7,9 +7,11 @@ const modelSelect = document.getElementById('model-select');
 const imageModelSelect = document.getElementById('image-model-select');
 const styleSelect = document.getElementById('style-select');
 const aspectRatioSelect = document.getElementById('aspect-ratio-select');
+const batchCountSelect = document.getElementById('batch-count-select');
 const modelInfo = document.getElementById('model-info');
 const stylePreview = document.getElementById('style-preview');
 const aspectRatioPreview = document.getElementById('aspect-ratio-preview');
+const batchCountPreview = document.getElementById('batch-count-preview');
 const imagePrompt = document.getElementById('image-prompt');
 const generateImgBtn = document.getElementById('generate-img-btn');
 const imageResult = document.getElementById('image-result');
@@ -249,6 +251,23 @@ function updateAspectRatioPreview() {
     }
 }
 
+// 更新批量數量預覽
+function updateBatchCountPreview() {
+    if (!batchCountSelect || !batchCountPreview) return;
+    
+    const count = parseInt(batchCountSelect.value, 10);
+    
+    batchCountPreview.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span style="font-size: 0.85rem; color: #10b981;">✅ 將生成 ${count} 張圖片${count > 1 ? ' (並行生成)' : ''}</span>
+    `;
+}
+
 // 放大圖片功能
 function openImageModal(imageData, prompt, modelName) {
     const modal = document.createElement('div');
@@ -417,7 +436,7 @@ clearHistoryBtn.addEventListener('click', () => {
 // 模型資訊
 const modelDescriptions = {
     'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支援自定義參數',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支持自定義參數',
     'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
     'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
     'dall-e-3': '✨ DALL-E 3: OpenAI 經典圖像生成模型'
@@ -458,10 +477,11 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ FLUX.2 圖像生成 - 官方API格式（Pro用簡化版）
+// ✅ FLUX.2 圖像生成 - 支持批量生成
 async function generateImage() {
     const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
+    const batchCount = parseInt(batchCountSelect.value, 10);
     
     if (!basePrompt) {
         imageResult.innerHTML = '<p class="error">⚠️ 請輸入圖像描述</p>';
@@ -490,14 +510,13 @@ async function generateImage() {
         imageResult.innerHTML = `
             <div class="loading-container">
                 <div class="loading-spinner"></div>
-                <p class="loading">⚡ 正在使用 FLUX.2 Pro 生成圖像...</p>
+                <p class="loading">⚡ 正在使用 FLUX.2 Pro 生成 ${batchCount} 張圖像...</p>
                 <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                    專業級品質 • 1024x1024 • 約 20-40 秒
+                    專業級品質 • 1024x1024 • 已完成 0/${batchCount}
                 </p>
             </div>
         `;
     } else {
-        // 解析尺寸選擇
         let width = 1024;
         let height = 1024;
         if (aspectRatioSelect) {
@@ -512,67 +531,71 @@ async function generateImage() {
         imageResult.innerHTML = `
             <div class="loading-container">
                 <div class="loading-spinner"></div>
-                <p class="loading">⚡ 正在使用 ${modelName} 生成圖像...</p>
+                <p class="loading">⚡ 正在使用 ${modelName} 生成 ${batchCount} 張圖像...</p>
                 <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                    FLUX.2 官方 API • 尺寸: ${width}x${height} • 約 15-30 秒
+                    FLUX.2 官方 API • 尺寸: ${width}x${height} • 已完成 0/${batchCount}
                 </p>
             </div>
         `;
     }
     
     try {
-        let imageElement;
+        const generatedImages = [];
+        let completedCount = 0;
         
-        if (isPro) {
-            // ✅ FLUX.2 Pro: 官方簡化格式（無需 width/height/steps/seed）
-            console.log('🚀 FLUX.2 Pro 生成（官方簡化格式）:', {
-                prompt: fullPrompt.substring(0, 100) + '...',
-                model: selectedModel
-            });
+        // 並行生成多張圖片
+        const promises = Array.from({ length: batchCount }, async (_, index) => {
+            let imageElement;
             
-            imageElement = await puter.ai.txt2img(fullPrompt, {
-                model: selectedModel,
-                disable_safety_checker: true
-            });
-            
-        } else {
-            // ✅ FLUX.2 Flex/Dev: 完整參數格式
-            let width = 1024;
-            let height = 1024;
-            if (aspectRatioSelect) {
-                const sizeValue = aspectRatioSelect.value;
-                const [w, h] = sizeValue.split('x').map(Number);
-                if (w && h) {
-                    width = w;
-                    height = h;
+            if (isPro) {
+                imageElement = await puter.ai.txt2img(fullPrompt, {
+                    model: selectedModel,
+                    disable_safety_checker: true
+                });
+            } else {
+                let width = 1024;
+                let height = 1024;
+                if (aspectRatioSelect) {
+                    const sizeValue = aspectRatioSelect.value;
+                    const [w, h] = sizeValue.split('x').map(Number);
+                    if (w && h) {
+                        width = w;
+                        height = h;
+                    }
                 }
+                
+                imageElement = await puter.ai.txt2img(fullPrompt, {
+                    model: selectedModel,
+                    width: width,
+                    height: height,
+                    steps: 30,
+                    seed: 42 + index, // 每張圖片不同的 seed
+                    disable_safety_checker: true
+                });
             }
             
-            const options = {
-                model: selectedModel,
-                width: width,
-                height: height,
-                steps: 30,
-                seed: 42,
-                disable_safety_checker: true
-            };
+            if (!imageElement || !imageElement.src) {
+                throw new Error('圖像生成失敗:無效的回應');
+            }
             
-            console.log('🚀 FLUX.2 Flex/Dev 生成參數:', {
-                prompt: fullPrompt.substring(0, 100) + '...',
-                ...options
-            });
+            completedCount++;
             
-            imageElement = await puter.ai.txt2img(fullPrompt, options);
-        }
+            // 更新進度
+            const loadingText = imageResult.querySelector('.loading');
+            if (loadingText) {
+                loadingText.textContent = `⚡ 正在生成... (已完成 ${completedCount}/${batchCount})`;
+            }
+            
+            return imageElement;
+        });
         
-        if (!imageElement || !imageElement.src) {
-            throw new Error('圖像生成失敗:無效的回應');
-        }
+        const results = await Promise.all(promises);
         
-        const imageData = imageElement.src;
-        
-        // 保存到記錄
-        imageHistory.addImage(imageData, fullPrompt, selectedModel);
+        // 保存到歷史
+        results.forEach(imageElement => {
+            imageHistory.addImage(imageElement.src, fullPrompt, selectedModel);
+            generatedImages.push(imageElement);
+        });
         
         // 顯示成功結果
         const sizeInfo = isPro ? '1024x1024 (官方預設)' : aspectRatioSelect.value;
@@ -583,7 +606,7 @@ async function generateImage() {
                     <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
                 <div>
-                    <p class="success">✅ 圖像生成成功! (已保存到記錄)</p>
+                    <p class="success">✅ ${batchCount} 張圖像生成成功! (已保存到記錄)</p>
                     <p style="color: var(--text-secondary); font-size: 0.85rem;">
                         模型: ${selectedModel} • 尺寸: ${sizeInfo}
                     </p>
@@ -591,24 +614,45 @@ async function generateImage() {
             </div>
         `;
         
-        imageResult.appendChild(imageElement);
-        imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); cursor: pointer;';
-        imageElement.addEventListener('click', () => openImageModal(imageData, fullPrompt, modelName));
+        // 網格佈局展示多張圖片
+        const gridContainer = document.createElement('div');
+        gridContainer.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        `;
         
-        // 下載按鈕
-        const downloadDiv = document.createElement('div');
-        downloadDiv.style.marginTop = '1rem';
-        downloadDiv.innerHTML = `
-            <a href="${imageData}" download="flux2-${modelName}-${Date.now()}.png" class="download-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        generatedImages.forEach((imageElement, index) => {
+            const imageWrapper = document.createElement('div');
+            imageWrapper.style.cssText = 'position: relative;';
+            
+            imageElement.style.cssText = 'max-width: 100%; border-radius: 12px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); cursor: pointer;';
+            imageElement.addEventListener('click', () => openImageModal(imageElement.src, fullPrompt, modelName));
+            
+            imageWrapper.appendChild(imageElement);
+            
+            // 每張圖片的下載按鈕
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = imageElement.src;
+            downloadBtn.download = `flux2-${modelName}-${index + 1}-${Date.now()}.png`;
+            downloadBtn.className = 'download-btn';
+            downloadBtn.style.marginTop = '0.5rem';
+            downloadBtn.style.display = 'block';
+            downloadBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                下載圖像
-            </a>
-        `;
-        imageResult.appendChild(downloadDiv);
+                下載圖片 ${index + 1}
+            `;
+            imageWrapper.appendChild(downloadBtn);
+            
+            gridContainer.appendChild(imageWrapper);
+        });
+        
+        imageResult.appendChild(gridContainer);
         
     } catch (error) {
         console.error('❌ 圖像生成錯誤:', error);
@@ -624,6 +668,7 @@ async function generateImage() {
                     <p><strong>💡 建議:</strong></p>
                     <ul>
                         <li>嘗試使用 <strong>FLUX.2-flex</strong> (更快速)</li>
+                        <li>減少生成數量</li>
                         <li>簡化提示詞內容</li>
                         <li>切換到 <strong>gpt-image-1</strong> 或 <strong>dall-e-3</strong></li>
                         <li>檢查網路連接</li>
@@ -705,6 +750,10 @@ if (aspectRatioSelect) {
     aspectRatioSelect.addEventListener('change', updateAspectRatioPreview);
 }
 
+if (batchCountSelect) {
+    batchCountSelect.addEventListener('change', updateBatchCountPreview);
+}
+
 ocrBtn.addEventListener('click', extractText);
 
 // 初始化
@@ -712,4 +761,5 @@ addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
 updateModelInfo();
 if (styleSelect) updateStylePreview();
 if (aspectRatioSelect) updateAspectRatioPreview();
+if (batchCountSelect) updateBatchCountPreview();
 renderHistory();
