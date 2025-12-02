@@ -114,7 +114,7 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）</span>
+                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染(僅支援1024x1024)</span>
                 </div>
 
                 <!-- 風格選擇 -->
@@ -143,7 +143,7 @@
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 16v-4M12 8h.01"/>
                     </svg>
-                    <span>選擇風格後，會自動加入到提示詞中</span>
+                    <span>選擇風格後,會自動加入到提示詞中</span>
                 </div>
 
                 <!-- 圖像尺寸選擇 -->
@@ -186,6 +186,39 @@
                         <rect x="14" y="14" width="7" height="7" rx="1"/>
                     </svg>
                     <span style="font-size: 0.85rem; color: #10b981;">✅ 將生成 1 張圖片</span>
+                </div>
+
+                <!-- 成人內容開關 -->
+                <div class="form-group">
+                    <label class="label-modern">🔞 內容限制</label>
+                    <div class="safety-toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="adult-content-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-label">
+                            <span class="toggle-title">允許成人內容 (18+)</span>
+                            <span class="toggle-description">關閉安全檢查器，生成不受限制的內容</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="adult-content-warning" id="adult-content-warning" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <div>
+                        <strong>⚠️ 18+ 警告</strong>
+                        <p>已開啟成人內容模式。請確保：</p>
+                        <ul>
+                            <li>您已年滿 18 歲</li>
+                            <li>遵守當地法律法規</li>
+                            <li>不生成非法或有害內容</li>
+                            <li>尊重他人權益</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="form-group">

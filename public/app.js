@@ -8,6 +8,8 @@ const imageModelSelect = document.getElementById('image-model-select');
 const styleSelect = document.getElementById('style-select');
 const aspectRatioSelect = document.getElementById('aspect-ratio-select');
 const batchCountSelect = document.getElementById('batch-count-select');
+const adultContentToggle = document.getElementById('adult-content-toggle');
+const adultContentWarning = document.getElementById('adult-content-warning');
 const modelInfo = document.getElementById('model-info');
 const stylePreview = document.getElementById('style-preview');
 const aspectRatioPreview = document.getElementById('aspect-ratio-preview');
@@ -122,6 +124,17 @@ tabBtns.forEach(btn => {
     });
 });
 
+// 成人內容開關監聽
+if (adultContentToggle && adultContentWarning) {
+    adultContentToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            adultContentWarning.style.display = 'flex';
+        } else {
+            adultContentWarning.style.display = 'none';
+        }
+    });
+}
+
 // 複製提示詞功能
 function copyPrompt(prompt) {
     navigator.clipboard.writeText(prompt).then(() => {
@@ -179,20 +192,20 @@ const stylePrompts = {
 
 // 風格說明
 const styleDescriptions = {
-    '': '無 - 自由風格，不添加額外風格提示詞',
-    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品攝影',
-    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細緻動漫藝術',
-    'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
-    'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
-    'watercolor': '🌊 水彩畫 - 柔和水彩效果，夢境感',
-    'sketch': '✏️ 素描風格 - 手繪素描效果，藝術草圖',
+    '': '無 - 自由風格,不添加額外風格提示詞',
+    'photorealistic': '📸 寫實風格 - 超高清寫實效果,適合人物、風景、產品攝影',
+    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格,細膩動漫藝術',
+    'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格,鮮豔色彩',
+    'oil-painting': '🎨 油畫風格 - 經典油畫質感,藝術大師風格',
+    'watercolor': '🌊 水彩畫 - 柔和水彩效果,夢境感',
+    'sketch': '✏️ 素描風格 - 手繪素描效果,藝術草圖',
     '3d-render': '🎬 3D 渲染 - 高品質 3D 建模效果',
     'cyberpunk': '🤖 賽博龐克 - 未來科技、霓燈風格',
-    'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界，史詩感',
-    'minimalist': '📍 極簡主義 - 簡潔設計，留白美學',
-    'vintage': '📼 復古風格 - 老照片質感，復古色調',
+    'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界,史詩感',
+    'minimalist': '📍 極簡主義 - 簡潔設計,留白美學',
+    'vintage': '📼 復古風格 - 老照片質感,復古色調',
     'comic': '📖 漫畫風格 - 美式漫畫/漫畫風格',
-    'surreal': '🌀 超現實主義 - 超現實藝術，夢境感'
+    'surreal': '🌀 超現實主義 - 超現實藝術,夢境感'
 };
 
 // 更新風格預覽
@@ -200,7 +213,7 @@ function updateStylePreview() {
     if (!styleSelect || !stylePreview) return;
     
     const selectedStyle = styleSelect.value;
-    const description = styleDescriptions[selectedStyle] || '選擇風格後，會自動加入到提示詞中';
+    const description = styleDescriptions[selectedStyle] || '選擇風格後,會自動加入到提示詞中';
     
     stylePreview.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -234,10 +247,10 @@ function updateAspectRatioPreview() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
             </svg>
-            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024（官方限制）</span>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024(官方限制)</span>
         `;
     } else {
-        // 其他模型：解除限制
+        // 其他模型:解除限制
         Array.from(aspectRatioSelect.options).forEach(option => {
             option.disabled = false;
         });
@@ -435,7 +448,7 @@ clearHistoryBtn.addEventListener('click', () => {
 
 // 模型資訊
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）',
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染(僅支援1024x1024)',
     'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支持自定義參數',
     'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
     'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
@@ -477,11 +490,12 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ FLUX.2 圖像生成 - 支持批量生成
+// ✅ FLUX.2 圖像生成 - 支持批量生成和成人內容
 async function generateImage() {
     const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
     const batchCount = parseInt(batchCountSelect.value, 10);
+    const allowAdultContent = adultContentToggle.checked;
     
     if (!basePrompt) {
         imageResult.innerHTML = '<p class="error">⚠️ 請輸入圖像描述</p>';
@@ -550,7 +564,7 @@ async function generateImage() {
             if (isPro) {
                 imageElement = await puter.ai.txt2img(fullPrompt, {
                     model: selectedModel,
-                    disable_safety_checker: true
+                    disable_safety_checker: allowAdultContent // 🔑 使用開關狀態
                 });
             } else {
                 let width = 1024;
@@ -569,8 +583,8 @@ async function generateImage() {
                     width: width,
                     height: height,
                     steps: 30,
-                    seed: 42 + index, // 每張圖片不同的 seed
-                    disable_safety_checker: true
+                    seed: 42 + index,
+                    disable_safety_checker: allowAdultContent // 🔑 使用開關狀態
                 });
             }
             
