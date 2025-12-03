@@ -70,7 +70,7 @@
     </header>
 
     <main class="main-content">
-        <!-- AI 聊天區 (全新設計) -->
+        <!-- AI 聊天區 (添加上傳功能) -->
         <section id="chat-section" class="section active chat-layout">
             <!-- 左側邊欄 -->
             <aside class="chat-sidebar">
@@ -135,8 +135,24 @@
                     <!-- 消息動態生成 -->
                 </div>
                 
+                <!-- 文件預覽區 -->
+                <div id="file-preview-container" class="file-preview-container" style="display: none;">
+                    <!-- 文件預覽動態生成 -->
+                </div>
+                
                 <div class="chat-input-container">
+                    <!-- 上傳按鈕 -->
+                    <input type="file" id="file-input" accept="image/*,.pdf,.txt,.doc,.docx" multiple style="display: none;">
+                    <button class="btn-upload" id="upload-btn" title="上傳文件 (圖片、PDF、文檔)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </button>
+                    
                     <textarea id="chat-input" class="chat-input" placeholder="輸入你的訊息... (Ctrl+Enter 發送)" rows="1"></textarea>
+                    
                     <button id="send-btn" class="btn-send">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <line x1="22" y1="2" x2="11" y2="13"/>
@@ -178,7 +194,7 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）</span>
+                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支持1024x1024）</span>
                 </div>
 
                 <div class="form-group">
