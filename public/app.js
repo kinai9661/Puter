@@ -41,12 +41,10 @@ async function checkAuthStatus() {
             return false;
         }
 
-        // 檢查是否已登入
         const isSignedIn = await puter.auth.isSignedIn();
         debugLog('登入狀態:', isSignedIn);
         
         if (isSignedIn) {
-            // 獲取用戶資訊
             currentUser = await puter.auth.getUser();
             console.log('✅ 用戶已登入:', currentUser.username);
             debugLog('用戶完整資訊:', currentUser);
@@ -60,7 +58,6 @@ async function checkAuthStatus() {
         }
     } catch (error) {
         console.error('❌ 檢查登入狀態失敗:', error);
-        console.error('錯誤堆棧:', error.stack);
         showLoginButton();
         return false;
     }
@@ -68,77 +65,45 @@ async function checkAuthStatus() {
 
 // 顯示登入按鈕
 function showLoginButton() {
-    if (loginBtn) {
-        loginBtn.style.display = 'inline-flex';
-    }
-    if (userMenu) {
-        userMenu.style.display = 'none';
-    }
+    if (loginBtn) loginBtn.style.display = 'inline-flex';
+    if (userMenu) userMenu.style.display = 'none';
 }
 
 // 顯示用戶選單
 function showUserMenu(user) {
     if (!user) return;
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userMenu) userMenu.style.display = 'block';
     
-    // 隱藏登入按鈕
-    if (loginBtn) {
-        loginBtn.style.display = 'none';
-    }
-    
-    // 顯示用戶選單
-    if (userMenu) {
-        userMenu.style.display = 'block';
-    }
-    
-    // 設置用戶資訊
     const avatarUrl = user.picture || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`;
     const displayName = user.username || '用戶';
     const email = user.email || '';
     
-    // 更新頭像和名稱
     if (userAvatar) {
         userAvatar.src = avatarUrl;
         userAvatar.alt = displayName;
     }
-    if (userName) {
-        userName.textContent = displayName;
-    }
-    
-    // 更新下拉選單資訊
+    if (userName) userName.textContent = displayName;
     if (dropdownAvatar) {
         dropdownAvatar.src = avatarUrl;
         dropdownAvatar.alt = displayName;
     }
-    if (dropdownName) {
-        dropdownName.textContent = displayName;
-    }
-    if (dropdownEmail) {
-        dropdownEmail.textContent = email || '未設置郵箱';
-    }
+    if (dropdownName) dropdownName.textContent = displayName;
+    if (dropdownEmail) dropdownEmail.textContent = email || '未設置郵箱';
 }
 
 // 登入功能
 async function handleLogin() {
     try {
         console.log('🔐 開始登入流程...');
-        
-        if (!puter || !puter.auth) {
-            throw new Error('Puter 認證模組未就緒');
-        }
-        
-        // 調用 Puter 登入
+        if (!puter || !puter.auth) throw new Error('Puter 認證模組未就緒');
         await puter.auth.signIn();
-        
-        // 登入成功後獲取用戶資訊
         currentUser = await puter.auth.getUser();
         console.log('✅ 登入成功:', currentUser.username);
-        
         showUserMenu(currentUser);
         showNotification(`✅ 歡迎回來,${currentUser.username}!`);
-        
     } catch (error) {
         console.error('❌ 登入失敗:', error);
-        console.error('錯誤堆棧:', error.stack);
         showNotification(`❌ 登入失敗: ${error.message}`, 'error');
     }
 }
@@ -147,20 +112,13 @@ async function handleLogin() {
 async function handleLogout() {
     try {
         console.log('🚪 開始登出...');
-        
-        if (!puter || !puter.auth) {
-            throw new Error('Puter 認證模組未就緒');
-        }
-        
+        if (!puter || !puter.auth) throw new Error('Puter 認證模組未就緒');
         await puter.auth.signOut();
-        
         currentUser = null;
         console.log('✅ 登出成功');
-        
         showLoginButton();
         closeUserDropdown();
         showNotification('✅ 已成功登出');
-        
     } catch (error) {
         console.error('❌ 登出失敗:', error);
         showNotification(`❌ 登出失敗: ${error.message}`, 'error');
@@ -171,91 +129,49 @@ async function handleLogout() {
 async function handleSwitchAccount() {
     try {
         console.log('🔄 切換帳戶...');
-        
-        if (!puter || !puter.auth) {
-            throw new Error('Puter 認證模組未就緒');
-        }
-        
-        // 先登出當前帳戶
+        if (!puter || !puter.auth) throw new Error('Puter 認證模組未就緒');
         await puter.auth.signOut();
-        
-        // 然後登入新帳戶
         await puter.auth.signIn();
-        
-        // 獲取新用戶資訊
         currentUser = await puter.auth.getUser();
         console.log('✅ 切換帳戶成功:', currentUser.username);
-        
         showUserMenu(currentUser);
         closeUserDropdown();
         showNotification(`✅ 已切換到 ${currentUser.username}`);
-        
     } catch (error) {
         console.error('❌ 切換帳戶失敗:', error);
         showNotification(`❌ 切換帳戶失敗: ${error.message}`, 'error');
-        // 如果切換失敗,顯示登入按鈕
         showLoginButton();
     }
 }
 
-// 切換用戶選單下拉狀態
 function toggleUserDropdown() {
     if (!userMenu || !userDropdown) return;
-    
     const isActive = userMenu.classList.toggle('active');
-    
-    if (!isActive) {
-        closeUserDropdown();
-    }
+    if (!isActive) closeUserDropdown();
 }
 
-// 關閉用戶選單下拉
 function closeUserDropdown() {
-    if (userMenu) {
-        userMenu.classList.remove('active');
-    }
+    if (userMenu) userMenu.classList.remove('active');
 }
 
-// 點擊外部關閉下拉選單
 document.addEventListener('click', (e) => {
-    if (!userMenu) return;
-    
-    if (!userMenu.contains(e.target)) {
-        closeUserDropdown();
-    }
+    if (userMenu && !userMenu.contains(e.target)) closeUserDropdown();
 });
 
-// 綁定用戶認證事件
-if (loginBtn) {
-    loginBtn.addEventListener('click', handleLogin);
-}
-
-if (userMenuTrigger) {
-    userMenuTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleUserDropdown();
-    });
-}
-
-if (switchAccountBtn) {
-    switchAccountBtn.addEventListener('click', handleSwitchAccount);
-}
-
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', handleLogout);
-}
+if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+if (userMenuTrigger) userMenuTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleUserDropdown();
+});
+if (switchAccountBtn) switchAccountBtn.addEventListener('click', handleSwitchAccount);
+if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
 // ==================== Puter.js 初始化 ====================
 
 async function initPuter() {
     try {
         console.log('🚀 正在初始化 Puter.js...');
-        debugLog('當前環境:', {
-            userAgent: navigator.userAgent,
-            url: window.location.href
-        });
         
-        // 等待 Puter SDK 加載
         if (typeof puter === 'undefined') {
             console.log('⏳ 等待 Puter SDK 加載...');
             await new Promise((resolve) => {
@@ -265,8 +181,6 @@ async function initPuter() {
                         resolve();
                     }
                 }, 100);
-                
-                // 10秒超時
                 setTimeout(() => {
                     clearInterval(checkPuter);
                     resolve();
@@ -279,10 +193,8 @@ async function initPuter() {
         }
         
         console.log('✅ Puter.js SDK 加載成功!');
-        debugLog('Puter 物件:', puter);
         debugLog('可用的 AI 方法:', Object.keys(puter.ai || {}));
         
-        // 檢查用戶登入狀態
         await checkAuthStatus();
         
         puterReady = true;
@@ -290,7 +202,6 @@ async function initPuter() {
         return true;
     } catch (error) {
         console.error('❌ Puter.js 初始化失敗:', error);
-        console.error('錯誤堆棧:', error.stack);
         puterReady = false;
         showLoginButton();
         showNotification('❌ 初始化失敗,請刷新頁面重試', 'error');
@@ -327,11 +238,10 @@ const imageUrl = document.getElementById('image-url');
 const ocrBtn = document.getElementById('ocr-btn');
 const ocrResult = document.getElementById('ocr-result');
 
-// ✅ 修復 localStorage 權限問題 - 使用安全包裝器
+// ✅ localStorage 安全包裝器
 const HISTORY_KEY = 'puter_ai_image_history';
 const MAX_HISTORY = 50;
 
-// ✅ 檢測 localStorage 是否可用
 function isLocalStorageAvailable() {
     try {
         const test = '__localStorage_test__';
@@ -346,18 +256,14 @@ function isLocalStorageAvailable() {
 
 const USE_LOCAL_STORAGE = isLocalStorageAvailable();
 
-// 圖片記錄管理 - 支持內存降級
 class ImageHistory {
     constructor() {
-        this.memoryHistory = []; // 內存備份
+        this.memoryHistory = [];
         this.history = this.loadHistory();
     }
 
     loadHistory() {
-        if (!USE_LOCAL_STORAGE) {
-            return this.memoryHistory;
-        }
-        
+        if (!USE_LOCAL_STORAGE) return this.memoryHistory;
         try {
             const data = localStorage.getItem(HISTORY_KEY);
             const loaded = data ? JSON.parse(data) : [];
@@ -370,23 +276,11 @@ class ImageHistory {
     }
 
     saveHistory() {
-        if (!USE_LOCAL_STORAGE) {
-            // 僅保存到內存
-            return;
-        }
-        
+        if (!USE_LOCAL_STORAGE) return;
         try {
             localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
         } catch (error) {
             console.warn('⚠️ 保存記錄失敗:', error);
-            if (this.history.length > 10) {
-                this.history = this.history.slice(-10);
-                try {
-                    localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
-                } catch (e) {
-                    console.warn('⚠️ 降級保存也失敗');
-                }
-            }
         }
     }
 
@@ -400,15 +294,12 @@ class ImageHistory {
             modelName: model.split('/').pop() || model,
             aspectRatio
         };
-
         this.history.unshift(record);
         this.memoryHistory.unshift(record);
-        
         if (this.history.length > MAX_HISTORY) {
             this.history = this.history.slice(0, MAX_HISTORY);
             this.memoryHistory = this.memoryHistory.slice(0, MAX_HISTORY);
         }
-
         this.saveHistory();
         return record;
     }
@@ -427,11 +318,9 @@ class ImageHistory {
 
     getStorageSize() {
         if (!USE_LOCAL_STORAGE) {
-            // 計算內存大小
             const size = JSON.stringify(this.memoryHistory).length;
             return (size / 1024).toFixed(2);
         }
-        
         try {
             const data = localStorage.getItem(HISTORY_KEY);
             return data ? (new Blob([data]).size / 1024).toFixed(2) : 0;
@@ -450,20 +339,15 @@ const sections = document.querySelectorAll('.section');
 tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         const targetTab = btn.dataset.tab;
-        
         tabBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
         sections.forEach(section => {
             section.classList.remove('active');
             if (section.id === `${targetTab}-section`) {
                 section.classList.add('active');
             }
         });
-
-        if (targetTab === 'history') {
-            renderHistory();
-        }
+        if (targetTab === 'history') renderHistory();
     });
 });
 
@@ -495,9 +379,7 @@ function showNotification(message, type = 'success') {
         animation: slideInRight 0.3s ease;
         font-weight: 600;
     `;
-    
     document.body.appendChild(notification);
-    
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => notification.remove(), 300);
@@ -541,10 +423,8 @@ const styleDescriptions = {
 
 function updateStylePreview() {
     if (!styleSelect || !stylePreview) return;
-    
     const selectedStyle = styleSelect.value;
     const description = styleDescriptions[selectedStyle] || '選擇風格後,會自動加入到提示詞中';
-    
     stylePreview.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
@@ -556,19 +436,15 @@ function updateStylePreview() {
 
 function updateAspectRatioPreview() {
     if (!aspectRatioSelect || !aspectRatioPreview || !imageModelSelect) return;
-    
     const selectedModel = imageModelSelect.value;
     const selectedSize = aspectRatioSelect.value;
     const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
     
     if (isPro) {
         Array.from(aspectRatioSelect.options).forEach(option => {
-            if (option.value !== '1024x1024') {
-                option.disabled = true;
-            }
+            if (option.value !== '1024x1024') option.disabled = true;
         });
         aspectRatioSelect.value = '1024x1024';
-        
         aspectRatioPreview.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -579,7 +455,6 @@ function updateAspectRatioPreview() {
         Array.from(aspectRatioSelect.options).forEach(option => {
             option.disabled = false;
         });
-        
         aspectRatioPreview.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -591,10 +466,8 @@ function updateAspectRatioPreview() {
 
 function updateBatchCountPreview() {
     if (!batchCountSelect || !batchCountPreview) return;
-    
     const count = parseInt(batchCountSelect.value);
     const text = count === 1 ? '將生成 1 張圖片' : `將並行生成 ${count} 張圖片`;
-    
     batchCountPreview.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -609,9 +482,7 @@ function updateBatchCountPreview() {
 function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024') {
     const modal = document.createElement('div');
     modal.className = 'image-modal';
-    
     const safePrompt = prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    
     modal.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content">
@@ -651,16 +522,10 @@ function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024')
             </div>
         </div>
     `;
-    
     document.body.appendChild(modal);
-    
-    modal.querySelector('.btn-copy-prompt').addEventListener('click', () => {
-        copyPrompt(prompt);
-    });
-    
+    modal.querySelector('.btn-copy-prompt').addEventListener('click', () => copyPrompt(prompt));
     modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
     modal.querySelector('.modal-backdrop').addEventListener('click', () => modal.remove());
-    
     const handleEsc = (e) => {
         if (e.key === 'Escape') {
             modal.remove();
@@ -672,7 +537,6 @@ function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024')
 
 function renderHistory() {
     const history = imageHistory.history;
-    
     totalCountEl.textContent = history.length;
     storageSizeEl.textContent = `${imageHistory.getStorageSize()} KB`;
 
@@ -692,15 +556,12 @@ function renderHistory() {
     }
 
     historyGrid.innerHTML = '';
-    
     history.forEach(item => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
         historyItem.dataset.id = item.id;
-        
         const truncatedPrompt = item.prompt.substring(0, 80) + (item.prompt.length > 80 ? '...' : '');
         const aspectRatio = item.aspectRatio || '1024x1024';
-        
         historyItem.innerHTML = `
             <img src="${item.imageData}" alt="${truncatedPrompt}" loading="lazy">
             <div class="history-overlay">
@@ -738,7 +599,6 @@ function renderHistory() {
                 </div>
             </div>
         `;
-        
         const img = historyItem.querySelector('img');
         const btnCopy = historyItem.querySelector('.btn-copy');
         const btnZoom = historyItem.querySelector('.btn-zoom');
@@ -760,7 +620,6 @@ function renderHistory() {
                 renderHistory();
             }
         });
-        
         historyGrid.appendChild(historyItem);
     });
 }
@@ -785,16 +644,13 @@ async function sendMessage() {
         showNotification('⚠️ 正在初始化,請稍候...', 'error');
         return;
     }
-    
     const message = chatInput.value.trim();
     const model = modelSelect.value;
-    
     if (!message) return;
     
     addMessage(message, 'user');
     chatInput.value = '';
     sendBtn.disabled = true;
-    
     const loadingDiv = addMessage('思考中...', 'ai', true);
     
     try {
@@ -820,9 +676,9 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ 終極修復版:FLUX.2 批量圖像生成
+// 🔥 完全重建 FLUX.2 圖像生成 - 嚴格遵循官方文檔
 async function generateImage() {
-    console.log('🎨 ===== 開始圖像生成流程 =====');
+    console.log('🎨 ===== 開始 FLUX.2 圖像生成 =====');
     
     if (!puterReady) {
         console.error('❌ Puter 未就緒');
@@ -855,7 +711,6 @@ async function generateImage() {
     if (styleSelect) {
         const styleKey = styleSelect.value.trim();
         const stylePromptText = stylePrompts[styleKey] || '';
-        
         if (stylePromptText) {
             fullPrompt = `${basePrompt}, ${stylePromptText}`;
             debugLog('已添加風格', styleKey);
@@ -1010,7 +865,7 @@ async function generateImage() {
     }
 }
 
-// ✅ 終極簡化版:單張圖片生成 - 根據官方文檔修正
+// 🔥 單張圖片生成 - 完全遵循官方文檔
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
     debugLog('完整提示詞', fullPrompt);
@@ -1018,113 +873,110 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
     
     const startTime = Date.now();
     
-    try {
-        if (!puter || !puter.ai || typeof puter.ai.txt2img !== 'function') {
-            throw new Error('puter.ai.txt2img 方法不存在');
-        }
-        
-        // ✅ 根據官方文檔修正參數格式
-        let options = {};
-        
-        if (isPro) {
-            // FLUX.2 Pro - 不需要 width/height
-            options = {
-                model: selectedModel
-            };
-            console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
-        } else {
-            // FLUX.2 Flex/Dev - 需要 width/height
-            const [width, height] = aspectRatio.split('x').map(Number);
-            options = {
+    return new Promise((resolve, reject) => {
+        try {
+            if (!puter || !puter.ai || typeof puter.ai.txt2img !== 'function') {
+                reject(new Error('puter.ai.txt2img 方法不存在'));
+                return;
+            }
+            
+            // ✅ 根據官方文檔構建參數
+            let options = {
                 model: selectedModel,
-                width: width,
-                height: height
+                disable_safety_checker: true  // 官方必須參數
             };
-            console.log(`🔄 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
+            
+            // ✅ 只有非 Pro 模型才添加 width/height
+            if (!isPro) {
+                const [width, height] = aspectRatio.split('x').map(Number);
+                options.width = width;
+                options.height = height;
+                console.log(`🔄 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
+            } else {
+                console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
+            }
+            
+            debugLog('API 調用參數', options);
+            console.log('⏳ 正在調用 puter.ai.txt2img...');
+            
+            // ✅ 使用官方推薦的 .then() 語法
+            puter.ai.txt2img(fullPrompt, options)
+                .then(imageElement => {
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                    console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
+                    
+                    debugLog('API 返回結果', imageElement);
+                    debugLog('返回值類型', imageElement?.constructor?.name);
+                    
+                    // ✅ 驗證返回值
+                    if (!imageElement) {
+                        reject(new Error('API 返回 null'));
+                        return;
+                    }
+                    
+                    // ✅ 提取圖片 URL
+                    let imageData = null;
+                    
+                    if (imageElement instanceof HTMLImageElement) {
+                        imageData = imageElement.src;
+                        console.log('✅ 返回 HTMLImageElement,成功提取 src');
+                    } else if (typeof imageElement === 'string') {
+                        imageData = imageElement;
+                        console.log('✅ 返回字符串 URL');
+                    } else if (imageElement.src) {
+                        imageData = imageElement.src;
+                        console.log('✅ 返回對象包含 src 屬性');
+                    } else {
+                        console.error('❌ 無法識別的返回格式:', imageElement);
+                        reject(new Error(`無法從返回值提取圖片數據,類型: ${imageElement?.constructor?.name}`));
+                        return;
+                    }
+                    
+                    if (!imageData || imageData === '') {
+                        reject(new Error('圖片 src 為空'));
+                        return;
+                    }
+                    
+                    console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio}, 耗時: ${elapsed}秒)`);
+                    debugLog('圖片 Data URL 前100字符', imageData.substring(0, 100));
+                    
+                    // 保存到記錄
+                    imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
+                    
+                    // 創建用於顯示的 img 元素
+                    const displayImage = document.createElement('img');
+                    displayImage.src = imageData;
+                    displayImage.alt = fullPrompt;
+                    
+                    resolve({ 
+                        imageElement: displayImage,
+                        imageData: imageData
+                    });
+                })
+                .catch(error => {
+                    console.error(`❌ 圖片 ${index} 生成失敗:`, error);
+                    console.error('錯誤類型:', error.constructor.name);
+                    console.error('錯誤訊息:', error.message);
+                    console.error('錯誤堆棧:', error.stack);
+                    
+                    let errorMessage = error.message || '未知錯誤';
+                    
+                    if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
+                        errorMessage = '用戶未登入,請先登入';
+                    } else if (errorMessage.includes('timeout')) {
+                        errorMessage = '請求超時,請重試';
+                    } else if (errorMessage.includes('network')) {
+                        errorMessage = '網路錯誤,請檢查連接';
+                    }
+                    
+                    reject(new Error(errorMessage));
+                });
+                
+        } catch (error) {
+            console.error(`❌ 圖片 ${index} 同步錯誤:`, error);
+            reject(error);
         }
-        
-        debugLog('API 調用參數', options);
-        console.log('⏳ 正在調用 puter.ai.txt2img...');
-        
-        // ✅ 帶超時的 API 調用
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('請求超時(60秒)')), 60000);
-        });
-        
-        const result = await Promise.race([
-            puter.ai.txt2img(fullPrompt, options),
-            timeoutPromise
-        ]);
-        
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-        console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
-        
-        debugLog('API 返回結果', result);
-        debugLog('返回值類型', result?.constructor?.name);
-        
-        // ✅ 驗證返回值
-        if (!result) {
-            throw new Error('API 返回 null 或 undefined');
-        }
-        
-        // ✅ 提取圖片 URL - 支持多種格式
-        let imageData = null;
-        
-        if (result instanceof HTMLImageElement) {
-            imageData = result.src;
-            console.log('✅ 返回 HTMLImageElement,成功提取 src');
-        } else if (typeof result === 'string') {
-            imageData = result;
-            console.log('✅ 返回字符串 URL');
-        } else if (result.src) {
-            imageData = result.src;
-            console.log('✅ 返回對象包含 src 屬性');
-        } else {
-            console.error('❌ 無法識別的返回格式:', result);
-            throw new Error(`無法從返回值提取圖片數據,類型: ${result?.constructor?.name}`);
-        }
-        
-        if (!imageData || imageData === '') {
-            throw new Error('圖片 src 為空');
-        }
-        
-        console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio}, 耗時: ${elapsed}秒)`);
-        debugLog('圖片 Data URL 前100字符', imageData.substring(0, 100));
-        
-        // 保存到記錄
-        imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
-        
-        // ✅ 創建用於顯示的 img 元素
-        const displayImage = document.createElement('img');
-        displayImage.src = imageData;
-        displayImage.alt = fullPrompt;
-        
-        return { 
-            imageElement: displayImage,
-            imageData: imageData
-        };
-        
-    } catch (error) {
-        console.error(`❌ 圖片 ${index} 生成失敗:`, error);
-        console.error('錯誤類型:', error.constructor.name);
-        console.error('錯誤訊息:', error.message);
-        console.error('錯誤堆棧:', error.stack);
-        
-        // ✅ 增強的錯誤訊息
-        let errorMessage = error.message || '未知錯誤';
-        
-        if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
-            errorMessage = '用戶未登入,請先登入';
-        } else if (errorMessage.includes('timeout')) {
-            errorMessage = '請求超時,請重試';
-        } else if (errorMessage.includes('network')) {
-            errorMessage = '網路錯誤,請檢查連接';
-        } else if (errorMessage.includes('undefined') || errorMessage.includes('null')) {
-            errorMessage = 'API 返回無效數據,可能是模型參數錯誤';
-        }
-        
-        throw new Error(errorMessage);
-    }
+    });
 }
 
 // OCR 功能
@@ -1133,17 +985,13 @@ async function extractText() {
         showNotification('⚠️ 正在初始化,請稍候...', 'error');
         return;
     }
-    
     const url = imageUrl.value.trim();
-    
     if (!url) {
         ocrResult.innerHTML = '<p class="error">⚠️ 請輸入圖像 URL</p>';
         return;
     }
-    
     ocrBtn.disabled = true;
     ocrResult.innerHTML = '<p class="loading">📝 正在提取文字...</p>';
-    
     try {
         const text = await puter.ai.img2txt(url);
         ocrResult.innerHTML = `
@@ -1164,7 +1012,6 @@ async function extractText() {
 function updateModelInfo() {
     const selectedModel = imageModelSelect.value;
     const description = modelDescriptions[selectedModel] || '選擇一個 FLUX.2 模型開始生成';
-    
     modelInfo.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
@@ -1173,7 +1020,6 @@ function updateModelInfo() {
         </svg>
         <span>${description}</span>
     `;
-    
     updateAspectRatioPreview();
 }
 
@@ -1192,18 +1038,9 @@ imagePrompt.addEventListener('keypress', (e) => {
     }
 });
 
-if (styleSelect) {
-    styleSelect.addEventListener('change', updateStylePreview);
-}
-
-if (aspectRatioSelect) {
-    aspectRatioSelect.addEventListener('change', updateAspectRatioPreview);
-}
-
-if (batchCountSelect) {
-    batchCountSelect.addEventListener('change', updateBatchCountPreview);
-}
-
+if (styleSelect) styleSelect.addEventListener('change', updateStylePreview);
+if (aspectRatioSelect) aspectRatioSelect.addEventListener('change', updateAspectRatioPreview);
+if (batchCountSelect) batchCountSelect.addEventListener('change', updateBatchCountPreview);
 ocrBtn.addEventListener('click', extractText);
 
 // 初始化
@@ -1213,10 +1050,8 @@ async function initialize() {
     console.log('調試模式:', DEBUG_MODE ? '開啟' : '關閉');
     console.log('localStorage:', USE_LOCAL_STORAGE ? '可用' : '不可用 (使用內存)');
     
-    // 初始化 Puter.js(包含用戶認證檢查)
     await initPuter();
     
-    // 初始化 UI
     if (chatMessages) {
         addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
     }
@@ -1229,7 +1064,6 @@ async function initialize() {
     console.log('✅ ===== 應用初始化完成 =====\n');
 }
 
-// 頁面加載完成後初始化
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
 } else {
