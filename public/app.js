@@ -1,3 +1,16 @@
+// ==================== 調試模式 ====================
+const DEBUG_MODE = true; // 開啟詳細日誌
+
+function debugLog(message, data = null) {
+    if (DEBUG_MODE) {
+        if (data) {
+            console.log(`[DEBUG] ${message}`, data);
+        } else {
+            console.log(`[DEBUG] ${message}`);
+        }
+    }
+}
+
 // 等待 Puter.js 初始化
 let puterReady = false;
 let currentUser = null;
@@ -20,28 +33,34 @@ const logoutBtn = document.getElementById('logout-btn');
 // 檢查用戶登入狀態
 async function checkAuthStatus() {
     try {
+        debugLog('檢查用戶登入狀態...');
+        
         if (!puter || !puter.auth) {
-            console.log('⚠️ Puter 認證模組未就緒');
+            console.warn('⚠️ Puter 認證模組未就緒');
             showLoginButton();
             return false;
         }
 
         // 檢查是否已登入
         const isSignedIn = await puter.auth.isSignedIn();
+        debugLog('登入狀態:', isSignedIn);
         
         if (isSignedIn) {
             // 獲取用戶資訊
             currentUser = await puter.auth.getUser();
             console.log('✅ 用戶已登入:', currentUser.username);
+            debugLog('用戶完整資訊:', currentUser);
             showUserMenu(currentUser);
             return true;
         } else {
-            console.log('ℹ️ 用戶未登入');
+            console.log('ℹ️ 用戶未登入 - 請點擊「登入 Puter」按鈕');
             showLoginButton();
+            showNotification('⚠️ 請先登入才能使用 AI 功能', 'error');
             return false;
         }
     } catch (error) {
         console.error('❌ 檢查登入狀態失敗:', error);
+        console.error('錯誤堆棧:', error.stack);
         showLoginButton();
         return false;
     }
@@ -119,6 +138,7 @@ async function handleLogin() {
         
     } catch (error) {
         console.error('❌ 登入失敗:', error);
+        console.error('錯誤堆棧:', error.stack);
         showNotification(`❌ 登入失敗: ${error.message}`, 'error');
     }
 }
@@ -230,6 +250,10 @@ if (logoutBtn) {
 async function initPuter() {
     try {
         console.log('🚀 正在初始化 Puter.js...');
+        debugLog('當前環境:', {
+            userAgent: navigator.userAgent,
+            url: window.location.href
+        });
         
         // 等待 Puter SDK 加載
         if (typeof puter === 'undefined') {
@@ -251,10 +275,12 @@ async function initPuter() {
         }
         
         if (typeof puter === 'undefined') {
-            throw new Error('Puter SDK 加載失敗');
+            throw new Error('Puter SDK 加載失敗 - 請檢查網路連接');
         }
         
         console.log('✅ Puter.js SDK 加載成功!');
+        debugLog('Puter 物件:', puter);
+        debugLog('可用的 AI 方法:', Object.keys(puter.ai || {}));
         
         // 檢查用戶登入狀態
         await checkAuthStatus();
@@ -264,8 +290,10 @@ async function initPuter() {
         return true;
     } catch (error) {
         console.error('❌ Puter.js 初始化失敗:', error);
+        console.error('錯誤堆棧:', error.stack);
         puterReady = false;
         showLoginButton();
+        showNotification('❌ 初始化失敗,請刷新頁面重試', 'error');
         return false;
     }
 }
@@ -750,10 +778,26 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ 方案 A 修復：FLUX.2 批量圖像生成（正確的 API 格式）
+// ✅ 增強調試版：FLUX.2 批量圖像生成
 async function generateImage() {
+    console.log('🎨 ===== 開始圖像生成流程 =====');
+    
+    // ✅ 檢查 1: Puter 是否就緒
     if (!puterReady) {
+        console.error('❌ Puter 未就緒');
         showNotification('⚠️ 正在初始化 Puter.js,請稍候...', 'error');
+        return;
+    }
+    
+    // ✅ 檢查 2: 用戶是否登入
+    if (!currentUser) {
+        console.error('❌ 用戶未登入');
+        showNotification('⚠️ 請先登入才能使用 AI 功能', 'error');
+        imageResult.innerHTML = `
+            <div class="error-container">
+                <p class="error">⚠️ 請先點擊右上角「登入 Puter」按鈕</p>
+            </div>
+        `;
         return;
     }
     
@@ -774,7 +818,7 @@ async function generateImage() {
         
         if (stylePromptText) {
             fullPrompt = `${basePrompt}, ${stylePromptText}`;
-            console.log('✅ 已添加風格:', styleKey);
+            debugLog('已添加風格', styleKey);
         }
     }
     
@@ -785,6 +829,15 @@ async function generateImage() {
     if (!isPro && aspectRatioSelect) {
         aspectRatio = aspectRatioSelect.value;
     }
+    
+    console.log('📋 生成參數:', {
+        model: selectedModel,
+        isPro,
+        aspectRatio,
+        batchCount,
+        promptLength: fullPrompt.length,
+        user: currentUser?.username
+    });
     
     generateImgBtn.disabled = true;
     const modelName = selectedModel.split('/').pop() || selectedModel;
@@ -885,9 +938,11 @@ async function generateImage() {
         });
         
         showNotification(`✅ 成功生成 ${successResults.length} 張圖片!`);
+        console.log('🎉 ===== 圖像生成完成 =====');
         
     } catch (error) {
         console.error('❌ 批量生成錯誤:', error);
+        console.error('錯誤堆棧:', error.stack);
         imageResult.innerHTML = `
             <div class="error-container">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -897,13 +952,14 @@ async function generateImage() {
                 </svg>
                 <p class="error">❌ 生成失敗: ${error.message || '未知錯誤'}</p>
                 <div class="error-suggestions">
-                    <p><strong>💡 建議:</strong></p>
+                    <p><strong>💡 解決建議:</strong></p>
                     <ul>
-                        <li>減少生成數量(嘗試 1 張)</li>
-                        <li>嘗試使用 <strong>FLUX.2-flex</strong> (更穩定)</li>
-                        <li>簡化提示詞內容</li>
-                        <li>檢查網路連接</li>
-                        <li>刷新頁面重試</li>
+                        <li><strong>確認已登入:</strong> 檢查右上角是否顯示用戶名</li>
+                        <li><strong>減少數量:</strong> 嘗試生成 1 張圖片</li>
+                        <li><strong>切換模型:</strong> 使用 <strong>FLUX.2-flex</strong></li>
+                        <li><strong>簡化提示詞:</strong> 移除特殊字符</li>
+                        <li><strong>檢查網路:</strong> 確保網路連接正常</li>
+                        <li><strong>查看控制台:</strong> 按 F12 查看詳細錯誤</li>
                     </ul>
                 </div>
             </div>
@@ -914,44 +970,65 @@ async function generateImage() {
     }
 }
 
-// ✅ 方案 A 核心修復：單張圖片生成函數（官方正確格式）
+// ✅ 增強調試版：單張圖片生成函數（帶超時和詳細日誌）
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
-    console.log(`📸 正在生成圖片 ${index}:`, {
-        model: selectedModel,
-        prompt: fullPrompt.substring(0, 50) + '...',
-        aspectRatio,
-        isPro
-    });
+    console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
+    debugLog('完整提示詞', fullPrompt);
+    debugLog('模型參數', { selectedModel, isPro, aspectRatio });
+    
+    const startTime = Date.now();
     
     try {
+        // ✅ 檢查 puter.ai.txt2img 是否存在
+        if (!puter || !puter.ai || typeof puter.ai.txt2img !== 'function') {
+            throw new Error('puter.ai.txt2img 方法不存在');
+        }
+        
+        let options;
         let imageElement;
         
         if (isPro) {
             // ✅ FLUX.2 Pro: 官方簡化格式（不傳 width/height）
-            console.log('🏆 使用 FLUX.2 Pro 格式 (無 width/height)');
-            imageElement = await puter.ai.txt2img(fullPrompt, {
+            options = {
                 model: selectedModel,
                 disable_safety_checker: true
-            });
+            };
+            console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
         } else {
             // ✅ FLUX.2 Flex/Dev: 完整參數格式（必須傳 width/height）
             const [width, height] = aspectRatio.split('x').map(Number);
-            console.log(`🔄 使用 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
-            
-            imageElement = await puter.ai.txt2img(fullPrompt, {
+            options = {
                 model: selectedModel,
                 width: width,
                 height: height,
                 disable_safety_checker: true
-            });
+            };
+            console.log(`🔄 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
         }
         
+        debugLog('API 調用參數', options);
+        console.log('⏳ 正在調用 puter.ai.txt2img...');
+        
+        // ✅ 帶超時的 API 調用
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('請求超時(60秒)')), 60000);
+        });
+        
+        imageElement = await Promise.race([
+            puter.ai.txt2img(fullPrompt, options),
+            timeoutPromise
+        ]);
+        
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
+        debugLog('返回的 imageElement', imageElement);
+        
         if (!imageElement || !imageElement.src) {
-            throw new Error('圖像生成失敗: 無效的回應');
+            throw new Error('API 返回無效的圖像數據');
         }
         
         const imageData = imageElement.src;
-        console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio})`);
+        console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio}, 耗時: ${elapsed}秒)`);
         
         // 保存到記錄
         imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
@@ -960,7 +1037,22 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         
     } catch (error) {
         console.error(`❌ 圖片 ${index} 生成失敗:`, error);
-        throw new Error(`生成失敗: ${error.message || '網路錯誤'}`);
+        console.error('錯誤類型:', error.constructor.name);
+        console.error('錯誤訊息:', error.message);
+        console.error('錯誤堆棧:', error.stack);
+        
+        // 增強的錯誤訊息
+        let errorMessage = error.message || '未知錯誤';
+        
+        if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
+            errorMessage = '用戶未登入,請先登入';
+        } else if (errorMessage.includes('timeout')) {
+            errorMessage = '請求超時,請重試';
+        } else if (errorMessage.includes('network')) {
+            errorMessage = '網路錯誤,請檢查連接';
+        }
+        
+        throw new Error(errorMessage);
     }
 }
 
@@ -1045,7 +1137,9 @@ ocrBtn.addEventListener('click', extractText);
 
 // 初始化
 async function initialize() {
-    console.log('🚀 開始初始化應用...');
+    console.log('🚀 ===== 應用初始化開始 =====');
+    console.log('當前時間:', new Date().toLocaleString('zh-TW'));
+    console.log('調試模式:', DEBUG_MODE ? '開啟' : '關閉');
     
     // 初始化 Puter.js(包含用戶認證檢查)
     await initPuter();
@@ -1060,7 +1154,7 @@ async function initialize() {
     if (batchCountSelect) updateBatchCountPreview();
     renderHistory();
     
-    console.log('✅ 應用初始化完成!');
+    console.log('✅ ===== 應用初始化完成 =====\n');
 }
 
 // 頁面加載完成後初始化
