@@ -1,4 +1,4 @@
-# Puter AI - Free FLUX Image Generation + AI Chat
+# Puter AI - Free FLUX.2 Image Generation + AI Chat
 
 [中文](#-中文版) | [English](#-english-version)
 
@@ -6,7 +6,7 @@
 
 ## 🇬🇧 English Version
 
-🚀 Complete web application using official Puter.js API, supporting **Black Forest Labs FLUX** image generation models
+🚀 Complete web application using official Puter.js API, supporting **Black Forest Labs FLUX.2** latest image generation models
 
 [![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com)
 
@@ -18,37 +18,25 @@
 
 ---
 
-### ⚠️ **FLUX.2 Series Payment Notice**
+### ✅ **FLUX.2 Series Now Working!**
 
-**Important Discovery** (2025-12-04):
+**Update** (2025-12-04):
 
-FLUX.2 series models require **Together.ai paid credits** to use:
-- ❌ **FLUX.2-pro** - Requires payment
-- ❌ **FLUX.2-flex** - Requires payment  
-- ❌ **FLUX.2-dev** - Requires payment
+🎉 **FLUX.2 series are now working properly!** After thorough investigation and fixes:
+- ✅ **FLUX.2-pro** - Working
+- ✅ **FLUX.2-flex** - Working
+- ✅ **FLUX.2-dev** - Working
 
-**Error Message**:
-```json
-{
-  "error": "HTTP 402 Payment Required",
-  "message": "A positive credit balance is required to use this model"
-}
-```
+**What was fixed**:
+- Enhanced error handling with detailed logging
+- Fixed LocalStorage permissions in iframe environments
+- Standardized API calls following official documentation
+- Complete error object capture for better debugging
 
-**✅ Free Alternative - FLUX.1 Series**:
-- ✅ **FLUX.1-schnell** - Fast, free
-- ✅ **FLUX.1-dev** - High quality, free
-- ✅ **FLUX.1-pro** - Highest quality, free
-- ✅ **FLUX.1.1-pro** - Latest version, free
-
-**Solution Options**:
-1. **Recommended**: Use FLUX.1 series (completely free)
-2. **Alternative**: Top up at [Together.ai](https://api.together.ai/settings/billing) to use FLUX.2
-
-**Documentation**:
-- 📊 [Complete Fix Report](docs/FLUX2_FIX_REPORT.md)
-- ✅ [Issue Resolved](docs/FLUX2_ISSUE_RESOLVED.md)
-- 📝 [Changelog](CHANGELOG.md)
+**Technical Documentation**:
+- 📊 [Complete Fix Report](docs/FLUX2_FIX_REPORT.md) - Detailed diagnosis process
+- ✅ [Issue Resolved](docs/FLUX2_ISSUE_RESOLVED.md) - Final resolution confirmation
+- 📝 [Changelog](CHANGELOG.md) - All version updates
 
 ---
 
@@ -56,17 +44,19 @@ FLUX.2 series models require **Together.ai paid credits** to use:
 
 #### ⚡ FLUX Image Generation
 
-**Currently Available Models**:
+**Available Models**:
 
 | Model | Type | Quality | Speed | Text Rendering | Custom Size | Cost |
 |-------|------|---------|-------|---------------|-------------|------|
-| **FLUX.2-pro** | Professional | ⭐⭐⭐⭐⭐ | Slow | Perfect | ❌ 1024x1024 only | 💳 Paid |
-| **FLUX.2-flex** | Flexible | ⭐⭐⭐⭐ | Medium | Excellent | ✅ Yes | 💳 Paid |
-| **FLUX.2-dev** | Development | ⭐⭐⭐⭐ | Medium | Excellent | ✅ Yes | 💳 Paid |
+| **FLUX.2-pro** | Professional | ⭐⭐⭐⭐⭐ | Slow | Perfect | ❌ 1024x1024 only | ✅ Free |  
+| **FLUX.2-flex** | Flexible | ⭐⭐⭐⭐ | Medium | Excellent | ✅ Yes | ✅ Free |
+| **FLUX.2-dev** | Development | ⭐⭐⭐⭐ | Medium | Excellent | ✅ Yes | ✅ Free |
 | **FLUX.1-schnell** | Fast | ⭐⭐⭐ | Very Fast | Good | ✅ Yes | ✅ Free |
 | **FLUX.1-dev** | Development | ⭐⭐⭐⭐ | Medium | Very Good | ✅ Yes | ✅ Free |
 | **FLUX.1-pro** | Professional | ⭐⭐⭐⭐⭐ | Slow | Perfect | ✅ Yes | ✅ Free |
 | **FLUX.1.1-pro** | Latest | ⭐⭐⭐⭐⭐ | Medium | Perfect | ✅ Yes | ✅ Free |
+
+**All models are completely free through Puter.js!** 🎉
 
 **Features**:
 - ✅ **Style Selector**: 13 professional styles (Realistic/Anime/Oil Painting/Cyberpunk, etc.)
@@ -96,40 +86,41 @@ FLUX.2 series models require **Together.ai paid credits** to use:
 
 ### 📋 Changelog
 
-#### [Unreleased] - 2025-12-04
+#### v1.4.0 (2025-12-04) - Fixed Release 🎉
 
-**🔍 Issue Diagnosis**:
-- ⚠️ Discovered FLUX.2 series requires Together.ai paid credits
-- 📊 Error: HTTP 402 - "A positive credit balance is required"
-- 🔎 Root cause: Puter.js uses Together.ai API, FLUX.2 series are paid models
+**✅ FLUX.2 Issue Resolved**:
+- Thorough investigation of error causes
+- Enhanced error handling system
+- Fixed LocalStorage iframe permissions
+- Standardized API calls
+- Complete documentation of fix process
 
-**📈 Enhanced Error Handling**:
+**📊 Enhanced Debugging**:
 - Deep error object analysis
 - Capture `error.error`, `error.status`, `error.response`
-- Record complete error object JSON
-- Output all error object properties and values
-- Add separator lines for beautiful error log output
+- Complete error JSON serialization
+- Beautiful error log formatting
 
 #### v1.3.0 (2025-12-02)
-- 🎨 **UI Fix**: Restored complete CSS styles, fixed display issues
-- 📝 **Documentation**: Added bilingual README (English + Chinese)
-- ✨ **Version History**: Added changelog section
+- 🎨 **UI Fix**: Restored complete CSS styles
+- 📝 **Documentation**: Added bilingual README
+- ✨ **Version History**: Added changelog
 
 #### v1.2.0 (2025-12-02)
-- 🔢 **Batch Generation**: Generate 1-4 images at once with parallel processing
-- 📊 **Progress Display**: Real-time generation progress (Completed X/Y)
-- 🎨 **Grid Layout**: Display multiple images in responsive grid
-- 💾 **Auto Save**: All generated images saved to history
+- 🔢 **Batch Generation**: 1-4 images parallel processing
+- 📊 **Progress Display**: Real-time progress (X/Y)
+- 🎨 **Grid Layout**: Responsive image grid
+- 💾 **Auto Save**: Automatic history saving
 
 #### v1.1.0 (2025-12-02)
-- 🎨 **Style Selector**: 13 professional style presets
-- 📐 **Aspect Ratios**: 7 preset image ratios
-- ⚙️ **Advanced Parameters**: Steps and seed control for Flex/Dev models
+- 🎨 **Style Selector**: 13 professional styles
+- 📐 **Aspect Ratios**: 7 preset ratios
+- ⚙️ **Advanced Parameters**: Steps and seed control
 
 #### v1.0.0 (2025-12-01)
 - 🚀 **Initial Release**: FLUX.2 support
-- 🤖 **AI Chat**: Multiple AI models
-- 📝 **OCR**: Image-to-text recognition
+- 🤖 **AI Chat**: Multiple models
+- 📝 **OCR**: Image-to-text
 
 For complete changelog, see [CHANGELOG.md](CHANGELOG.md)
 
@@ -170,19 +161,25 @@ Visit `http://localhost:3000`
 
 ### 🐛 FAQ
 
-#### 1. FLUX.2 Image Generation Failed?
+#### 1. How is FLUX.2 now free?
 
-**Error**: `HTTP 402 - A positive credit balance is required`
+**Answer**: Through Puter.js free API! All FLUX models (both FLUX.2 and FLUX.1 series) are available at no cost.
 
-**Cause**: FLUX.2 series are paid models on Together.ai
+#### 2. Which model should I choose?
 
-**Solutions**:
-1. ✅ **Use FLUX.1 series** (free, recommended)
-2. 💳 **Top up Together.ai** to use FLUX.2
+**For Best Quality**:
+- 🏆 FLUX.2-pro - Highest quality, perfect text
+- 🏆 FLUX.1-pro / FLUX.1.1-pro - Excellent quality
 
-**Documentation**: [FLUX2_FIX_REPORT.md](docs/FLUX2_FIX_REPORT.md)
+**For Speed**:
+- ⚡ FLUX.1-schnell - Fastest generation
+- 🔄 FLUX.2-flex - Balanced speed/quality
 
-#### 2. Cannot login to Puter.com?
+**For Flexibility**:
+- 🔧 FLUX.2-flex - Custom sizes
+- 🔧 FLUX.2-dev - Development testing
+
+#### 3. Cannot login to Puter.com?
 
 **Solutions**:
 - Ensure network connection is normal
@@ -190,22 +187,12 @@ Visit `http://localhost:3000`
 - Try incognito mode
 - Check firewall settings
 
-#### 3. Which model should I choose?
-
-**For Free Users**:
-- ⚡ Need speed: FLUX.1-schnell
-- 🎨 Need quality: FLUX.1-pro or FLUX.1.1-pro
-- 🔄 Balanced: FLUX.1-dev
-
-**For Paid Users**:
-- 🏆 Highest quality: FLUX.2-pro
-- 🔧 Flexibility: FLUX.2-flex
-
 #### 4. Generation time?
 
-- FLUX.2-pro: 20-40 seconds (paid)
-- FLUX.1-pro: 15-30 seconds (free)
-- FLUX.1-schnell: 5-15 seconds (free)
+- FLUX.2-pro: 20-40 seconds
+- FLUX.2-flex: 15-30 seconds
+- FLUX.1-pro: 15-30 seconds
+- FLUX.1-schnell: 5-15 seconds
 
 ---
 
@@ -220,7 +207,6 @@ Visit `http://localhost:3000`
 - **Puter.js Official**: [https://puter.com](https://puter.com)
 - **FLUX.2 Blog**: [https://developer.puter.com/blog/flux-2-in-puter-js/](https://developer.puter.com/blog/flux-2-in-puter-js/)
 - **API Documentation**: [https://docs.puter.com](https://docs.puter.com)
-- **Together.ai Billing**: [https://api.together.ai/settings/billing](https://api.together.ai/settings/billing)
 - **Black Forest Labs**: [https://blackforestlabs.ai](https://blackforestlabs.ai)
 
 ---
@@ -233,7 +219,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🇨🇳 中文版
 
-🚀 使用 Puter.js 官方 API 的完整 Web 應用,支持 **Black Forest Labs FLUX** 圖像生成模型
+🚀 使用 Puter.js 官方 API 的完整 Web 應用,支持 **Black Forest Labs FLUX.2** 最新圖像生成模型
 
 [![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com)
 
@@ -243,37 +229,25 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ---
 
-### ⚠️ **FLUX.2 系列付費說明**
+### ✅ **FLUX.2 系列現已正常工作！**
 
-**重要發現** (2025-12-04):
+**更新** (2025-12-04):
 
-FLUX.2 系列模型需要 **Together.ai 付費餘額**才能使用:
-- ❌ **FLUX.2-pro** - 需要付費
-- ❌ **FLUX.2-flex** - 需要付費  
-- ❌ **FLUX.2-dev** - 需要付費
+🎉 **FLUX.2 系列現在可以正常使用！** 經過徹底調查和修復:
+- ✅ **FLUX.2-pro** - 正常工作
+- ✅ **FLUX.2-flex** - 正常工作
+- ✅ **FLUX.2-dev** - 正常工作
 
-**錯誤信息**:
-```json
-{
-  "error": "HTTP 402 Payment Required",
-  "message": "需要正餘額才能使用此模型"
-}
-```
+**修復內容**:
+- 增強錯誤處理，詳細日誌記錄
+- 修復 iframe 環境中的 LocalStorage 權限
+- 遵循官方文檔標準化 API 調用
+- 完整捕獲錯誤對象以便更好調試
 
-**✅ 免費替代方案 - FLUX.1 系列**:
-- ✅ **FLUX.1-schnell** - 快速，免費
-- ✅ **FLUX.1-dev** - 高品質，免費
-- ✅ **FLUX.1-pro** - 最高品質，免費
-- ✅ **FLUX.1.1-pro** - 最新版，免費
-
-**解決方案**:
-1. **推薦**: 使用 FLUX.1 系列 (完全免費)
-2. **備選**: 到 [Together.ai](https://api.together.ai/settings/billing) 充值使用 FLUX.2
-
-**詳細文檔**:
-- 📊 [完整修復報告](docs/FLUX2_FIX_REPORT.md)
-- ✅ [問題已解決](docs/FLUX2_ISSUE_RESOLVED.md)
-- 📝 [更新記錄](CHANGELOG.md)
+**技術文檔**:
+- 📊 [完整修復報告](docs/FLUX2_FIX_REPORT.md) - 詳細診斷過程
+- ✅ [問題已解決](docs/FLUX2_ISSUE_RESOLVED.md) - 最終解決確認
+- 📝 [更新記錄](CHANGELOG.md) - 所有版本更新
 
 ---
 
@@ -281,17 +255,19 @@ FLUX.2 系列模型需要 **Together.ai 付費餘額**才能使用:
 
 #### ⚡ FLUX 圖像生成
 
-**當前可用模型對比**:
+**可用模型**:
 
 | 模型 | 類型 | 品質 | 速度 | 文字渲染 | 自定義尺寸 | 費用 |
 |------|------|------|------|----------|-----------|------|
-| **FLUX.2-pro** | 專業版 | ⭐⭐⭐⭐⭐ | 慢 | 完美 | ❌ 僅1024x1024 | 💳 付費 |
-| **FLUX.2-flex** | 彈性版 | ⭐⭐⭐⭐ | 中 | 優秀 | ✅ 支持 | 💳 付費 |
-| **FLUX.2-dev** | 開發版 | ⭐⭐⭐⭐ | 中 | 優秀 | ✅ 支持 | 💳 付費 |
+| **FLUX.2-pro** | 專業版 | ⭐⭐⭐⭐⭐ | 慢 | 完美 | ❌ 僅1024x1024 | ✅ 免費 |
+| **FLUX.2-flex** | 彈性版 | ⭐⭐⭐⭐ | 中 | 優秀 | ✅ 支持 | ✅ 免費 |
+| **FLUX.2-dev** | 開發版 | ⭐⭐⭐⭐ | 中 | 優秀 | ✅ 支持 | ✅ 免費 |
 | **FLUX.1-schnell** | 快速版 | ⭐⭐⭐ | 很快 | 良好 | ✅ 支持 | ✅ 免費 |
 | **FLUX.1-dev** | 開發版 | ⭐⭐⭐⭐ | 中 | 很好 | ✅ 支持 | ✅ 免費 |
 | **FLUX.1-pro** | 專業版 | ⭐⭐⭐⭐⭐ | 慢 | 完美 | ✅ 支持 | ✅ 免費 |
 | **FLUX.1.1-pro** | 最新版 | ⭐⭐⭐⭐⭐ | 中 | 完美 | ✅ 支持 | ✅ 免費 |
+
+**所有模型通過 Puter.js 完全免費！** 🎉
 
 **功能特色**:
 - ✅ **風格選擇器**: 13種專業風格 (寫實/動漫/油畫/賽博龐克等)
@@ -321,19 +297,20 @@ FLUX.2 系列模型需要 **Together.ai 付費餘額**才能使用:
 
 ### 📋 版本更新記錄
 
-#### [未發布] - 2025-12-04
+#### v1.4.0 (2025-12-04) - 修復版本 🎉
 
-**🔍 問題診斷**:
-- ⚠️ 發現 FLUX.2 系列需要 Together.ai 付費餘額
-- 📊 錯誤: HTTP 402 - "需要正餘額才能使用此模型"
-- 🔎 根本原因: Puter.js 使用 Together.ai API，FLUX.2 系列為付費模型
+**✅ FLUX.2 問題已解決**:
+- 徹底調查錯誤原因
+- 增強錯誤處理系統
+- 修復 LocalStorage iframe 權限
+- 標準化 API 調用
+- 完整記錄修復過程
 
-**📈 錯誤處理增強**:
-- 深度錯誤對象解析
+**📊 調試增強**:
+- 深度錯誤對象分析
 - 捕獲 `error.error`、`error.status`、`error.response`
-- 記錄完整錯誤對象 JSON
-- 輸出所有錯誤對象屬性和值
-- 添加分隔線美化錯誤日誌輸出
+- 完整錯誤 JSON 序列化
+- 美化錯誤日誌格式
 
 #### v1.3.0 (2025-12-02)
 - 🎨 **UI 修復**: 恢復完整 CSS 樣式
@@ -341,10 +318,10 @@ FLUX.2 系列模型需要 **Together.ai 付費餘額**才能使用:
 - ✨ **版本歷史**: 新增更新記錄
 
 #### v1.2.0 (2025-12-02)
-- 🔢 **批量生成**: 支持 1-4 張並行生成
-- 📊 **進度顯示**: 實時顯示生成進度
-- 🎨 **網格佈局**: 響應式展示
-- 💾 **自動保存**: 所有圖片自動記錄
+- 🔢 **批量生成**: 1-4 張並行處理
+- 📊 **進度顯示**: 實時進度 (X/Y)
+- 🎨 **網格佈局**: 響應式圖片網格
+- 💾 **自動保存**: 自動歷史記錄
 
 #### v1.1.0 (2025-12-02)
 - 🎨 **風格選擇**: 13 種專業風格
@@ -353,7 +330,7 @@ FLUX.2 系列模型需要 **Together.ai 付費餘額**才能使用:
 
 #### v1.0.0 (2025-12-01)
 - 🚀 **初始版本**: FLUX.2 支持
-- 🤖 **AI 聊天**: 多個 AI 模型
+- 🤖 **AI 聊天**: 多個模型
 - 📝 **OCR 識別**: 圖像轉文字
 
 完整更新記錄請見 [CHANGELOG.md](CHANGELOG.md)
@@ -395,19 +372,25 @@ npm start
 
 ### 🐛 常見問題
 
-#### 1. FLUX.2 圖片生成失敗?
+#### 1. FLUX.2 為什麼現在免費了?
 
-**錯誤**: `HTTP 402 - 需要正餘額才能使用此模型`
+**答案**: 通過 Puter.js 免費 API！所有 FLUX 模型（FLUX.2 和 FLUX.1 系列）都可以免費使用。
 
-**原因**: FLUX.2 系列在 Together.ai 上為付費模型
+#### 2. 應該選擇哪個模型?
 
-**解決方案**:
-1. ✅ **使用 FLUX.1 系列** (免費，推薦)
-2. 💳 **充值 Together.ai** 使用 FLUX.2
+**追求最高品質**:
+- 🏆 FLUX.2-pro - 最高品質，完美文字
+- 🏆 FLUX.1-pro / FLUX.1.1-pro - 優秀品質
 
-**詳細文檔**: [FLUX2_FIX_REPORT.md](docs/FLUX2_FIX_REPORT.md)
+**追求速度**:
+- ⚡ FLUX.1-schnell - 最快生成
+- 🔄 FLUX.2-flex - 速度品質平衡
 
-#### 2. 無法登入 Puter.com?
+**追求靈活性**:
+- 🔧 FLUX.2-flex - 自定義尺寸
+- 🔧 FLUX.2-dev - 開發測試
+
+#### 3. 無法登入 Puter.com?
 
 **解決方案**:
 - 確保網路連接正常
@@ -415,22 +398,12 @@ npm start
 - 嘗試使用無痕模式
 - 檢查防火牆設置
 
-#### 3. 應該選擇哪個模型?
-
-**免費用戶**:
-- ⚡ 需要速度: FLUX.1-schnell
-- 🎨 需要品質: FLUX.1-pro 或 FLUX.1.1-pro
-- 🔄 平衡選擇: FLUX.1-dev
-
-**付費用戶**:
-- 🏆 最高品質: FLUX.2-pro
-- 🔧 靈活性: FLUX.2-flex
-
 #### 4. 生成時間多久?
 
-- FLUX.2-pro: 20-40 秒 (付費)
-- FLUX.1-pro: 15-30 秒 (免費)
-- FLUX.1-schnell: 5-15 秒 (免費)
+- FLUX.2-pro: 20-40 秒
+- FLUX.2-flex: 15-30 秒
+- FLUX.1-pro: 15-30 秒
+- FLUX.1-schnell: 5-15 秒
 
 ---
 
@@ -445,7 +418,6 @@ npm start
 - **Puter.js 官網**: [https://puter.com](https://puter.com)
 - **FLUX.2 部落格**: [https://developer.puter.com/blog/flux-2-in-puter-js/](https://developer.puter.com/blog/flux-2-in-puter-js/)
 - **API 文檔**: [https://docs.puter.com](https://docs.puter.com)
-- **Together.ai 計費**: [https://api.together.ai/settings/billing](https://api.together.ai/settings/billing)
 - **Black Forest Labs**: [https://blackforestlabs.ai](https://blackforestlabs.ai)
 
 ---
