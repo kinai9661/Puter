@@ -9,6 +9,7 @@ class ChatManager {
         this.STORAGE_KEY = 'puter_ai_conversations';
         this.MAX_CONVERSATIONS = 50;
         this.MAX_MESSAGES = 100;
+        this.DEFAULT_MODEL = 'gpt-5.1-chat'; // 更新為最新模型
         
         // 配置 Markdown 渲染
         this.configureMarked();
@@ -101,7 +102,7 @@ class ChatManager {
             id: Date.now(),
             title: title,
             messages: [],
-            model: 'gpt-4o',
+            model: this.DEFAULT_MODEL,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -149,7 +150,7 @@ class ChatManager {
         // 更新模型選擇
         const modelSelect = document.getElementById('model-select');
         if (modelSelect) {
-            modelSelect.value = conversation.model || 'gpt-4o';
+            modelSelect.value = conversation.model || this.DEFAULT_MODEL;
         }
     }
     
@@ -419,7 +420,7 @@ class ChatManager {
         
         try {
             // 調用 AI API
-            const model = this.elements.modelSelect?.value || 'gpt-4o';
+            const model = this.elements.modelSelect?.value || this.DEFAULT_MODEL;
             const response = await puter.ai.chat(message, { model: model });
             
             // 移除打字動畫
@@ -497,7 +498,7 @@ class ChatManager {
         this.showTypingIndicator();
         
         try {
-            const model = this.elements.modelSelect?.value || 'gpt-4o';
+            const model = this.elements.modelSelect?.value || this.DEFAULT_MODEL;
             const response = await puter.ai.chat(userMessage, { model: model });
             
             this.hideTypingIndicator();
