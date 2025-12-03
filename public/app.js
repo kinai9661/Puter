@@ -1,7 +1,232 @@
 // 等待 Puter.js 初始化
 let puterReady = false;
+let currentUser = null;
 
-// Puter.js 初始化
+// ==================== 用戶認證功能 ====================
+
+// DOM 元素 - 用戶認證
+const loginBtn = document.getElementById('login-btn');
+const userMenu = document.getElementById('user-menu');
+const userMenuTrigger = document.getElementById('user-menu-trigger');
+const userDropdown = document.getElementById('user-dropdown');
+const userAvatar = document.getElementById('user-avatar');
+const userName = document.getElementById('user-name');
+const dropdownAvatar = document.getElementById('dropdown-avatar');
+const dropdownName = document.getElementById('dropdown-name');
+const dropdownEmail = document.getElementById('dropdown-email');
+const switchAccountBtn = document.getElementById('switch-account-btn');
+const logoutBtn = document.getElementById('logout-btn');
+
+// 檢查用戶登入狀態
+async function checkAuthStatus() {
+    try {
+        if (!puter || !puter.auth) {
+            console.log('⚠️ Puter 認證模組未就緒');
+            showLoginButton();
+            return false;
+        }
+
+        // 檢查是否已登入
+        const isSignedIn = await puter.auth.isSignedIn();
+        
+        if (isSignedIn) {
+            // 獲取用戶資訊
+            currentUser = await puter.auth.getUser();
+            console.log('✅ 用戶已登入:', currentUser.username);
+            showUserMenu(currentUser);
+            return true;
+        } else {
+            console.log('ℹ️ 用戶未登入');
+            showLoginButton();
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ 檢查登入狀態失敗:', error);
+        showLoginButton();
+        return false;
+    }
+}
+
+// 顯示登入按鈕
+function showLoginButton() {
+    if (loginBtn) {
+        loginBtn.style.display = 'inline-flex';
+    }
+    if (userMenu) {
+        userMenu.style.display = 'none';
+    }
+}
+
+// 顯示用戶選單
+function showUserMenu(user) {
+    if (!user) return;
+    
+    // 隱藏登入按鈕
+    if (loginBtn) {
+        loginBtn.style.display = 'none';
+    }
+    
+    // 顯示用戶選單
+    if (userMenu) {
+        userMenu.style.display = 'block';
+    }
+    
+    // 設置用戶資訊
+    const avatarUrl = user.picture || user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`;
+    const displayName = user.username || '用戶';
+    const email = user.email || '';
+    
+    // 更新頭像和名稱
+    if (userAvatar) {
+        userAvatar.src = avatarUrl;
+        userAvatar.alt = displayName;
+    }
+    if (userName) {
+        userName.textContent = displayName;
+    }
+    
+    // 更新下拉選單資訊
+    if (dropdownAvatar) {
+        dropdownAvatar.src = avatarUrl;
+        dropdownAvatar.alt = displayName;
+    }
+    if (dropdownName) {
+        dropdownName.textContent = displayName;
+    }
+    if (dropdownEmail) {
+        dropdownEmail.textContent = email || '未設置郵箱';
+    }
+}
+
+// 登入功能
+async function handleLogin() {
+    try {
+        console.log('🔐 開始登入流程...');
+        
+        if (!puter || !puter.auth) {
+            throw new Error('Puter 認證模組未就緒');
+        }
+        
+        // 調用 Puter 登入
+        await puter.auth.signIn();
+        
+        // 登入成功後獲取用戶資訊
+        currentUser = await puter.auth.getUser();
+        console.log('✅ 登入成功:', currentUser.username);
+        
+        showUserMenu(currentUser);
+        showNotification(`✅ 歡迎回來，${currentUser.username}！`);
+        
+    } catch (error) {
+        console.error('❌ 登入失敗:', error);
+        showNotification(`❌ 登入失敗: ${error.message}`, 'error');
+    }
+}
+
+// 登出功能
+async function handleLogout() {
+    try {
+        console.log('🚪 開始登出...');
+        
+        if (!puter || !puter.auth) {
+            throw new Error('Puter 認證模組未就緒');
+        }
+        
+        await puter.auth.signOut();
+        
+        currentUser = null;
+        console.log('✅ 登出成功');
+        
+        showLoginButton();
+        closeUserDropdown();
+        showNotification('✅ 已成功登出');
+        
+    } catch (error) {
+        console.error('❌ 登出失敗:', error);
+        showNotification(`❌ 登出失敗: ${error.message}`, 'error');
+    }
+}
+
+// 切換帳戶功能
+async function handleSwitchAccount() {
+    try {
+        console.log('🔄 切換帳戶...');
+        
+        if (!puter || !puter.auth) {
+            throw new Error('Puter 認證模組未就緒');
+        }
+        
+        // 先登出當前帳戶
+        await puter.auth.signOut();
+        
+        // 然後登入新帳戶
+        await puter.auth.signIn();
+        
+        // 獲取新用戶資訊
+        currentUser = await puter.auth.getUser();
+        console.log('✅ 切換帳戶成功:', currentUser.username);
+        
+        showUserMenu(currentUser);
+        closeUserDropdown();
+        showNotification(`✅ 已切換到 ${currentUser.username}`);
+        
+    } catch (error) {
+        console.error('❌ 切換帳戶失敗:', error);
+        showNotification(`❌ 切換帳戶失敗: ${error.message}`, 'error');
+        // 如果切換失敗，顯示登入按鈕
+        showLoginButton();
+    }
+}
+
+// 切換用戶選單下拉狀態
+function toggleUserDropdown() {
+    if (!userMenu || !userDropdown) return;
+    
+    const isActive = userMenu.classList.toggle('active');
+    
+    if (!isActive) {
+        closeUserDropdown();
+    }
+}
+
+// 關閉用戶選單下拉
+function closeUserDropdown() {
+    if (userMenu) {
+        userMenu.classList.remove('active');
+    }
+}
+
+// 點擊外部關閉下拉選單
+document.addEventListener('click', (e) => {
+    if (!userMenu) return;
+    
+    if (!userMenu.contains(e.target)) {
+        closeUserDropdown();
+    }
+});
+
+// 綁定用戶認證事件
+if (loginBtn) {
+    loginBtn.addEventListener('click', handleLogin);
+}
+
+if (userMenuTrigger) {
+    userMenuTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleUserDropdown();
+    });
+}
+
+if (switchAccountBtn) {
+    switchAccountBtn.addEventListener('click', handleSwitchAccount);
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+}
+
+// ==================== Puter.js 初始化 ====================
+
 async function initPuter() {
     try {
         console.log('🚀 正在初始化 Puter.js...');
@@ -29,15 +254,23 @@ async function initPuter() {
             throw new Error('Puter SDK 加載失敗');
         }
         
-        console.log('✅ Puter.js 初始化成功!');
+        console.log('✅ Puter.js SDK 加載成功!');
+        
+        // 檢查用戶登入狀態
+        await checkAuthStatus();
+        
         puterReady = true;
+        console.log('✅ Puter.js 完全初始化成功!');
         return true;
     } catch (error) {
         console.error('❌ Puter.js 初始化失敗:', error);
         puterReady = false;
+        showLoginButton();
         return false;
     }
 }
+
+// ==================== 其他功能代碼 ====================
 
 // DOM 元素
 const chatMessages = document.getElementById('messages');
@@ -469,7 +702,7 @@ clearHistoryBtn.addEventListener('click', () => {
     }
 });
 
-// ✅ FLUX.2 模型資訊 (只保留 FLUX.2 系列)
+// FLUX.2 模型資訊
 const modelDescriptions = {
     'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型，完美文字渲染，最高品質（僅支援 1024x1024）',
     'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型，適應多種生成需求，支援多種尺寸比例',
@@ -517,7 +750,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ FLUX.2 批量圖像生成 (修復版本)
+// FLUX.2 批量圖像生成
 async function generateImage() {
     if (!puterReady) {
         showNotification('⚠️ 正在初始化 Puter.js,請稍候...', 'error');
@@ -694,13 +927,11 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
     
     try {
         if (isPro) {
-            // FLUX.2 Pro: 官方簡化格式
             console.log('🏆 使用 FLUX.2 Pro 模式');
             imageElement = await puter.ai.txt2img(fullPrompt, {
                 model: selectedModel
             });
         } else {
-            // FLUX.2 Flex/Dev: 完整參數格式
             let width = 1024;
             let height = 1024;
             if (aspectRatio) {
@@ -820,9 +1051,9 @@ ocrBtn.addEventListener('click', extractText);
 
 // 初始化
 async function initialize() {
-    console.log('🚀 開始初始化...');
+    console.log('🚀 開始初始化應用...');
     
-    // 初始化 Puter.js
+    // 初始化 Puter.js（包含用戶認證檢查）
     await initPuter();
     
     // 初始化 UI
@@ -835,7 +1066,7 @@ async function initialize() {
     if (batchCountSelect) updateBatchCountPreview();
     renderHistory();
     
-    console.log('✅ 初始化完成!');
+    console.log('✅ 應用初始化完成!');
 }
 
 // 頁面加載完成後初始化
