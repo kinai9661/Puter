@@ -820,7 +820,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ 最終修復版:FLUX.2 批量圖像生成
+// ✅ 終極修復版:FLUX.2 批量圖像生成
 async function generateImage() {
     console.log('🎨 ===== 開始圖像生成流程 =====');
     
@@ -1010,7 +1010,7 @@ async function generateImage() {
     }
 }
 
-// ✅ 終極簡化版:單張圖片生成 - 直接使用 API 返回值
+// ✅ 終極簡化版:單張圖片生成 - 根據官方文檔修正
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
     debugLog('完整提示詞', fullPrompt);
@@ -1023,14 +1023,17 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
             throw new Error('puter.ai.txt2img 方法不存在');
         }
         
-        let options;
+        // ✅ 根據官方文檔修正參數格式
+        let options = {};
         
         if (isPro) {
+            // FLUX.2 Pro - 不需要 width/height
             options = {
                 model: selectedModel
             };
             console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
         } else {
+            // FLUX.2 Flex/Dev - 需要 width/height
             const [width, height] = aspectRatio.split('x').map(Number);
             options = {
                 model: selectedModel,
@@ -1043,12 +1046,12 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         debugLog('API 調用參數', options);
         console.log('⏳ 正在調用 puter.ai.txt2img...');
         
-        // ✅ 簡化版:直接調用,60秒超時
+        // ✅ 帶超時的 API 調用
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('請求超時(60秒)')), 60000);
         });
         
-        const imageElement = await Promise.race([
+        const result = await Promise.race([
             puter.ai.txt2img(fullPrompt, options),
             timeoutPromise
         ]);
@@ -1056,24 +1059,29 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
         console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
         
-        debugLog('返回的 imageElement', imageElement);
+        debugLog('API 返回結果', result);
+        debugLog('返回值類型', result?.constructor?.name);
         
         // ✅ 驗證返回值
-        if (!imageElement) {
-            throw new Error('API 返回 null');
+        if (!result) {
+            throw new Error('API 返回 null 或 undefined');
         }
         
-        // ✅ 直接從 imageElement 獲取 src
-        let imageData;
+        // ✅ 提取圖片 URL - 支持多種格式
+        let imageData = null;
         
-        if (imageElement instanceof HTMLImageElement) {
-            imageData = imageElement.src;
-        } else if (imageElement.src) {
-            imageData = imageElement.src;
-        } else if (typeof imageElement === 'string') {
-            imageData = imageElement;
+        if (result instanceof HTMLImageElement) {
+            imageData = result.src;
+            console.log('✅ 返回 HTMLImageElement,成功提取 src');
+        } else if (typeof result === 'string') {
+            imageData = result;
+            console.log('✅ 返回字符串 URL');
+        } else if (result.src) {
+            imageData = result.src;
+            console.log('✅ 返回對象包含 src 屬性');
         } else {
-            throw new Error(`無法從返回值提取圖片數據,類型: ${imageElement?.constructor?.name}`);
+            console.error('❌ 無法識別的返回格式:', result);
+            throw new Error(`無法從返回值提取圖片數據,類型: ${result?.constructor?.name}`);
         }
         
         if (!imageData || imageData === '') {
@@ -1102,6 +1110,7 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         console.error('錯誤訊息:', error.message);
         console.error('錯誤堆棧:', error.stack);
         
+        // ✅ 增強的錯誤訊息
         let errorMessage = error.message || '未知錯誤';
         
         if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
@@ -1110,6 +1119,8 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
             errorMessage = '請求超時,請重試';
         } else if (errorMessage.includes('network')) {
             errorMessage = '網路錯誤,請檢查連接';
+        } else if (errorMessage.includes('undefined') || errorMessage.includes('null')) {
+            errorMessage = 'API 返回無效數據,可能是模型參數錯誤';
         }
         
         throw new Error(errorMessage);
