@@ -327,33 +327,65 @@ const imageUrl = document.getElementById('image-url');
 const ocrBtn = document.getElementById('ocr-btn');
 const ocrResult = document.getElementById('ocr-result');
 
-// 圖片記錄管理
+// ✅ 修復 localStorage 權限問題 - 使用安全包裝器
 const HISTORY_KEY = 'puter_ai_image_history';
 const MAX_HISTORY = 50;
 
+// ✅ 檢測 localStorage 是否可用
+function isLocalStorageAvailable() {
+    try {
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+    } catch (e) {
+        console.warn('⚠️ localStorage 不可用,使用內存存儲');
+        return false;
+    }
+}
+
+const USE_LOCAL_STORAGE = isLocalStorageAvailable();
+
+// 圖片記錄管理 - 支持內存降級
 class ImageHistory {
     constructor() {
+        this.memoryHistory = []; // 內存備份
         this.history = this.loadHistory();
     }
 
     loadHistory() {
+        if (!USE_LOCAL_STORAGE) {
+            return this.memoryHistory;
+        }
+        
         try {
             const data = localStorage.getItem(HISTORY_KEY);
-            return data ? JSON.parse(data) : [];
+            const loaded = data ? JSON.parse(data) : [];
+            this.memoryHistory = loaded;
+            return loaded;
         } catch (error) {
-            console.error('載入記錄失敗:', error);
-            return [];
+            console.warn('⚠️ 載入記錄失敗,使用內存:', error);
+            return this.memoryHistory;
         }
     }
 
     saveHistory() {
+        if (!USE_LOCAL_STORAGE) {
+            // 僅保存到內存
+            return;
+        }
+        
         try {
             localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
         } catch (error) {
-            console.error('保存記錄失敗:', error);
+            console.warn('⚠️ 保存記錄失敗:', error);
             if (this.history.length > 10) {
                 this.history = this.history.slice(-10);
-                this.saveHistory();
+                try {
+                    localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
+                } catch (e) {
+                    console.warn('⚠️ 降級保存也失敗');
+                }
             }
         }
     }
@@ -370,9 +402,11 @@ class ImageHistory {
         };
 
         this.history.unshift(record);
+        this.memoryHistory.unshift(record);
         
         if (this.history.length > MAX_HISTORY) {
             this.history = this.history.slice(0, MAX_HISTORY);
+            this.memoryHistory = this.memoryHistory.slice(0, MAX_HISTORY);
         }
 
         this.saveHistory();
@@ -381,20 +415,28 @@ class ImageHistory {
 
     deleteImage(id) {
         this.history = this.history.filter(item => item.id !== id);
+        this.memoryHistory = this.memoryHistory.filter(item => item.id !== id);
         this.saveHistory();
     }
 
     clearAll() {
         this.history = [];
+        this.memoryHistory = [];
         this.saveHistory();
     }
 
     getStorageSize() {
+        if (!USE_LOCAL_STORAGE) {
+            // 計算內存大小
+            const size = JSON.stringify(this.memoryHistory).length;
+            return (size / 1024).toFixed(2);
+        }
+        
         try {
             const data = localStorage.getItem(HISTORY_KEY);
             return data ? (new Blob([data]).size / 1024).toFixed(2) : 0;
         } catch (error) {
-            return 0;
+            return '0';
         }
     }
 }
@@ -643,7 +685,7 @@ function renderHistory() {
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
                 <p>尚無生成記錄</p>
-                <small>開始生成圖片後,記錄會自動保存在這裡</small>
+                <small>開始生成圖片後,記錄會自動保存在這裡${USE_LOCAL_STORAGE ? '' : ' (僅當前會話)'}</small>
             </div>
         `;
         return;
@@ -778,18 +820,16 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ 增強調試版:FLUX.2 批量圖像生成
+// ✅ 最終修復版:FLUX.2 批量圖像生成
 async function generateImage() {
     console.log('🎨 ===== 開始圖像生成流程 =====');
     
-    // ✅ 檢查 1: Puter 是否就緒
     if (!puterReady) {
         console.error('❌ Puter 未就緒');
         showNotification('⚠️ 正在初始化 Puter.js,請稍候...', 'error');
         return;
     }
     
-    // ✅ 檢查 2: 用戶是否登入
     if (!currentUser) {
         console.error('❌ 用戶未登入');
         showNotification('⚠️ 請先登入才能使用 AI 功能', 'error');
@@ -970,7 +1010,7 @@ async function generateImage() {
     }
 }
 
-// ✅ 修復版:單張圖片生成函數 - 正確處理 puter.ai.txt2img 返回的 DOM 元素
+// ✅ 終極簡化版:單張圖片生成 - 直接使用 API 返回值
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
     debugLog('完整提示詞', fullPrompt);
@@ -979,29 +1019,23 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
     const startTime = Date.now();
     
     try {
-        // ✅ 檢查 puter.ai.txt2img 是否存在
         if (!puter || !puter.ai || typeof puter.ai.txt2img !== 'function') {
             throw new Error('puter.ai.txt2img 方法不存在');
         }
         
         let options;
-        let imageElement;
         
         if (isPro) {
-            // ✅ FLUX.2 Pro: 官方簡化格式(不傳 width/height)
             options = {
-                model: selectedModel,
-                disable_safety_checker: true
+                model: selectedModel
             };
             console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
         } else {
-            // ✅ FLUX.2 Flex/Dev: 完整參數格式(必須傳 width/height)
             const [width, height] = aspectRatio.split('x').map(Number);
             options = {
                 model: selectedModel,
                 width: width,
-                height: height,
-                disable_safety_checker: true
+                height: height
             };
             console.log(`🔄 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
         }
@@ -1009,12 +1043,12 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         debugLog('API 調用參數', options);
         console.log('⏳ 正在調用 puter.ai.txt2img...');
         
-        // ✅ 帶超時的 API 調用
+        // ✅ 簡化版:直接調用,60秒超時
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('請求超時(60秒)')), 60000);
         });
         
-        imageElement = await Promise.race([
+        const imageElement = await Promise.race([
             puter.ai.txt2img(fullPrompt, options),
             timeoutPromise
         ]);
@@ -1022,30 +1056,25 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
         console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
         
-        // ✅ 關鍵修復:puter.ai.txt2img 返回的就是 <img> DOM 元素
-        debugLog('返回的 imageElement 類型', imageElement?.constructor?.name);
-        debugLog('imageElement 對象', imageElement);
+        debugLog('返回的 imageElement', imageElement);
         
-        // ✅ 驗證返回的是否是有效的 img 元素
+        // ✅ 驗證返回值
         if (!imageElement) {
-            throw new Error('API 返回 null 或 undefined');
+            throw new Error('API 返回 null');
         }
         
-        if (!(imageElement instanceof HTMLImageElement)) {
-            throw new Error(`API 返回了錯誤的類型: ${imageElement?.constructor?.name}`);
+        // ✅ 直接從 imageElement 獲取 src
+        let imageData;
+        
+        if (imageElement instanceof HTMLImageElement) {
+            imageData = imageElement.src;
+        } else if (imageElement.src) {
+            imageData = imageElement.src;
+        } else if (typeof imageElement === 'string') {
+            imageData = imageElement;
+        } else {
+            throw new Error(`無法從返回值提取圖片數據,類型: ${imageElement?.constructor?.name}`);
         }
-        
-        // ✅ 等待圖片加載完成
-        await new Promise((resolve, reject) => {
-            if (imageElement.complete) {
-                resolve();
-            } else {
-                imageElement.onload = resolve;
-                imageElement.onerror = () => reject(new Error('圖片加載失敗'));
-            }
-        });
-        
-        const imageData = imageElement.src;
         
         if (!imageData || imageData === '') {
             throw new Error('圖片 src 為空');
@@ -1057,7 +1086,15 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         // 保存到記錄
         imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
         
-        return { imageElement, imageData };
+        // ✅ 創建用於顯示的 img 元素
+        const displayImage = document.createElement('img');
+        displayImage.src = imageData;
+        displayImage.alt = fullPrompt;
+        
+        return { 
+            imageElement: displayImage,
+            imageData: imageData
+        };
         
     } catch (error) {
         console.error(`❌ 圖片 ${index} 生成失敗:`, error);
@@ -1065,7 +1102,6 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         console.error('錯誤訊息:', error.message);
         console.error('錯誤堆棧:', error.stack);
         
-        // 增強的錯誤訊息
         let errorMessage = error.message || '未知錯誤';
         
         if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
@@ -1164,6 +1200,7 @@ async function initialize() {
     console.log('🚀 ===== 應用初始化開始 =====');
     console.log('當前時間:', new Date().toLocaleString('zh-TW'));
     console.log('調試模式:', DEBUG_MODE ? '開啟' : '關閉');
+    console.log('localStorage:', USE_LOCAL_STORAGE ? '可用' : '不可用 (使用內存)');
     
     // 初始化 Puter.js(包含用戶認證檢查)
     await initPuter();
