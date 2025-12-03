@@ -750,7 +750,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ 修復後的 FLUX.2 批量圖像生成
+// ✅ 方案 A 修復：FLUX.2 批量圖像生成（正確的 API 格式）
 async function generateImage() {
     if (!puterReady) {
         showNotification('⚠️ 正在初始化 Puter.js,請稍候...', 'error');
@@ -914,27 +914,44 @@ async function generateImage() {
     }
 }
 
-// ✅ 修復後的單張圖片生成函數 - 使用官方推薦格式
+// ✅ 方案 A 核心修復：單張圖片生成函數（官方正確格式）
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`📸 正在生成圖片 ${index}:`, {
         model: selectedModel,
         prompt: fullPrompt.substring(0, 50) + '...',
-        aspectRatio
+        aspectRatio,
+        isPro
     });
     
     try {
-        // ✅ 使用官方推薦的簡化調用方式
-        const imageElement = await puter.ai.txt2img(fullPrompt, {
-            model: selectedModel,
-            disable_safety_checker: true
-        });
+        let imageElement;
+        
+        if (isPro) {
+            // ✅ FLUX.2 Pro: 官方簡化格式（不傳 width/height）
+            console.log('🏆 使用 FLUX.2 Pro 格式 (無 width/height)');
+            imageElement = await puter.ai.txt2img(fullPrompt, {
+                model: selectedModel,
+                disable_safety_checker: true
+            });
+        } else {
+            // ✅ FLUX.2 Flex/Dev: 完整參數格式（必須傳 width/height）
+            const [width, height] = aspectRatio.split('x').map(Number);
+            console.log(`🔄 使用 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
+            
+            imageElement = await puter.ai.txt2img(fullPrompt, {
+                model: selectedModel,
+                width: width,
+                height: height,
+                disable_safety_checker: true
+            });
+        }
         
         if (!imageElement || !imageElement.src) {
-            throw new Error('圖像生成失敗:無效的回應');
+            throw new Error('圖像生成失敗: 無效的回應');
         }
         
         const imageData = imageElement.src;
-        console.log(`✅ 圖片 ${index} 生成成功`);
+        console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio})`);
         
         // 保存到記錄
         imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
