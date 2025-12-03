@@ -469,12 +469,11 @@ clearHistoryBtn.addEventListener('click', () => {
     }
 });
 
+// ✅ FLUX.2 模型資訊 (只保留 FLUX.2 系列)
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支持1024x1024）',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
-    'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
-    'dall-e-3': '✨ DALL-E 3: OpenAI 經典圖像生成模型'
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型，完美文字渲染，最高品質（僅支援 1024x1024）',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型，適應多種生成需求，支援多種尺寸比例',
+    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本，適合實驗與測試，支援多種尺寸比例'
 };
 
 // 聊天功能
@@ -776,7 +775,7 @@ async function extractText() {
 
 function updateModelInfo() {
     const selectedModel = imageModelSelect.value;
-    const description = modelDescriptions[selectedModel] || '選擇一個模型開始生成';
+    const description = modelDescriptions[selectedModel] || '選擇一個 FLUX.2 模型開始生成';
     
     modelInfo.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
