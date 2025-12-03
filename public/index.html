@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puter AI - 免費 FLUX.2 Pro 圖像生成與 AI 聊天</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>
+    
+    <!-- 代碼高亮 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- XSS 防護 -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.0/dist/purify.min.js"></script>
+    
     <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
@@ -58,32 +69,72 @@
     </header>
 
     <main class="main-content">
-        <!-- AI 聊天區 -->
-        <section id="chat-section" class="section active">
-            <div class="card">
-                <div class="card-header">
-                    <h2>🤖 AI 聊天助手</h2>
-                    <select id="model-select" class="select-modern">
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="claude-3.5-sonnet">Claude Sonnet 3.5</option>
-                        <option value="gpt-5-nano">GPT-5 Nano</option>
-                    </select>
+        <!-- AI 聊天區 (全新設計) -->
+        <section id="chat-section" class="section active chat-layout">
+            <!-- 左側邊欄 -->
+            <aside class="chat-sidebar">
+                <div class="sidebar-header">
+                    <button class="btn-new-chat" id="new-chat-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        新對話
+                    </button>
                 </div>
-                <div id="chat-messages" class="messages"></div>
-                <div class="input-container">
-                    <input type="text" id="chat-input" class="input-modern" placeholder="輸入你的訊息..." />
-                    <button id="send-btn" class="btn-primary">
+                
+                <div class="search-container">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="search-conversations" class="search-input" placeholder="搜尋對話...">
+                </div>
+                
+                <div class="conversations-list" id="conversations-list">
+                    <!-- 對話列表動態生成 -->
+                </div>
+            </aside>
+            
+            <!-- 主對話區 -->
+            <div class="chat-main">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <h2 id="current-chat-title">新對話</h2>
+                        <span class="chat-subtitle" id="message-count">0 條消息</span>
+                    </div>
+                    <div class="chat-controls">
+                        <select id="model-select" class="select-compact">
+                            <option value="gpt-4o">🤖 GPT-4o</option>
+                            <option value="claude-3.5-sonnet">🧠 Claude 3.5</option>
+                            <option value="gpt-5-nano">⚡ GPT-5 Nano</option>
+                        </select>
+                        <button class="btn-icon-header" id="clear-chat-btn" title="清除所有消息">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="chat-messages" class="chat-messages">
+                    <!-- 消息動態生成 -->
+                </div>
+                
+                <div class="chat-input-container">
+                    <textarea id="chat-input" class="chat-input" placeholder="輸入你的訊息... (Ctrl+Enter 發送)" rows="1"></textarea>
+                    <button id="send-btn" class="btn-send">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <line x1="22" y1="2" x2="11" y2="13"/>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                         </svg>
-                        發送
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- FLUX.2 圖像生成區 -->
+        <!-- FLUX.2 圖像生成區 (保持原樣) -->
         <section id="image-section" class="section">
             <div class="card">
                 <div class="card-header">
@@ -114,10 +165,9 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）</span>
+                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支持1024x1024）</span>
                 </div>
 
-                <!-- 風格選擇 -->
                 <div class="form-group">
                     <label class="label-modern">🎨 圖像風格 (可選)</label>
                     <select id="style-select" class="select-modern">
@@ -146,7 +196,6 @@
                     <span>選擇風格後，會自動加入到提示詞中</span>
                 </div>
 
-                <!-- 圖像尺寸選擇 -->
                 <div class="form-group">
                     <label class="label-modern">📸 圖像比例 / 尺寸</label>
                     <select id="aspect-ratio-select" class="select-modern">
@@ -167,7 +216,6 @@
                     <span style="font-size: 0.85rem; color: #667eea;">✅ 選擇的尺寸: 1024x1024 px</span>
                 </div>
 
-                <!-- 生成數量選擇 -->
                 <div class="form-group">
                     <label class="label-modern">🔢 生成數量</label>
                     <select id="batch-count-select" class="select-modern">
@@ -209,7 +257,7 @@
             </div>
         </section>
 
-        <!-- 圖片記錄區 -->
+        <!-- 圖片記錄區 (保持原樣) -->
         <section id="history-section" class="section">
             <div class="card">
                 <div class="card-header">
@@ -248,7 +296,7 @@
             </div>
         </section>
 
-        <!-- OCR 區 -->
+        <!-- OCR 區 (保持原樣) -->
         <section id="ocr-section" class="section">
             <div class="card">
                 <div class="card-header">
