@@ -167,7 +167,7 @@ body {
     stroke: var(--primary);
 }
 
-/* Messages (舊版聊天樣式 - 兼容保留) */
+/* Messages */
 .messages {
     height: 450px;
     overflow-y: auto;
@@ -826,9 +826,6 @@ body {
 .footer a:hover {
     opacity: 0.8;
 }
-
-/* 引入聊天優化樣式 */
-@import url('chat-optimized.css');
 
 /* Responsive */
 @media (max-width: 768px) {
