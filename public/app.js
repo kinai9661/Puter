@@ -778,7 +778,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ 增強調試版：FLUX.2 批量圖像生成
+// ✅ 增強調試版:FLUX.2 批量圖像生成
 async function generateImage() {
     console.log('🎨 ===== 開始圖像生成流程 =====');
     
@@ -970,7 +970,7 @@ async function generateImage() {
     }
 }
 
-// ✅ 增強調試版：單張圖片生成函數（帶超時和詳細日誌）
+// ✅ 修復版:單張圖片生成函數 - 正確處理 puter.ai.txt2img 返回的 DOM 元素
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
     debugLog('完整提示詞', fullPrompt);
@@ -988,14 +988,14 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         let imageElement;
         
         if (isPro) {
-            // ✅ FLUX.2 Pro: 官方簡化格式（不傳 width/height）
+            // ✅ FLUX.2 Pro: 官方簡化格式(不傳 width/height)
             options = {
                 model: selectedModel,
                 disable_safety_checker: true
             };
             console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
         } else {
-            // ✅ FLUX.2 Flex/Dev: 完整參數格式（必須傳 width/height）
+            // ✅ FLUX.2 Flex/Dev: 完整參數格式(必須傳 width/height)
             const [width, height] = aspectRatio.split('x').map(Number);
             options = {
                 model: selectedModel,
@@ -1021,14 +1021,38 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
         
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
         console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
-        debugLog('返回的 imageElement', imageElement);
         
-        if (!imageElement || !imageElement.src) {
-            throw new Error('API 返回無效的圖像數據');
+        // ✅ 關鍵修復:puter.ai.txt2img 返回的就是 <img> DOM 元素
+        debugLog('返回的 imageElement 類型', imageElement?.constructor?.name);
+        debugLog('imageElement 對象', imageElement);
+        
+        // ✅ 驗證返回的是否是有效的 img 元素
+        if (!imageElement) {
+            throw new Error('API 返回 null 或 undefined');
         }
         
+        if (!(imageElement instanceof HTMLImageElement)) {
+            throw new Error(`API 返回了錯誤的類型: ${imageElement?.constructor?.name}`);
+        }
+        
+        // ✅ 等待圖片加載完成
+        await new Promise((resolve, reject) => {
+            if (imageElement.complete) {
+                resolve();
+            } else {
+                imageElement.onload = resolve;
+                imageElement.onerror = () => reject(new Error('圖片加載失敗'));
+            }
+        });
+        
         const imageData = imageElement.src;
+        
+        if (!imageData || imageData === '') {
+            throw new Error('圖片 src 為空');
+        }
+        
         console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio}, 耗時: ${elapsed}秒)`);
+        debugLog('圖片 Data URL 前100字符', imageData.substring(0, 100));
         
         // 保存到記錄
         imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
