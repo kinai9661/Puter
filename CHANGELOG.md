@@ -6,6 +6,62 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [未發布] - 2025-12-04
+
+### 🔍 問題診斷 / Issue Diagnosis
+
+#### **發現核心問題: FLUX.2 需要付費餘額**
+
+**錯誤詳情**:
+```json
+{
+  "success": false,
+  "error": {
+    "id": "oNWkGQF-2kFHot-9g846r37bab37Fb4-PDX",
+    "message": "A positive credit balance is required to use this model. 
+                Please navigate to https://api.together.ai/settings/billing 
+                to add additional credits.",
+    "type": "credit_limit",
+    "code": 402
+  }
+}
+```
+
+**問題分析**:
+1. **HTTP 狀態碼**: 402 Payment Required
+2. **根本原因**: Puter.js 使用 Together.ai API，FLUX.2 系列為 **付費模型**
+3. **影響範圍**: 
+   - FLUX.2-pro
+   - FLUX.2-flex
+   - FLUX.2-dev
+
+**解決方案**:
+- 🔄 切換到免費的 FLUX.1 模型
+- 💳 或到 Together.ai 充值使用 FLUX.2
+
+---
+
+### 📊 錯誤處理增強 / Error Handling Enhancement
+
+- **深度錯誤解析** - 完整捕獲錯誤信息
+  - 捕獲 `error.error` 屬性
+  - 捕獲 `error.status` HTTP 狀態碼
+  - 捕獲 `error.response` API 響應
+  - 記錄完整錯誤對象 JSON
+  - 輸出所有屬性和值
+  - 提交: [d8c747a](https://github.com/kinai9661/Puter/commit/d8c747af15015443bb2f51855c60f5873d41ca93)
+
+- **美化日誌輸出** - 添加分隔線
+  ```
+  ━━━━━━━━━ 錯誤詳情開始 ━━━━━━━━━
+  錯誤類型: Error
+  錯誤訊息: A positive credit balance is required...
+  完整錯誤對象: {...}
+  ━━━━━━━━━ 錯誤詳情結束 ━━━━━━━━━
+  ```
+
+---
+
 ## [v1.3.0] - 2025-12-02
 
 ### 🎨 UI 改進 / UI Improvements
@@ -21,11 +77,6 @@ All notable changes to this project will be documented in this file.
   - 保留完整中文版
   - 優化雙語結構和導航
   - 提交: [1a517c6](https://github.com/kinai9661/Puter/commit/1a517c6dd2ce8369977424bf8fcaf33dde89dbed)
-
-- **版本更新記錄** - 創建 CHANGELOG.md
-  - 記錄所有版本變更
-  - 分類清晰（功能、修復、文檔等）
-  - 包含提交連結
 
 ### 🔄 代碼優化 / Code Optimization
 - **回復簡潔版本** - 移除實驗性功能
@@ -51,17 +102,6 @@ All notable changes to this project will be documented in this file.
   - 動態更新加載文字
   - 提升用戶等待體驗
 
-- **網格佈局展示** - 多張圖片優雅呈現
-  - 響應式網格佈局
-  - 每張圖片獨立下載按鈕
-  - 自動適配手機端
-
-### 💾 數據管理 / Data Management
-- **批量保存到歷史** - 所有圖片自動記錄
-  - 批量添加到 LocalStorage
-  - 每張圖片獨立記錄
-  - 支持單獨管理
-
 ---
 
 ## [v1.1.0] - 2025-12-02
@@ -71,7 +111,6 @@ All notable changes to this project will be documented in this file.
   - 寫實攝影、動漫、油畫等風格
   - 自動追加專業提示詞
   - 風格預覽和說明
-  - 提交: 多個提交實現
 
 ### 📐 圖像比例 / Aspect Ratios
 - **7 種預設比例** - 適應不同用途
@@ -79,32 +118,6 @@ All notable changes to this project will be documented in this file.
   - 實時尺寸預覽
   - FLUX.2 Pro 限制提示
   - 提交: [0db5fbe](https://github.com/kinai9661/Puter/commit/0db5fbe76b44fd1715708691abbd8a45f7330739)
-
-### ⚙️ 進階參數 / Advanced Parameters
-- **Steps 和 Seed 控制** - 精細調整生成
-  - FLUX.2 Flex/Dev 支持自定義參數
-  - Steps (生成步數): 30 推薦
-  - Seed (隨機種子): 可重現結果
-  - 提交: [eaf1fc6](https://github.com/kinai9661/Puter/commit/eaf1fc64c05be0d4f5311bfefc0565fb4e521e7f)
-
-### 🔧 模型優化 / Model Optimization
-- **FLUX.2 Pro 簡化** - 使用官方推薦格式
-  - 只用 model + disable_safety_checker
-  - 移除不支持的參數
-  - 固定 1024x1024 尺寸
-  - 提交: [4fda279](https://github.com/kinai9661/Puter/commit/4fda27921c2b2cd2d51cf10ae44baa53940f6514)
-
-- **官方 API 格式** - 標準化參數
-  - width, height, steps, seed
-  - 所有模型統一使用 disable_safety_checker
-  - 提交: [6a74221](https://github.com/kinai9661/Puter/commit/6a742211adf1e18408c261459539a21039237383)
-
-### 📝 文檔完善 / Documentation
-- **README 更新** - 添加比例選擇說明
-  - 7 種比例的使用場景
-  - FLUX.2 Pro 限制說明
-  - 模型比較表格
-  - 提交: [9441d9e](https://github.com/kinai9661/Puter/commit/9441d9e2b29c7995b4ef28cb3b6dbc6459a1ff63)
 
 ---
 
@@ -114,14 +127,9 @@ All notable changes to this project will be documented in this file.
 
 #### ⚡ FLUX.2 圖像生成 / FLUX.2 Image Generation
 - **三個 FLUX.2 模型** - 不同品質選擇
-  - FLUX.2 Pro: 最高品質
-  - FLUX.2 Flex: 彈性版本
-  - FLUX.2 Dev: 開發測試
-
-- **基礎功能**
-  - 文字轉圖片 (txt2img)
-  - Puter.js v2 SDK 集成
-  - 官方 API 調用
+  - FLUX.2 Pro: 最高品質 (付費)
+  - FLUX.2 Flex: 彈性版本 (付費)
+  - FLUX.2 Dev: 開發測試 (付費)
 
 #### 🤖 AI 聊天 / AI Chat
 - **多模型支持**
@@ -129,133 +137,89 @@ All notable changes to this project will be documented in this file.
   - Claude Sonnet 3.5
   - GPT-5 Nano
 
-- **聊天功能**
-  - 實時對話
-  - 模型切換
-  - 消息歷史
-
 #### 📝 OCR 識別 / OCR Recognition
 - **圖像轉文字**
   - 支持 URL 輸入
   - img2txt API 調用
-  - 文字提取顯示
-
-#### 🖼️ 歷史管理 / History Management
-- **LocalStorage 儲存**
-  - 最多保存 50 張圖片
-  - 自動保存生成記錄
-  - 統計信息顯示
-
-- **管理功能**
-  - 複製提示詞
-  - 放大查看
-  - 下載圖片
-  - 刪除記錄
-  - 清空歷史
-
-#### 🆓 部署 / Deployment
-- **Zeabur 一鍵部署**
-  - 簡單配置
-  - 快速上線
-  - 免費額度
-
-- **本地運行**
-  - Node.js + Express
-  - 靜態文件服務
-  - 端口 3000
-
-#### 🎨 UI/UX 設計 / UI/UX Design
-- **現代化界面**
-  - 紫藍漸變配色
-  - 圓角卡片設計
-  - 響應式佈局
-
-- **動畫效果**
-  - 淡入淡出
-  - Hover 效果
-  - 加載動畫
-
-#### 🔐 認證 / Authentication
-- **Puter.com OAuth**
-  - 自動彈窗登入
-  - 免費註冊
-  - 雲端同步
-
----
-
-## 📌 版本說明 / Version Notes
-
-### 語義化版本 / Semantic Versioning
-
-本專案遵循 [語義化版本 2.0.0](https://semver.org/lang/zh-TW/)
-
-This project follows [Semantic Versioning 2.0.0](https://semver.org/)
-
-- **主版本號 (Major)**: 不兼容的 API 修改
-- **次版本號 (Minor)**: 向下兼容的功能性新增
-- **修訂號 (Patch)**: 向下兼容的問題修正
-
-### 圖標說明 / Icon Legend
-
-- ✨ **新功能** (New Features)
-- 🎨 **UI 改進** (UI Improvements)
-- 🐛 **Bug 修復** (Bug Fixes)
-- 📝 **文檔更新** (Documentation)
-- 🔧 **配置變更** (Configuration)
-- ⚡ **性能優化** (Performance)
-- 🔒 **安全更新** (Security)
-- 🗑️ **移除功能** (Deprecated)
-- 🔄 **代碼重構** (Refactoring)
-- 💾 **數據管理** (Data Management)
-- 📊 **用戶體驗** (User Experience)
 
 ---
 
 ## 🔮 未來計劃 / Future Plans
 
-### v1.4.0 (計劃中)
+### [下一版本] - 緊急修復
+- [ ] **切換到免費 FLUX.1 模型** (最高優先級)
+  - FLUX.1-schnell (免費、快速)
+  - FLUX.1-dev (免費、高品質)
+  - FLUX.1-pro (免費、最高品質)
+  - FLUX.1.1-pro (免費、最新版)
+
+- [ ] **添加模型餘額檢測**
+  - 生成前檢查餘額
+  - 提示用戶充值或切換模型
+
+- [ ] **優化錯誤處理**
+  - 更友好的錯誤提示
+  - 自動重試機制
+
+### [v1.4.0] - 功能增強
 - [ ] 圖片編輯功能
 - [ ] 更多 AI 模型支持
 - [ ] 雲端同步歷史記錄
 - [ ] 提示詞模板庫
 - [ ] 批量下載功能
 
-### v1.5.0 (規劃中)
-- [ ] 圖片變體生成
+### [v1.5.0] - 進階功能
+- [ ] 圖生圖 (Image-to-Image)
+- [ ] ControlNet 支持
 - [ ] 風格遷移功能
 - [ ] 多語言界面支持
 - [ ] 自定義風格訓練
-- [ ] API 使用統計
 
 ---
 
-## 🤝 貢獻指南 / Contributing
+## 📝 開發筆記 / Development Notes
 
-如果您想為此專案做出貢獻，請：
+### 已知問題 / Known Issues
 
-If you'd like to contribute to this project:
+1. **FLUX.2 系列需要付費** (2025-12-04) ⚠️ **致命問題**
+   - **錯誤代碼**: HTTP 402 Payment Required
+   - **原因**: Together.ai API 需要付費餘額
+   - **影響**: FLUX.2-pro, FLUX.2-flex, FLUX.2-dev 全部無法使用
+   - **解決方案**: 切換到 FLUX.1 免費模型
+   - **相關 API**: https://api.together.ai/settings/billing
 
-1. Fork 此倉庫 / Fork the repository
-2. 創建特性分支 / Create a feature branch
-3. 提交更改 / Commit your changes
-4. 推送分支 / Push to the branch
-5. 開啟 Pull Request / Open a Pull Request
+2. **localStorage 在 iframe 中不可用** (2025-12-03) ✅ 已解決
+   - 已解決: 實現內存存儲降級
+   - 影響: 刷新頁面後歷史記錄會清空
+
+### 性能優化 / Performance
+- 圖片生成平均耗時: 20-30 秒
+- 批量生成使用 Promise.all 並行處理
+- 歷史記錄限制: 最多保存 50 張
+
+### 技術債務 / Technical Debt
+- 需要添加錯誤邊界處理
+- 考慮實現 Service Worker 離線緩存
+- 優化大圖片的內存使用
 
 ---
 
-## 📞 聯繫方式 / Contact
+## 🙏 致謝 / Acknowledgments
 
-- **GitHub**: [@kinai9661](https://github.com/kinai9661)
-- **Email**: kinai9661@gmail.com
-- **Issues**: [GitHub Issues](https://github.com/kinai9661/Puter/issues)
+- [Puter.js](https://puter.com) - 免費的雲端和 AI 服務
+- [Black Forest Labs](https://blackforestlabs.ai) - FLUX 模型開發者
+- [Together.ai](https://together.ai) - AI 模型託管服務
+- [Zeabur](https://zeabur.com) - 應用部署平台
 
 ---
 
-## 📄 授權 / License
+## 📄 許可證 / License
 
 MIT License - 詳見 [LICENSE](LICENSE) 檔案 / See [LICENSE](LICENSE) file for details
 
 ---
+
+**最後更新 / Last Updated**: 2025-12-04 00:50 HKT
 
 <div align="center">
   <p><strong>⭐ 如果這個專案對您有幫助，請給個星星！</strong></p>
