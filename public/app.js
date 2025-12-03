@@ -115,7 +115,7 @@ async function handleLogin() {
         console.log('✅ 登入成功:', currentUser.username);
         
         showUserMenu(currentUser);
-        showNotification(`✅ 歡迎回來，${currentUser.username}！`);
+        showNotification(`✅ 歡迎回來,${currentUser.username}!`);
         
     } catch (error) {
         console.error('❌ 登入失敗:', error);
@@ -173,7 +173,7 @@ async function handleSwitchAccount() {
     } catch (error) {
         console.error('❌ 切換帳戶失敗:', error);
         showNotification(`❌ 切換帳戶失敗: ${error.message}`, 'error');
-        // 如果切換失敗，顯示登入按鈕
+        // 如果切換失敗,顯示登入按鈕
         showLoginButton();
     }
 }
@@ -453,7 +453,7 @@ const stylePrompts = {
 };
 
 const styleDescriptions = {
-    '': '無 - 自由風格，不添加額外風格提示詞',
+    '': '無 - 自由風格,不添加額外風格提示詞',
     'photorealistic': '📸 寫實風格 - 超高清寫實效果',
     'anime': '🌸 日本動漫風格 - 吉卜力工作室風格',
     'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格',
@@ -473,7 +473,7 @@ function updateStylePreview() {
     if (!styleSelect || !stylePreview) return;
     
     const selectedStyle = styleSelect.value;
-    const description = styleDescriptions[selectedStyle] || '選擇風格後，會自動加入到提示詞中';
+    const description = styleDescriptions[selectedStyle] || '選擇風格後,會自動加入到提示詞中';
     
     stylePreview.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -503,7 +503,7 @@ function updateAspectRatioPreview() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
             </svg>
-            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024（官方限制）</span>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024(官方限制)</span>
         `;
     } else {
         Array.from(aspectRatioSelect.options).forEach(option => {
@@ -704,9 +704,9 @@ clearHistoryBtn.addEventListener('click', () => {
 
 // FLUX.2 模型資訊
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型，完美文字渲染，最高品質（僅支援 1024x1024）',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型，適應多種生成需求，支援多種尺寸比例',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本，適合實驗與測試，支援多種尺寸比例'
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型,完美文字渲染,最高品質(僅支援 1024x1024)',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支援多種尺寸比例',
+    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試,支援多種尺寸比例'
 };
 
 // 聊天功能
@@ -750,7 +750,7 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// FLUX.2 批量圖像生成
+// ✅ 修復後的 FLUX.2 批量圖像生成
 async function generateImage() {
     if (!puterReady) {
         showNotification('⚠️ 正在初始化 Puter.js,請稍候...', 'error');
@@ -899,8 +899,8 @@ async function generateImage() {
                 <div class="error-suggestions">
                     <p><strong>💡 建議:</strong></p>
                     <ul>
-                        <li>減少生成數量（嘗試 1-2 張）</li>
-                        <li>嘗試使用 <strong>FLUX.2-flex</strong> (更快速)</li>
+                        <li>減少生成數量(嘗試 1 張)</li>
+                        <li>嘗試使用 <strong>FLUX.2-flex</strong> (更穩定)</li>
                         <li>簡化提示詞內容</li>
                         <li>檢查網路連接</li>
                         <li>刷新頁面重試</li>
@@ -914,43 +914,20 @@ async function generateImage() {
     }
 }
 
-// 單張圖片生成函數
+// ✅ 修復後的單張圖片生成函數 - 使用官方推薦格式
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`📸 正在生成圖片 ${index}:`, {
         model: selectedModel,
         prompt: fullPrompt.substring(0, 50) + '...',
-        aspectRatio,
-        isPro
+        aspectRatio
     });
     
-    let imageElement;
-    
     try {
-        if (isPro) {
-            console.log('🏆 使用 FLUX.2 Pro 模式');
-            imageElement = await puter.ai.txt2img(fullPrompt, {
-                model: selectedModel
-            });
-        } else {
-            let width = 1024;
-            let height = 1024;
-            if (aspectRatio) {
-                const [w, h] = aspectRatio.split('x').map(Number);
-                if (w && h) {
-                    width = w;
-                    height = h;
-                }
-            }
-            
-            console.log(`✨ 使用 FLUX.2 Flex/Dev 模式 (${width}x${height})`);
-            imageElement = await puter.ai.txt2img(fullPrompt, {
-                model: selectedModel,
-                width: width,
-                height: height,
-                steps: 30,
-                seed: Math.floor(Math.random() * 100000) + index
-            });
-        }
+        // ✅ 使用官方推薦的簡化調用方式
+        const imageElement = await puter.ai.txt2img(fullPrompt, {
+            model: selectedModel,
+            disable_safety_checker: true
+        });
         
         if (!imageElement || !imageElement.src) {
             throw new Error('圖像生成失敗:無效的回應');
@@ -1053,7 +1030,7 @@ ocrBtn.addEventListener('click', extractText);
 async function initialize() {
     console.log('🚀 開始初始化應用...');
     
-    // 初始化 Puter.js（包含用戶認證檢查）
+    // 初始化 Puter.js(包含用戶認證檢查)
     await initPuter();
     
     // 初始化 UI
