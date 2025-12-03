@@ -106,9 +106,21 @@
                     </div>
                     <div class="chat-controls">
                         <select id="model-select" class="select-compact">
-                            <option value="gpt-4o">🤖 GPT-4o</option>
-                            <option value="claude-3.5-sonnet">🧠 Claude 3.5</option>
-                            <option value="gpt-5-nano">⚡ GPT-5 Nano</option>
+                            <optgroup label="🆕 最新模型 (2025)">
+                                <option value="gpt-5.1-chat" selected>🚀 GPT-5.1 Chat (最快)</option>
+                                <option value="nous-hermes-4">🔮 Nous Hermes 4 (推理)</option>
+                                <option value="claude-sonnet-4">🧠 Claude Sonnet 4</option>
+                            </optgroup>
+                            <optgroup label="⚡ 高性能模型">
+                                <option value="gpt-5-nano">⚡ GPT-5 Nano</option>
+                                <option value="gpt-4o">💡 GPT-4o</option>
+                                <option value="claude-3.5-sonnet">🤖 Claude 3.5 Sonnet</option>
+                                <option value="google/gemini-2.5-flash">✨ Gemini 2.5 Flash</option>
+                            </optgroup>
+                            <optgroup label="📦 其他模型">
+                                <option value="gpt-4.1-nano">📦 GPT-4.1 Nano</option>
+                                <option value="gpt-4o-mini">🔹 GPT-4o Mini</option>
+                            </optgroup>
                         </select>
                         <button class="btn-icon-header" id="clear-chat-btn" title="清除所有消息">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -166,7 +178,7 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支持1024x1024）</span>
+                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支援1024x1024）</span>
                 </div>
 
                 <div class="form-group">
