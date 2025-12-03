@@ -42,7 +42,7 @@
 
 ### ✨ Features
 
-#### ⚡ FLUX Image Generation
+#### ⚡ FLUX.2 Image Generation
 
 **Available Models**:
 
@@ -51,12 +51,8 @@
 | **FLUX.2-pro** | Professional | ⭐⭐⭐⭐⭐ | Slow | Perfect | ❌ 1024x1024 only | ✅ Free |  
 | **FLUX.2-flex** | Flexible | ⭐⭐⭐⭐ | Medium | Excellent | ✅ Yes | ✅ Free |
 | **FLUX.2-dev** | Development | ⭐⭐⭐⭐ | Medium | Excellent | ✅ Yes | ✅ Free |
-| **FLUX.1-schnell** | Fast | ⭐⭐⭐ | Very Fast | Good | ✅ Yes | ✅ Free |
-| **FLUX.1-dev** | Development | ⭐⭐⭐⭐ | Medium | Very Good | ✅ Yes | ✅ Free |
-| **FLUX.1-pro** | Professional | ⭐⭐⭐⭐⭐ | Slow | Perfect | ✅ Yes | ✅ Free |
-| **FLUX.1.1-pro** | Latest | ⭐⭐⭐⭐⭐ | Medium | Perfect | ✅ Yes | ✅ Free |
 
-**All models are completely free through Puter.js!** 🎉
+**All FLUX.2 models are completely free through Puter.js!** 🎉
 
 **Features**:
 - ✅ **Style Selector**: 13 professional styles (Realistic/Anime/Oil Painting/Cyberpunk, etc.)
@@ -161,23 +157,23 @@ Visit `http://localhost:3000`
 
 ### 🐛 FAQ
 
-#### 1. How is FLUX.2 now free?
+#### 1. How is FLUX.2 free?
 
-**Answer**: Through Puter.js free API! All FLUX models (both FLUX.2 and FLUX.1 series) are available at no cost.
+**Answer**: Through Puter.js free API! All FLUX.2 models are available at no cost.
 
 #### 2. Which model should I choose?
 
 **For Best Quality**:
-- 🏆 FLUX.2-pro - Highest quality, perfect text
-- 🏆 FLUX.1-pro / FLUX.1.1-pro - Excellent quality
+- 🏆 **FLUX.2-pro** - Highest quality, perfect text rendering
+- Perfect for professional work and presentations
 
-**For Speed**:
-- ⚡ FLUX.1-schnell - Fastest generation
-- 🔄 FLUX.2-flex - Balanced speed/quality
+**For Speed & Flexibility**:
+- ⚡ **FLUX.2-flex** - Balanced speed/quality, custom sizes
+- Best for general use and experimentation
 
-**For Flexibility**:
-- 🔧 FLUX.2-flex - Custom sizes
-- 🔧 FLUX.2-dev - Development testing
+**For Development**:
+- 🔧 **FLUX.2-dev** - Development testing, custom sizes
+- Ideal for testing and iterations
 
 #### 3. Cannot login to Puter.com?
 
@@ -189,10 +185,9 @@ Visit `http://localhost:3000`
 
 #### 4. Generation time?
 
-- FLUX.2-pro: 20-40 seconds
-- FLUX.2-flex: 15-30 seconds
-- FLUX.1-pro: 15-30 seconds
-- FLUX.1-schnell: 5-15 seconds
+- **FLUX.2-pro**: 20-40 seconds
+- **FLUX.2-flex**: 15-30 seconds
+- **FLUX.2-dev**: 15-30 seconds
 
 ---
 
@@ -253,7 +248,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ### ✨ 功能特色
 
-#### ⚡ FLUX 圖像生成
+#### ⚡ FLUX.2 圖像生成
 
 **可用模型**:
 
@@ -262,12 +257,8 @@ MIT License - See [LICENSE](LICENSE) file for details
 | **FLUX.2-pro** | 專業版 | ⭐⭐⭐⭐⭐ | 慢 | 完美 | ❌ 僅1024x1024 | ✅ 免費 |
 | **FLUX.2-flex** | 彈性版 | ⭐⭐⭐⭐ | 中 | 優秀 | ✅ 支持 | ✅ 免費 |
 | **FLUX.2-dev** | 開發版 | ⭐⭐⭐⭐ | 中 | 優秀 | ✅ 支持 | ✅ 免費 |
-| **FLUX.1-schnell** | 快速版 | ⭐⭐⭐ | 很快 | 良好 | ✅ 支持 | ✅ 免費 |
-| **FLUX.1-dev** | 開發版 | ⭐⭐⭐⭐ | 中 | 很好 | ✅ 支持 | ✅ 免費 |
-| **FLUX.1-pro** | 專業版 | ⭐⭐⭐⭐⭐ | 慢 | 完美 | ✅ 支持 | ✅ 免費 |
-| **FLUX.1.1-pro** | 最新版 | ⭐⭐⭐⭐⭐ | 中 | 完美 | ✅ 支持 | ✅ 免費 |
 
-**所有模型通過 Puter.js 完全免費！** 🎉
+**所有 FLUX.2 模型通過 Puter.js 完全免費！** 🎉
 
 **功能特色**:
 - ✅ **風格選擇器**: 13種專業風格 (寫實/動漫/油畫/賽博龐克等)
@@ -372,23 +363,23 @@ npm start
 
 ### 🐛 常見問題
 
-#### 1. FLUX.2 為什麼現在免費了?
+#### 1. FLUX.2 為什麼免費?
 
-**答案**: 通過 Puter.js 免費 API！所有 FLUX 模型（FLUX.2 和 FLUX.1 系列）都可以免費使用。
+**答案**: 通過 Puter.js 免費 API！所有 FLUX.2 模型都可以免費使用。
 
 #### 2. 應該選擇哪個模型?
 
 **追求最高品質**:
-- 🏆 FLUX.2-pro - 最高品質，完美文字
-- 🏆 FLUX.1-pro / FLUX.1.1-pro - 優秀品質
+- 🏆 **FLUX.2-pro** - 最高品質，完美文字渲染
+- 適合專業作品和簡報
 
-**追求速度**:
-- ⚡ FLUX.1-schnell - 最快生成
-- 🔄 FLUX.2-flex - 速度品質平衡
+**追求速度與靈活性**:
+- ⚡ **FLUX.2-flex** - 速度品質平衡，自定義尺寸
+- 最適合一般使用和實驗
 
-**追求靈活性**:
-- 🔧 FLUX.2-flex - 自定義尺寸
-- 🔧 FLUX.2-dev - 開發測試
+**開發測試**:
+- 🔧 **FLUX.2-dev** - 開發測試，自定義尺寸
+- 適合測試和迭代
 
 #### 3. 無法登入 Puter.com?
 
@@ -400,10 +391,9 @@ npm start
 
 #### 4. 生成時間多久?
 
-- FLUX.2-pro: 20-40 秒
-- FLUX.2-flex: 15-30 秒
-- FLUX.1-pro: 15-30 秒
-- FLUX.1-schnell: 5-15 秒
+- **FLUX.2-pro**: 20-40 秒
+- **FLUX.2-flex**: 15-30 秒
+- **FLUX.2-dev**: 15-30 秒
 
 ---
 
