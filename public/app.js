@@ -449,7 +449,7 @@ function updateAspectRatioPreview() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
             </svg>
-            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024(官方限制)</span>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支持 1024x1024(官方限制)</span>
         `;
     } else {
         Array.from(aspectRatioSelect.options).forEach(option => {
@@ -633,9 +633,9 @@ clearHistoryBtn.addEventListener('click', () => {
 
 // FLUX.2 模型資訊
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型,完美文字渲染,最高品質(僅支援 1024x1024)',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支援多種尺寸比例',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試,支援多種尺寸比例'
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型,完美文字渲染,最高品質(僅支持 1024x1024)',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支持多種尺寸比例',
+    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試,支持多種尺寸比例'
 };
 
 // 聊天功能
@@ -865,7 +865,7 @@ async function generateImage() {
     }
 }
 
-// 🔥 單張圖片生成 - 完全遵循官方文檔
+// 🔧 增強錯誤處理 - 單張圖片生成
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
     console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
     debugLog('完整提示詞', fullPrompt);
@@ -908,8 +908,9 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                     debugLog('API 返回結果', imageElement);
                     debugLog('返回值類型', imageElement?.constructor?.name);
                     
-                    // ✅ 驗證返回值
+                    // 🔥 完整記錄錯誤對象
                     if (!imageElement) {
+                        console.error('❌ API 返回 null 或 undefined');
                         reject(new Error('API 返回 null'));
                         return;
                     }
@@ -928,6 +929,7 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                         console.log('✅ 返回對象包含 src 屬性');
                     } else {
                         console.error('❌ 無法識別的返回格式:', imageElement);
+                        console.error('完整對象:', JSON.stringify(imageElement, null, 2));
                         reject(new Error(`無法從返回值提取圖片數據,類型: ${imageElement?.constructor?.name}`));
                         return;
                     }
@@ -955,11 +957,41 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                 })
                 .catch(error => {
                     console.error(`❌ 圖片 ${index} 生成失敗:`, error);
-                    console.error('錯誤類型:', error.constructor.name);
-                    console.error('錯誤訊息:', error.message);
-                    console.error('錯誤堆棧:', error.stack);
                     
-                    let errorMessage = error.message || '未知錯誤';
+                    // 🔥 深度解析錯誤對象
+                    console.error('━━━━━━━━━ 錯誤詳情開始 ━━━━━━━━━');
+                    console.error('錯誤類型:', error?.constructor?.name);
+                    console.error('錯誤訊息:', error?.message);
+                    console.error('錯誤堆棧:', error?.stack);
+                    console.error('完整錯誤對象:', error);
+                    
+                    // 嘗試提取更多錯誤信息
+                    if (error.error) {
+                        console.error('error.error:', error.error);
+                    }
+                    if (error.response) {
+                        console.error('error.response:', error.response);
+                    }
+                    if (error.status) {
+                        console.error('error.status:', error.status);
+                    }
+                    if (error.statusText) {
+                        console.error('error.statusText:', error.statusText);
+                    }
+                    
+                    // 嘗試 JSON 序列化錯誤對象
+                    try {
+                        console.error('錯誤對象 JSON:', JSON.stringify(error, null, 2));
+                    } catch (e) {
+                        console.error('無法序列化錯誤對象');
+                    }
+                    
+                    // 列出錯誤對象所有屬性
+                    console.error('錯誤對象所有鍵:', Object.keys(error));
+                    console.error('錯誤對象所有值:', Object.values(error));
+                    console.error('━━━━━━━━━ 錯誤詳情結束 ━━━━━━━━━\n');
+                    
+                    let errorMessage = error.message || error.error || error.statusText || '未知錯誤';
                     
                     if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
                         errorMessage = '用戶未登入,請先登入';
@@ -967,6 +999,8 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                         errorMessage = '請求超時,請重試';
                     } else if (errorMessage.includes('network')) {
                         errorMessage = '網路錯誤,請檢查連接';
+                    } else if (errorMessage === '未知錯誤') {
+                        errorMessage = 'Puter API 錯誤 (請查看控制台完整日誌)';
                     }
                     
                     reject(new Error(errorMessage));
