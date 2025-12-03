@@ -111,7 +111,7 @@ async function handleLogin() {
 // 登出功能
 async function handleLogout() {
     try {
-        console.log('🚪 開始登出...');
+        console.log('🚺 開始登出...');
         if (!puter || !puter.auth) throw new Error('Puter 認證模組未就緒');
         await puter.auth.signOut();
         currentUser = null;
@@ -249,7 +249,7 @@ function isLocalStorageAvailable() {
         localStorage.removeItem(test);
         return true;
     } catch (e) {
-        console.warn('⚠️ localStorage 不可用,使用內存存儲');
+        console.warn('⚠️ localStorage 不可用,使用內存儲存');
         return false;
     }
 }
@@ -268,6 +268,7 @@ class ImageHistory {
             const data = localStorage.getItem(HISTORY_KEY);
             const loaded = data ? JSON.parse(data) : [];
             this.memoryHistory = loaded;
+            console.log(`💾 載入 ${loaded.length} 筆圖片記錄`);
             return loaded;
         } catch (error) {
             console.warn('⚠️ 載入記錄失敗,使用內存:', error);
@@ -276,15 +277,42 @@ class ImageHistory {
     }
 
     saveHistory() {
-        if (!USE_LOCAL_STORAGE) return;
+        if (!USE_LOCAL_STORAGE) {
+            console.log('💾 內存模式 - 不保存到 localStorage');
+            return;
+        }
         try {
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
+            const jsonData = JSON.stringify(this.history);
+            const sizeKB = (new Blob([jsonData]).size / 1024).toFixed(2);
+            console.log(`💾 正在保存 ${this.history.length} 筆記錄 (大小: ${sizeKB} KB)`);
+            
+            localStorage.setItem(HISTORY_KEY, jsonData);
+            console.log('✅ 圖片記錄保存成功!');
         } catch (error) {
-            console.warn('⚠️ 保存記錄失敗:', error);
+            console.error('❌ 保存記錄失敗:', error);
+            if (error.name === 'QuotaExceededError') {
+                console.warn('⚠️ localStorage 空間不足，刪除最舊記錄...');
+                // 刪除一半舊記錄
+                this.history = this.history.slice(0, Math.floor(this.history.length / 2));
+                this.memoryHistory = this.history;
+                try {
+                    localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
+                    console.log('✅ 刪除舊記錄後保存成功');
+                } catch (e) {
+                    console.error('❌ 仍然無法保存:', e);
+                }
+            }
         }
     }
 
     addImage(imageData, prompt, model, aspectRatio = '1024x1024') {
+        console.log('🖼️ 正在添加圖片到記錄...', {
+            promptLength: prompt.length,
+            model,
+            aspectRatio,
+            imageDataLength: imageData.length
+        });
+        
         const record = {
             id: Date.now() + Math.random(),
             timestamp: new Date().toISOString(),
@@ -294,13 +322,18 @@ class ImageHistory {
             modelName: model.split('/').pop() || model,
             aspectRatio
         };
+        
         this.history.unshift(record);
         this.memoryHistory.unshift(record);
+        
         if (this.history.length > MAX_HISTORY) {
+            console.log(`⚠️ 記錄超過 ${MAX_HISTORY} 筆，刪除最舊記錄`);
             this.history = this.history.slice(0, MAX_HISTORY);
             this.memoryHistory = this.memoryHistory.slice(0, MAX_HISTORY);
         }
+        
         this.saveHistory();
+        console.log(`✅ 圖片記錄已添加！當前總數: ${this.history.length}`);
         return record;
     }
 
@@ -347,7 +380,10 @@ tabBtns.forEach(btn => {
                 section.classList.add('active');
             }
         });
-        if (targetTab === 'history') renderHistory();
+        if (targetTab === 'history') {
+            console.log('📋 切換到圖片記錄頁，重新渲染...');
+            renderHistory();
+        }
     });
 });
 
@@ -536,11 +572,15 @@ function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024')
 }
 
 function renderHistory() {
+    console.log('🔄 正在渲染圖片記錄...');
     const history = imageHistory.history;
+    console.log(`📊 當前記錄數量: ${history.length}`);
+    
     totalCountEl.textContent = history.length;
     storageSizeEl.textContent = `${imageHistory.getStorageSize()} KB`;
 
     if (history.length === 0) {
+        console.log('⚠️ 無記錄，顯示空狀態');
         historyGrid.innerHTML = `
             <div class="empty-state">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -555,8 +595,9 @@ function renderHistory() {
         return;
     }
 
+    console.log(`✅ 正在渲染 ${history.length} 筆記錄...`);
     historyGrid.innerHTML = '';
-    history.forEach(item => {
+    history.forEach((item, idx) => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
         historyItem.dataset.id = item.id;
@@ -622,6 +663,7 @@ function renderHistory() {
         });
         historyGrid.appendChild(historyItem);
     });
+    console.log('✅ 圖片記錄渲染完成!');
 }
 
 clearHistoryBtn.addEventListener('click', () => {
@@ -835,6 +877,10 @@ async function generateImage() {
         showNotification(`✅ 成功生成 ${successResults.length} 張圖片!`);
         console.log('🎉 ===== 圖像生成完成 =====');
         
+        // ✅ 生成成功後立即重新渲染記錄
+        console.log('🔄 生成完成，重新渲染記錄...');
+        renderHistory();
+        
     } catch (error) {
         console.error('❌ 批量生成錯誤:', error);
         console.error('錯誤堆棧:', error.stack);
@@ -908,7 +954,6 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                     debugLog('API 返回結果', imageElement);
                     debugLog('返回值類型', imageElement?.constructor?.name);
                     
-                    // 🔥 完整記錄錯誤對象
                     if (!imageElement) {
                         console.error('❌ API 返回 null 或 undefined');
                         reject(new Error('API 返回 null'));
@@ -929,7 +974,6 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                         console.log('✅ 返回對象包含 src 屬性');
                     } else {
                         console.error('❌ 無法識別的返回格式:', imageElement);
-                        console.error('完整對象:', JSON.stringify(imageElement, null, 2));
                         reject(new Error(`無法從返回值提取圖片數據,類型: ${imageElement?.constructor?.name}`));
                         return;
                     }
@@ -942,8 +986,10 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                     console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio}, 耗時: ${elapsed}秒)`);
                     debugLog('圖片 Data URL 前100字符', imageData.substring(0, 100));
                     
-                    // 保存到記錄
+                    // ✅ 保存到記錄
+                    console.log(`💾 正在保存圖片 ${index} 到記錄...`);
                     imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
+                    console.log(`✅ 圖片 ${index} 已保存到記錄!`);
                     
                     // 創建用於顯示的 img 元素
                     const displayImage = document.createElement('img');
@@ -957,39 +1003,6 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
                 })
                 .catch(error => {
                     console.error(`❌ 圖片 ${index} 生成失敗:`, error);
-                    
-                    // 🔥 深度解析錯誤對象
-                    console.error('━━━━━━━━━ 錯誤詳情開始 ━━━━━━━━━');
-                    console.error('錯誤類型:', error?.constructor?.name);
-                    console.error('錯誤訊息:', error?.message);
-                    console.error('錯誤堆棧:', error?.stack);
-                    console.error('完整錯誤對象:', error);
-                    
-                    // 嘗試提取更多錯誤信息
-                    if (error.error) {
-                        console.error('error.error:', error.error);
-                    }
-                    if (error.response) {
-                        console.error('error.response:', error.response);
-                    }
-                    if (error.status) {
-                        console.error('error.status:', error.status);
-                    }
-                    if (error.statusText) {
-                        console.error('error.statusText:', error.statusText);
-                    }
-                    
-                    // 嘗試 JSON 序列化錯誤對象
-                    try {
-                        console.error('錯誤對象 JSON:', JSON.stringify(error, null, 2));
-                    } catch (e) {
-                        console.error('無法序列化錯誤對象');
-                    }
-                    
-                    // 列出錯誤對象所有屬性
-                    console.error('錯誤對象所有鍵:', Object.keys(error));
-                    console.error('錯誤對象所有值:', Object.values(error));
-                    console.error('━━━━━━━━━ 錯誤詳情結束 ━━━━━━━━━\n');
                     
                     let errorMessage = error.message || error.error || error.statusText || '未知錯誤';
                     
