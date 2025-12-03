@@ -1,5 +1,46 @@
+// 等待 Puter.js 初始化
+let puterReady = false;
+
+// Puter.js 初始化
+async function initPuter() {
+    try {
+        console.log('🚀 正在初始化 Puter.js...');
+        
+        // 等待 Puter SDK 加載
+        if (typeof puter === 'undefined') {
+            console.log('⏳ 等待 Puter SDK 加載...');
+            await new Promise((resolve) => {
+                const checkPuter = setInterval(() => {
+                    if (typeof puter !== 'undefined') {
+                        clearInterval(checkPuter);
+                        resolve();
+                    }
+                }, 100);
+                
+                // 10秒超時
+                setTimeout(() => {
+                    clearInterval(checkPuter);
+                    resolve();
+                }, 10000);
+            });
+        }
+        
+        if (typeof puter === 'undefined') {
+            throw new Error('Puter SDK 加載失敗');
+        }
+        
+        console.log('✅ Puter.js 初始化成功!');
+        puterReady = true;
+        return true;
+    } catch (error) {
+        console.error('❌ Puter.js 初始化失敗:', error);
+        puterReady = false;
+        return false;
+    }
+}
+
 // DOM 元素
-const chatMessages = document.getElementById('chat-messages');
+const chatMessages = document.getElementById('messages');
 const chatInput = document.getElementById('chat-input');
 const sendBtn = document.getElementById('send-btn');
 const modelSelect = document.getElementById('model-select');
@@ -58,13 +99,13 @@ class ImageHistory {
 
     addImage(imageData, prompt, model, aspectRatio = '1024x1024') {
         const record = {
-            id: Date.now() + Math.random(), // 確保唯一性
+            id: Date.now() + Math.random(),
             timestamp: new Date().toISOString(),
             imageData,
             prompt,
             model,
             modelName: model.split('/').pop() || model,
-            aspectRatio // ✅ 新增比例信息
+            aspectRatio
         };
 
         this.history.unshift(record);
@@ -157,7 +198,7 @@ function showNotification(message, type = 'success') {
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => notification.remove(), 300);
-    }, 2000);
+    }, 3000);
 }
 
 // 風格映射表
@@ -178,25 +219,23 @@ const stylePrompts = {
     'surreal': 'surrealist art, dreamlike, abstract, Salvador Dali inspired'
 };
 
-// 風格說明
 const styleDescriptions = {
     '': '無 - 自由風格，不添加額外風格提示詞',
-    'photorealistic': '📸 寫實風格 - 超高清寫實效果，適合人物、風景、產品攝影',
-    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格，細綻動漫藝術',
-    'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格，鮮豔色彩',
-    'oil-painting': '🎨 油畫風格 - 經典油畫質感，藝術大師風格',
-    'watercolor': '🌊 水彩畫 - 柔和水彩效果，夢境感',
-    'sketch': '✏️ 素描風格 - 手繪素描效果，藝術草圖',
-    '3d-render': '🎬 3D 渲染 - 高品質 3D 建模效果',
-    'cyberpunk': '🤖 賽博龐克 - 未來科技、霜燈風格',
-    'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界，史詩感',
-    'minimalist': '📍 極簡主義 - 簡潔設計，留白美學',
-    'vintage': '📼 復古風格 - 老照片質感，復古色調',
-    'comic': '📖 漫畫風格 - 美式漫畫/漫畫風格',
-    'surreal': '🌀 超現實主義 - 超現實藝術，夢境感'
+    'photorealistic': '📸 寫實風格 - 超高清寫實效果',
+    'anime': '🌸 日本動漫風格 - 吉卜力工作室風格',
+    'digital-art': '🖼️ 數位藝術 - 現代數位繪畫風格',
+    'oil-painting': '🎨 油畫風格 - 經典油畫質感',
+    'watercolor': '🌊 水彩畫 - 柔和水彩效果',
+    'sketch': '✏️ 素描風格 - 手繪素描效果',
+    '3d-render': '🎬 3D 渲染 - 高品質 3D 建模',
+    'cyberpunk': '🤖 賽博龐克 - 未來科技風格',
+    'fantasy': '✨ 奇幻風格 - 魔幻奇幻世界',
+    'minimalist': '📍 極簡主義 - 簡潔設計',
+    'vintage': '📼 復古風格 - 老照片質感',
+    'comic': '📖 漫畫風格 - 美式漫畫風格',
+    'surreal': '🌀 超現實主義 - 超現實藝術'
 };
 
-// 更新風格預覽
 function updateStylePreview() {
     if (!styleSelect || !stylePreview) return;
     
@@ -212,7 +251,6 @@ function updateStylePreview() {
     `;
 }
 
-// 更新尺寸預覽和限制
 function updateAspectRatioPreview() {
     if (!aspectRatioSelect || !aspectRatioPreview || !imageModelSelect) return;
     
@@ -220,15 +258,12 @@ function updateAspectRatioPreview() {
     const selectedSize = aspectRatioSelect.value;
     const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
     
-    // FLUX.2 Pro 限制
     if (isPro) {
-        // 禁用所有非 1024x1024 的選項
         Array.from(aspectRatioSelect.options).forEach(option => {
             if (option.value !== '1024x1024') {
                 option.disabled = true;
             }
         });
-        // 強制選擇 1024x1024
         aspectRatioSelect.value = '1024x1024';
         
         aspectRatioPreview.innerHTML = `
@@ -238,7 +273,6 @@ function updateAspectRatioPreview() {
             <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支援 1024x1024（官方限制）</span>
         `;
     } else {
-        // 其他模型：解除限制
         Array.from(aspectRatioSelect.options).forEach(option => {
             option.disabled = false;
         });
@@ -252,7 +286,6 @@ function updateAspectRatioPreview() {
     }
 }
 
-// 更新批量數量預覽
 function updateBatchCountPreview() {
     if (!batchCountSelect || !batchCountPreview) return;
     
@@ -270,7 +303,6 @@ function updateBatchCountPreview() {
     `;
 }
 
-// 放大圖片功能
 function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024') {
     const modal = document.createElement('div');
     modal.className = 'image-modal';
@@ -335,7 +367,6 @@ function openImageModal(imageData, prompt, modelName, aspectRatio = '1024x1024')
     document.addEventListener('keydown', handleEsc);
 }
 
-// 渲染圖片記錄
 function renderHistory() {
     const history = imageHistory.history;
     
@@ -365,7 +396,7 @@ function renderHistory() {
         historyItem.dataset.id = item.id;
         
         const truncatedPrompt = item.prompt.substring(0, 80) + (item.prompt.length > 80 ? '...' : '');
-        const aspectRatio = item.aspectRatio || '1024x1024'; // 兼容舊記錄
+        const aspectRatio = item.aspectRatio || '1024x1024';
         
         historyItem.innerHTML = `
             <img src="${item.imageData}" alt="${truncatedPrompt}" loading="lazy">
@@ -438,10 +469,9 @@ clearHistoryBtn.addEventListener('click', () => {
     }
 });
 
-// 模型資訊
 const modelDescriptions = {
     'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支持1024x1024）',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支援自定義參數',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求',
     'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試',
     'gpt-image-1': '🤖 GPT Image-1: Puter 預設高品質模型',
     'dall-e-3': '✨ DALL-E 3: OpenAI 經典圖像生成模型'
@@ -449,6 +479,11 @@ const modelDescriptions = {
 
 // 聊天功能
 async function sendMessage() {
+    if (!puterReady) {
+        showNotification('⚠️ 正在初始化,請稍候...', 'error');
+        return;
+    }
+    
     const message = chatInput.value.trim();
     const model = modelSelect.value;
     
@@ -465,6 +500,7 @@ async function sendMessage() {
         loadingDiv.remove();
         addMessage(response, 'ai');
     } catch (error) {
+        console.error('聊天錯誤:', error);
         loadingDiv.remove();
         addMessage(`錯誤: ${error.message}`, 'ai');
     } finally {
@@ -482,8 +518,13 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// ✅ FLUX.2 批量圖像生成
+// ✅ FLUX.2 批量圖像生成 (修復版本)
 async function generateImage() {
+    if (!puterReady) {
+        showNotification('⚠️ 正在初始化 Puter.js,請稍候...', 'error');
+        return;
+    }
+    
     const basePrompt = imagePrompt.value.trim();
     const selectedModel = imageModelSelect.value;
     const batchCount = parseInt(batchCountSelect.value);
@@ -493,7 +534,7 @@ async function generateImage() {
         return;
     }
     
-    // 獲取風格並組合提示詞
+    // 組合風格提示詞
     let fullPrompt = basePrompt;
     if (styleSelect) {
         const styleKey = styleSelect.value.trim();
@@ -507,7 +548,7 @@ async function generateImage() {
     
     const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
     
-    // ✅ 獲取圖像比例
+    // 獲取圖像比例
     let aspectRatio = '1024x1024';
     if (!isPro && aspectRatioSelect) {
         aspectRatio = aspectRatioSelect.value;
@@ -516,7 +557,6 @@ async function generateImage() {
     generateImgBtn.disabled = true;
     const modelName = selectedModel.split('/').pop() || selectedModel;
     
-    // 生成提示信息
     const countText = batchCount === 1 ? '1 張圖片' : `${batchCount} 張圖片`;
     imageResult.innerHTML = `
         <div class="loading-container">
@@ -532,7 +572,6 @@ async function generateImage() {
     const batchProgress = document.getElementById('batch-progress');
     
     try {
-        // ✅ 批量並行生成
         const promises = [];
         
         for (let i = 0; i < batchCount; i++) {
@@ -548,6 +587,7 @@ async function generateImage() {
                     return result;
                 })
                 .catch(error => {
+                    console.error(`圖片 ${i + 1} 生成失敗:`, error);
                     progressItem.innerHTML = `❌ 圖片 ${i + 1}/${batchCount}: ${error.message}`;
                     progressItem.style.background = 'rgba(239, 68, 68, 0.1)';
                     return null;
@@ -563,7 +603,6 @@ async function generateImage() {
             throw new Error('所有圖片生成失敗');
         }
         
-        // 顯示成功結果
         const sizeInfo = isPro ? '1024x1024 (官方預設)' : aspectRatio;
         imageResult.innerHTML = `
             <div class="success-header">
@@ -613,6 +652,8 @@ async function generateImage() {
             grid.appendChild(container);
         });
         
+        showNotification(`✅ 成功生成 ${successResults.length} 張圖片!`);
+        
     } catch (error) {
         console.error('❌ 批量生成錯誤:', error);
         imageResult.innerHTML = `
@@ -630,10 +671,12 @@ async function generateImage() {
                         <li>嘗試使用 <strong>FLUX.2-flex</strong> (更快速)</li>
                         <li>簡化提示詞內容</li>
                         <li>檢查網路連接</li>
+                        <li>刷新頁面重試</li>
                     </ul>
                 </div>
             </div>
         `;
+        showNotification(`❌ 生成失敗: ${error.message}`, 'error');
     } finally {
         generateImgBtn.disabled = false;
     }
@@ -641,50 +684,69 @@ async function generateImage() {
 
 // 單張圖片生成函數
 async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
+    console.log(`📸 正在生成圖片 ${index}:`, {
+        model: selectedModel,
+        prompt: fullPrompt.substring(0, 50) + '...',
+        aspectRatio,
+        isPro
+    });
+    
     let imageElement;
     
-    if (isPro) {
-        // FLUX.2 Pro: 官方簡化格式
-        imageElement = await puter.ai.txt2img(fullPrompt, {
-            model: selectedModel,
-            disable_safety_checker: true
-        });
-    } else {
-        // FLUX.2 Flex/Dev: 完整參數格式
-        let width = 1024;
-        let height = 1024;
-        if (aspectRatio) {
-            const [w, h] = aspectRatio.split('x').map(Number);
-            if (w && h) {
-                width = w;
-                height = h;
+    try {
+        if (isPro) {
+            // FLUX.2 Pro: 官方簡化格式
+            console.log('🏆 使用 FLUX.2 Pro 模式');
+            imageElement = await puter.ai.txt2img(fullPrompt, {
+                model: selectedModel
+            });
+        } else {
+            // FLUX.2 Flex/Dev: 完整參數格式
+            let width = 1024;
+            let height = 1024;
+            if (aspectRatio) {
+                const [w, h] = aspectRatio.split('x').map(Number);
+                if (w && h) {
+                    width = w;
+                    height = h;
+                }
             }
+            
+            console.log(`✨ 使用 FLUX.2 Flex/Dev 模式 (${width}x${height})`);
+            imageElement = await puter.ai.txt2img(fullPrompt, {
+                model: selectedModel,
+                width: width,
+                height: height,
+                steps: 30,
+                seed: Math.floor(Math.random() * 100000) + index
+            });
         }
         
-        imageElement = await puter.ai.txt2img(fullPrompt, {
-            model: selectedModel,
-            width: width,
-            height: height,
-            steps: 30,
-            seed: 42 + index, // 每張圖使用不同 seed
-            disable_safety_checker: true
-        });
+        if (!imageElement || !imageElement.src) {
+            throw new Error('圖像生成失敗:無效的回應');
+        }
+        
+        const imageData = imageElement.src;
+        console.log(`✅ 圖片 ${index} 生成成功`);
+        
+        // 保存到記錄
+        imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
+        
+        return { imageElement, imageData };
+        
+    } catch (error) {
+        console.error(`❌ 圖片 ${index} 生成失敗:`, error);
+        throw new Error(`生成失敗: ${error.message || '網路錯誤'}`);
     }
-    
-    if (!imageElement || !imageElement.src) {
-        throw new Error('圖像生成失敗:無效的回應');
-    }
-    
-    const imageData = imageElement.src;
-    
-    // ✅ 保存到記錄（包含比例信息）
-    imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
-    
-    return { imageElement, imageData };
 }
 
 // OCR 功能
 async function extractText() {
+    if (!puterReady) {
+        showNotification('⚠️ 正在初始化,請稍候...', 'error');
+        return;
+    }
+    
     const url = imageUrl.value.trim();
     
     if (!url) {
@@ -705,13 +767,13 @@ async function extractText() {
             </div>
         `;
     } catch (error) {
+        console.error('OCR 錯誤:', error);
         ocrResult.innerHTML = `<p class="error">❌ 提取失敗: ${error.message}</p>`;
     } finally {
         ocrBtn.disabled = false;
     }
 }
 
-// 更新模型資訊
 function updateModelInfo() {
     const selectedModel = imageModelSelect.value;
     const description = modelDescriptions[selectedModel] || '選擇一個模型開始生成';
@@ -725,7 +787,6 @@ function updateModelInfo() {
         <span>${description}</span>
     `;
     
-    // 更新尺寸限制
     updateAspectRatioPreview();
 }
 
@@ -759,9 +820,28 @@ if (batchCountSelect) {
 ocrBtn.addEventListener('click', extractText);
 
 // 初始化
-addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
-updateModelInfo();
-if (styleSelect) updateStylePreview();
-if (aspectRatioSelect) updateAspectRatioPreview();
-if (batchCountSelect) updateBatchCountPreview();
-renderHistory();
+async function initialize() {
+    console.log('🚀 開始初始化...');
+    
+    // 初始化 Puter.js
+    await initPuter();
+    
+    // 初始化 UI
+    if (chatMessages) {
+        addMessage('👋 您好!我是 AI 助手,有什麼可以幫您的嗎?', 'ai');
+    }
+    updateModelInfo();
+    if (styleSelect) updateStylePreview();
+    if (aspectRatioSelect) updateAspectRatioPreview();
+    if (batchCountSelect) updateBatchCountPreview();
+    renderHistory();
+    
+    console.log('✅ 初始化完成!');
+}
+
+// 頁面加載完成後初始化
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+} else {
+    initialize();
+}
