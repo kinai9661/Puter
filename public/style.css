@@ -41,7 +41,7 @@ body {
 }
 
 .header-content {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 1rem 2rem;
     display: flex;
@@ -95,7 +95,7 @@ body {
 
 /* Main Content */
 .main-content {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 2rem auto;
     padding: 0 2rem 2rem;
 }
@@ -167,7 +167,7 @@ body {
     stroke: var(--primary);
 }
 
-/* Messages */
+/* Messages (舊版聊天樣式 - 兼容保留) */
 .messages {
     height: 450px;
     overflow-y: auto;
@@ -467,6 +467,8 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .history-model {
@@ -475,6 +477,15 @@ body {
     color: white;
     background: var(--primary);
     padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+}
+
+.history-size {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    background: rgba(16, 185, 129, 0.9);
+    padding: 0.25rem 0.5rem;
     border-radius: 6px;
 }
 
@@ -753,13 +764,22 @@ body {
     gap: 1rem;
 }
 
-.modal-model {
+.modal-model,
+.modal-size {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--primary);
-    background: rgba(102, 126, 234, 0.1);
     padding: 0.5rem 1rem;
     border-radius: 8px;
+}
+
+.modal-model {
+    color: var(--primary);
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.modal-size {
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .modal-actions {
@@ -806,6 +826,9 @@ body {
 .footer a:hover {
     opacity: 0.8;
 }
+
+/* 引入聊天優化樣式 */
+@import url('chat-optimized.css');
 
 /* Responsive */
 @media (max-width: 768px) {
