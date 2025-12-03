@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puter AI - 免費 FLUX.2 Pro 圖像生成與 AI 聊天</title>
+    <title>Puter AI - 免費 FLUX.2 圖像生成與 AI 聊天</title>
     
     <!-- 主要樣式 -->
     <link rel="stylesheet" href="style.css">
@@ -114,17 +114,15 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    <span>Powered by Black Forest Labs FLUX.2</span>
+                    <span>Powered by Black Forest Labs FLUX.2 (2025 最新)</span>
                 </div>
 
                 <div class="form-group">
                     <label class="label-modern">選擇 FLUX.2 模型</label>
                     <select id="image-model-select" class="select-modern">
-                        <option value="black-forest-labs/FLUX.2-pro" selected>🏆 FLUX.2 Pro (最高品質)</option>
-                        <option value="black-forest-labs/FLUX.2-flex">🔄 FLUX.2 Flex (彈性)</option>
-                        <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2 Dev (開發)</option>
-                        <option value="gpt-image-1">🤖 GPT Image-1 (備用)</option>
-                        <option value="dall-e-3">✨ DALL-E 3 (經典)</option>
+                        <option value="black-forest-labs/FLUX.2-pro" selected>🏆 FLUX.2 Pro - 最高品質 (僅 1024x1024)</option>
+                        <option value="black-forest-labs/FLUX.2-flex">🔄 FLUX.2 Flex - 彈性模型 (支援多尺寸)</option>
+                        <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2 Dev - 開發版本 (支援多尺寸)</option>
                     </select>
                 </div>
 
@@ -134,7 +132,7 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🏆 FLUX.2 Pro: 最新一代專業級模型,完美文字渲染（僅支持1024x1024）</span>
+                    <span>🏆 FLUX.2 Pro: 2025 最新專業級模型，完美文字渲染，最高品質（僅支援 1024x1024）</span>
                 </div>
 
                 <div class="form-group">
@@ -206,11 +204,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="label-modern">圖像描述</label>
+                    <label class="label-modern">💭 圖像描述提示詞</label>
                     <textarea id="image-prompt" class="textarea-modern" rows="4" placeholder="詳細描述你想生成的圖像...
 
+✨ FLUX.2 專長:
+• 完美的文字渲染 (海報、標誌、UI)
+• 複雜的場景構圖
+• 精細的細節和光影
+• 準確的物體定位
+
 示例:
-• A vintage movie poster for 'The Last Voyage', featuring bold art deco typography
+• A vintage movie poster for 'The Last Voyage', bold art deco typography
 • An infographic showing how to make coffee step by step
 • A majestic dragon on a mountain peak, fantasy art, detailed scales">A majestic dragon perched on a mountain peak, fantasy art style, detailed scales, dramatic lighting, 8K quality</textarea>
                 </div>
@@ -295,7 +299,7 @@
         <p>
             Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + 
             <a href="https://blackforestlabs.ai" target="_blank">FLUX.2</a> • 
-            免費使用 • 無需 API 金鑰
+            免費使用 • 無需 API 金鑰 • 2025 最新
         </p>
     </footer>
 
