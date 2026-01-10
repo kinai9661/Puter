@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍌 Nano Banana AI 圖像生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== 頂部導航欄 ===== */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .navbar-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #FFD93D;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* ===== 主內容區域 ===== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* ===== 左側控制面板 ===== */
+        .control-panel {
+            width: 35%;
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .control-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            border-bottom: 2px solid #FFD93D;
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-input {
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 80px;
+            max-height: 120px;
+        }
+
+        .form-select {
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .button-group.full {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-generate {
+            grid-column: 1 / -1;
+            padding: 0.9rem;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD93D 0%, #FFC93D 100%);
+            color: #333;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 217, 61, 0.3);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 217, 61, 0.4);
+        }
+
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-value {
+            min-width: 45px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.95rem;
+        }
+
+        /* ===== 右側預覽和歷史區 ===== */
+        .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow: hidden;
+        }
+
+        .preview-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 0.6;
+            overflow: auto;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            object-fit: contain;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #999;
+        }
+
+        .preview-placeholder svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .loading-progress {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 100%; }
+        }
+
+        /* ===== 歷史畫廊 ===== */
+        .history-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            flex: 0.4;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #FFD93D;
+        }
+
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .history-stats {
+            font-size: 0.85rem;
+            color: #999;
+            background: #f5f5f5;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.3rem;
+        }
+
+        .btn-clear-history {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.85rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear-history:hover {
+            background: #ff5252;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.8rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .history-item {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .history-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .history-item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .history-item:hover .history-item-overlay {
+            opacity: 1;
+        }
+
+        .history-item-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .history-item-btn.use {
+            background: #667eea;
+            color: white;
+        }
+
+        .history-item-btn.use:hover {
+            background: #764ba2;
+        }
+
+        .history-item-btn.delete {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .history-item-btn.delete:hover {
+            background: #ff5252;
+        }
+
+        .history-empty {
+            text-align: center;
+            color: #999;
+            padding: 2rem 0;
+        }
+
+        /* ===== 錯誤和成功提示 ===== */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* ===== 響應式設計 ===== */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .control-panel {
+                width: 100%;
+                max-height: 40vh;
+            }
+
+            .preview-section {
+                max-height: 60vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .navbar-left, .navbar-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .main-content {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .control-panel, .preview-container, .history-section {
+                padding: 1rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .history-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+        }
+
+        /* ===== 滾動條樣式 ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頂部導航欄 -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <div class="navbar-title">🍌 Nano Banana AI</div>
+            </div>
+            <div class="navbar-right">
+                <button class="btn btn-home" id="btnHome">
+                    ← 返回主頁
+                </button>
+            </div>
+        </nav>
+
+        <!-- 主內容區域 -->
+        <div class="main-content">
+            <!-- 左側控制面板 -->
+            <div class="control-panel">
+                <div class="control-section">
+                    <div class="control-title">📝 提示詞</div>
+                    <div class="form-group">
+                        <label class="form-label" for="prompt">輸入你的創意想法</label>
+                        <textarea 
+                            class="form-input" 
+                            id="prompt" 
+                            placeholder="例如：一隻穿著太空服的香蕉，在太空中飄浮，背景是閃亮的星星和行星..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="control-title">🎯 模型設置</div>
+                    <div class="form-group">
+                        <label class="form-label" for="model">選擇模型</label>
+                        <select class="form-select" id="model">
+                            <option value="gemini-3-pro-image">🌟 Gemini 3 Pro Image (最強)</option>
+                            <option value="gemini-2.5-flash-image-preview">⚡ Gemini 2.5 Flash Image (快速)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="control-title">🖼️ 圖片參數</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="width">寬度</label>
+                        <div class="slider-container">
+                            <input 
+                                type="range" 
+                                id="width" 
+                                min="512" 
+                                max="1024" 
+                                step="64" 
+                                value="768" 
+                                class="form-input"
+                            >
+                            <span class="slider-value" id="widthValue">768</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="height">高度</label>
+                        <div class="slider-container">
+                            <input 
+                                type="range" 
+                                id="height" 
+                                min="512" 
+                                max="1024" 
+                                step="64" 
+                                value="768" 
+                                class="form-input"
+                            >
+                            <span class="slider-value" id="heightValue">768</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="seed">隨機種子 (可留空)</label>
+                        <input 
+                            type="number" 
+                            class="form-input" 
+                            id="seed" 
+                            placeholder="留空為隨機"
+                        >
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="control-title">⚙️ 生成選項</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="batchCount">一次生成張數</label>
+                        <select class="form-select" id="batchCount">
+                            <option value="1">1 張 (快速)</option>
+                            <option value="2">2 張</option>
+                            <option value="3">3 張</option>
+                            <option value="4" selected>4 張 (推薦)</option>
+                        </select>
+                        <small style="color: #999; margin-top: 0.3rem;">⚠️ 每次消耗相應張數額度</small>
+                    </div>
+                </div>
+
+                <div id="alertContainer"></div>
+
+                <div class="button-group full">
+                    <button class="btn-generate" id="btnGenerate">🚀 開始生成</button>
+                    <button class="btn btn-secondary" id="btnRegenerate" style="display: none;">
+                        🔄 使用同樣 Seed 重新生成
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右側預覽和歷史區 -->
+            <div class="preview-section">
+                <!-- 預覽容器 -->
+                <div class="preview-container">
+                    <div id="preview" class="preview-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p>👈 輸入提示詞後，點擊「開始生成」</p>
+                    </div>
+                    <div id="loadingSpinner" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p class="loading-text" id="loadingText">🍌 香蕉動力生成中...</p>
+                        <div class="loading-progress">
+                            <div class="loading-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 歷史畫廊 -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <div>
+                            <div class="history-title">📸 圖片記錄</div>
+                            <div class="history-stats">共 <span id="historyCount">0</span> 張</div>
+                        </div>
+                        <button class="btn-clear-history" id="btnClearHistory" style="display: none;">
+                            🗑️ 清空
+                        </button>
+                    </div>
+                    <div id="historyGrid" class="history-grid">
+                        <div class="history-empty">暫無圖片記錄</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 常數定義 =====
+        const HISTORY_KEY = "nanobanana_history_v1";
+        const HISTORY_MAX = 100;
+        const API_ENDPOINT = "https://api.together.xyz/v1/images/generations";
+
+        // ===== 狀態管理 =====
+        let currentState = {
+            isLoading: false,
+            lastSeed: null,
+            lastImageUrl: null,
+        };
+
+        // ===== DOM 元素 =====
+        const elements = {
+            prompt: document.getElementById("prompt"),
+            model: document.getElementById("model"),
+            width: document.getElementById("width"),
+            height: document.getElementById("height"),
+            widthValue: document.getElementById("widthValue"),
+            heightValue: document.getElementById("heightValue"),
+            seed: document.getElementById("seed"),
+            batchCount: document.getElementById("batchCount"),
+            btnGenerate: document.getElementById("btnGenerate"),
+            btnRegenerate: document.getElementById("btnRegenerate"),
+            btnHome: document.getElementById("btnHome"),
+            btnClearHistory: document.getElementById("btnClearHistory"),
+            preview: document.getElementById("preview"),
+            loadingSpinner: document.getElementById("loadingSpinner"),
+            loadingText: document.getElementById("loadingText"),
+            historyGrid: document.getElementById("historyGrid"),
+            historyCount: document.getElementById("historyCount"),
+            alertContainer: document.getElementById("alertContainer"),
+        };
+
+        // ===== 初始化 =====
+        function init() {
+            setupEventListeners();
+            renderHistory();
+        }
+
+        // ===== 事件監聽器設置 =====
+        function setupEventListeners() {
+            // 寬度和高度滑塊
+            elements.width.addEventListener("input", (e) => {
+                elements.widthValue.textContent = e.target.value;
+            });
+
+            elements.height.addEventListener("input", (e) => {
+                elements.heightValue.textContent = e.target.value;
+            });
+
+            // 按鈕事件
+            elements.btnGenerate.addEventListener("click", handleGenerate);
+            elements.btnRegenerate.addEventListener("click", handleRegenerate);
+            elements.btnHome.addEventListener("click", () => {
+                window.location.href = "/";
+            });
+            elements.btnClearHistory.addEventListener("click", handleClearHistory);
+
+            // Enter 鍵生成
+            elements.prompt.addEventListener("keydown", (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                    handleGenerate();
+                }
+            });
+        }
+
+        // ===== 生成圖片 =====
+        async function handleGenerate() {
+            const prompt = elements.prompt.value.trim();
+            if (!prompt) {
+                showAlert("請輸入提示詞", "error");
+                return;
+            }
+
+            const batchCount = parseInt(elements.batchCount.value);
+            await generateBatch(prompt, batchCount);
+        }
+
+        async function generateBatch(prompt, count) {
+            const results = [];
+            for (let i = 0; i < count; i++) {
+                try {
+                    const result = await generateOneImage(prompt);
+                    results.push(result);
+                    // 短暫延遲避免請求過快
+                    if (i < count - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                } catch (error) {
+                    console.error(`第 ${i + 1} 張生成失敗:`, error);
+                }
+            }
+
+            if (results.length > 0) {
+                showAlert(`✅ 成功生成 ${results.length} 張圖片！`, "success");
+            }
+        }
+
+        async function generateOneImage(prompt) {
+            currentState.isLoading = true;
+            setUILoading(true);
+
+            try {
+                const width = parseInt(elements.width.value);
+                const height = parseInt(elements.height.value);
+                const model = elements.model.value;
+                const seed = elements.seed.value ? parseInt(elements.seed.value) : null;
+
+                // 構建請求
+                const requestBody = {
+                    prompt: prompt,
+                    model: model,
+                    width: width,
+                    height: height,
+                    steps: 30,
+                    guidance_scale: 7.5,
+                };
+
+                if (seed !== null) {
+                    requestBody.seed = seed;
+                }
+
+                elements.loadingText.textContent = `🍌 使用 ${model} 生成中... (${width}x${height})`;
+
+                // 調用 API
+                const response = await fetch(API_ENDPOINT, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getAPIKey()}`,
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API 錯誤 (${response.status}): ${errorData.message || "未知錯誤"}`);
+                }
+
+                const data = await response.json();
+                const imageUrl = data.data[0].url;
+
+                // 保存到歷史
+                recordToHistory({
+                    id: generateUUID(),
+                    createdAt: new Date().toLocaleString("zh-TW"),
+                    prompt: prompt,
+                    model: model,
+                    width: width,
+                    height: height,
+                    seed: data.data[0].seed || seed,
+                    imageUrl: imageUrl,
+                });
+
+                // 更新預覽
+                displayImage(imageUrl);
+
+                // 保存為最後一張圖片
+                currentState.lastImageUrl = imageUrl;
+                currentState.lastSeed = data.data[0].seed || seed;
+
+                // 顯示重新生成按鈕
+                elements.btnRegenerate.style.display = "block";
+
+                return { imageUrl, seed: data.data[0].seed || seed };
+            } catch (error) {
+                console.error("生成失敗:", error);
+                showAlert(`❌ 生成失敗: ${error.message}`, "error");
+                return null;
+            } finally {
+                currentState.isLoading = false;
+                setUILoading(false);
+            }
+        }
+
+        // ===== 使用相同 Seed 重新生成 =====
+        async function handleRegenerate() {
+            if (!currentState.lastSeed) {
+                showAlert("無法找到前一次的種子", "error");
+                return;
+            }
+
+            elements.seed.value = currentState.lastSeed;
+            await handleGenerate();
+        }
+
+        // ===== 歷史管理 =====
+        function loadHistory() {
+            try {
+                return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+            } catch (e) {
+                console.error("讀取歷史失敗:", e);
+                return [];
+            }
+        }
+
+        function saveHistory(items) {
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, HISTORY_MAX)));
+            } catch (e) {
+                console.error("保存歷史失敗:", e);
+                showAlert("保存歷史失敗（可能是存儲空間滿）", "error");
+            }
+        }
+
+        function recordToHistory(item) {
+            const items = loadHistory();
+            items.unshift(item);
+            saveHistory(items);
+            renderHistory();
+        }
+
+        function removeHistoryItem(id) {
+            const items = loadHistory().filter(x => x.id !== id);
+            saveHistory(items);
+            renderHistory();
+        }
+
+        function handleClearHistory() {
+            if (confirm("確定要清空所有圖片記錄嗎？此操作無法撤銷。")) {
+                localStorage.removeItem(HISTORY_KEY);
+                renderHistory();
+                showAlert("已清空所有圖片記錄", "success");
+            }
+        }
+
+        function renderHistory() {
+            const items = loadHistory();
+            elements.historyCount.textContent = items.length;
+
+            if (items.length === 0) {
+                elements.historyGrid.innerHTML = '<div class="history-empty">暫無圖片記錄</div>';
+                elements.btnClearHistory.style.display = "none";
+                return;
+            }
+
+            elements.btnClearHistory.style.display = "block";
+
+            elements.historyGrid.innerHTML = items.map((item) => `
+                <div class="history-item" title="${escapeHtml(item.prompt)}">
+                    <img src="${item.imageUrl}" alt="${escapeHtml(item.prompt)}" loading="lazy" />
+                    <div class="history-item-overlay">
+                        <button class="history-item-btn use" onclick="useHistoryItem('${item.id}')" title="使用此提示詞">
+                            ↑
+                        </button>
+                        <button class="history-item-btn delete" onclick="deleteHistoryItem('${item.id}')" title="刪除">
+                            ×
+                        </button>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function useHistoryItem(id) {
+            const items = loadHistory();
+            const item = items.find(x => x.id === id);
+            if (item) {
+                elements.prompt.value = item.prompt;
+                elements.model.value = item.model;
+                elements.width.value = item.width;
+                elements.height.value = item.height;
+                elements.widthValue.textContent = item.width;
+                elements.heightValue.textContent = item.height;
+                elements.seed.value = item.seed || "";
+                elements.prompt.focus();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+        }
+
+        function deleteHistoryItem(id) {
+            if (confirm("確定要刪除這張圖片嗎？")) {
+                removeHistoryItem(id);
+                showAlert("已刪除圖片", "success");
+            }
+        }
+
+        // ===== UI 更新 =====
+        function setUILoading(isLoading) {
+            elements.btnGenerate.disabled = isLoading;
+            elements.btnRegenerate.disabled = isLoading;
+
+            if (isLoading) {
+                elements.preview.style.display = "none";
+                elements.loadingSpinner.classList.add("active");
+            } else {
+                elements.preview.style.display = "block";
+                elements.loadingSpinner.classList.remove("active");
+            }
+        }
+
+        function displayImage(imageUrl) {
+            if (elements.preview.querySelector("img")) {
+                elements.preview.querySelector("img").remove();
+            }
+            const img = document.createElement("img");
+            img.src = imageUrl;
+            img.alt = "生成的圖片";
+            img.className = "preview-image";
+            elements.preview.innerHTML = "";
+            elements.preview.appendChild(img);
+        }
+
+        function showAlert(message, type = "info") {
+            const alertEl = document.createElement("div");
+            alertEl.className = `alert alert-${type} show`;
+            alertEl.textContent = message;
+
+            elements.alertContainer.innerHTML = "";
+            elements.alertContainer.appendChild(alertEl);
+
+            setTimeout(() => {
+                alertEl.classList.remove("show");
+                setTimeout(() => alertEl.remove(), 300);
+            }, 4000);
+        }
+
+        // ===== 工具函數 =====
+        function getAPIKey() {
+            // TODO: 從環境變數或配置中獲取 API Key
+            return "your-api-key-here";
+        }
+
+        function generateUUID() {
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === "x" ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        // 初始化應用
+        init();
+    </script>
+</body>
+</html>
