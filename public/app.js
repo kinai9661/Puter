@@ -238,6 +238,10 @@ const imageUrl = document.getElementById('image-url');
 const ocrBtn = document.getElementById('ocr-btn');
 const ocrResult = document.getElementById('ocr-result');
 
+// 新增 DOM 元素
+const stepsInput = document.getElementById('steps-input');
+const seedInput = document.getElementById('seed-input');
+
 // ✅ localStorage 安全包裝器
 const HISTORY_KEY = 'puter_ai_image_history';
 const MAX_HISTORY = 50;
@@ -474,9 +478,9 @@ function updateAspectRatioPreview() {
     if (!aspectRatioSelect || !aspectRatioPreview || !imageModelSelect) return;
     const selectedModel = imageModelSelect.value;
     const selectedSize = aspectRatioSelect.value;
-    const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
+    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('max');
     
-    if (isPro) {
+    if (isFixedSize) {
         Array.from(aspectRatioSelect.options).forEach(option => {
             if (option.value !== '1024x1024') option.disabled = true;
         });
@@ -485,7 +489,7 @@ function updateAspectRatioPreview() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
             </svg>
-            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ FLUX.2 Pro 僅支持 1024x1024(官方限制)</span>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ Pro/Max 模型僅支持 1024x1024 (官方限制)</span>
         `;
     } else {
         Array.from(aspectRatioSelect.options).forEach(option => {
@@ -675,9 +679,11 @@ clearHistoryBtn.addEventListener('click', () => {
 
 // FLUX.2 模型資訊
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 2025 最新專業級模型,完美文字渲染,最高品質(僅支持 1024x1024)',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 彈性模型,適應多種生成需求,支持多種尺寸比例',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本,適合實驗與測試,支持多種尺寸比例'
+    'black-forest-labs/FLUX.2-max': '🚀 FLUX.2 Max: 官方旗艦模型，提供目前最高的細節與寫實度',
+    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 專業級模型，完美文字渲染 (固定 1024x1024)',
+    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 支援自訂步數與種子碼，彈性最高',
+    'black-forest-labs/FLUX.1-schnell': '⚡ FLUX.1 Schnell: 極速生成模型，適合快速預覽',
+    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本，適合實驗'
 };
 
 // 聊天功能
@@ -759,17 +765,17 @@ async function generateImage() {
         }
     }
     
-    const isPro = selectedModel === 'black-forest-labs/FLUX.2-pro';
+    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('max');
     
     // 獲取圖像比例
     let aspectRatio = '1024x1024';
-    if (!isPro && aspectRatioSelect) {
+    if (!isFixedSize && aspectRatioSelect) {
         aspectRatio = aspectRatioSelect.value;
     }
     
     console.log('📋 生成參數:', {
         model: selectedModel,
-        isPro,
+        isFixedSize,
         aspectRatio,
         batchCount,
         promptLength: fullPrompt.length,
@@ -785,7 +791,7 @@ async function generateImage() {
             <div class="loading-spinner"></div>
             <p class="loading">⚡ 正在使用 ${modelName} 並行生成 ${countText}...</p>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                ${isPro ? '專業級品質 • 1024x1024' : `FLUX.2 官方 API • ${aspectRatio}`} • 預計 ${batchCount * 20}-${batchCount * 40} 秒
+                ${isFixedSize ? '旗艦級品質 • 1024x1024' : `FLUX.2 官方 API • ${aspectRatio}`} • 預計 ${batchCount * 20}-${batchCount * 40} 秒
             </p>
             <div id="batch-progress" style="margin-top: 1rem;"></div>
         </div>
@@ -802,7 +808,7 @@ async function generateImage() {
             progressItem.innerHTML = `🔄 圖片 ${i + 1}/${batchCount}: 正在生成...`;
             batchProgress.appendChild(progressItem);
             
-            const promise = generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, i + 1)
+            const promise = generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspectRatio, i + 1)
                 .then(result => {
                     progressItem.innerHTML = `✅ 圖片 ${i + 1}/${batchCount}: 生成成功!`;
                     progressItem.style.background = 'rgba(16, 185, 129, 0.1)';
@@ -825,7 +831,7 @@ async function generateImage() {
             throw new Error('所有圖片生成失敗');
         }
         
-        const sizeInfo = isPro ? '1024x1024 (官方預設)' : aspectRatio;
+        const sizeInfo = isFixedSize ? '1024x1024 (官方預設)' : aspectRatio;
         imageResult.innerHTML = `
             <div class="success-header">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -912,10 +918,10 @@ async function generateImage() {
 }
 
 // 🔧 增強錯誤處理 - 單張圖片生成
-async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio, index) {
+async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspectRatio, index) {
     console.log(`\n🖼️ ===== 圖片 ${index} 開始生成 =====`);
     debugLog('完整提示詞', fullPrompt);
-    debugLog('模型參數', { selectedModel, isPro, aspectRatio });
+    debugLog('模型參數', { selectedModel, isFixedSize, aspectRatio });
     
     const startTime = Date.now();
     
@@ -929,17 +935,32 @@ async function generateSingleImage(fullPrompt, selectedModel, isPro, aspectRatio
             // ✅ 根據官方文檔構建參數
             let options = {
                 model: selectedModel,
-                disable_safety_checker: true  // 官方必須參數
+                disable_safety_checker: true
             };
             
-            // ✅ 只有非 Pro 模型才添加 width/height
-            if (!isPro) {
+            // ✅ 判斷是否為固定尺寸模型 (Pro/Max)
+            if (!isFixedSize) {
                 const [width, height] = aspectRatio.split('x').map(Number);
                 options.width = width;
                 options.height = height;
-                console.log(`🔄 FLUX.2 Flex/Dev 格式 (${width}x${height})`);
+                
+                // ✅ 處理 Steps 和 Seed (Flex/Dev/Schnell)
+                if (stepsInput && seedInput) {
+                    const steps = parseInt(stepsInput.value) || 28;
+                    const seedVal = parseInt(seedInput.value);
+                    
+                    // 限制 steps 範圍 (4-50)
+                    options.steps = Math.min(Math.max(steps, 4), 50);
+                    
+                    // 如果 seed 不是 -1，則指定種子
+                    if (seedVal !== -1 && !isNaN(seedVal)) {
+                        options.seed = seedVal;
+                        console.log(`🎲 使用固定種子碼: ${seedVal}`);
+                    }
+                }
+                console.log(`🔄 Flex/Dev/Schnell 參數:`, options);
             } else {
-                console.log('🏆 FLUX.2 Pro 格式 (無 width/height)');
+                console.log('🏆 Pro/Max 模型使用官方預設參數 (固定尺寸)');
             }
             
             debugLog('API 調用參數', options);
