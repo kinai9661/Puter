@@ -171,10 +171,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="label-modern">選擇 FLUX.2 模型 (完全免費)</label>
+                    <label class="label-modern">選擇 FLUX 模型 (完全免費)</label>
                     <select id="image-model-select" class="select-modern">
+                        <option value="black-forest-labs/FLUX.2-max">🚀 FLUX.2-max - 旗艦級最強畫質 (最新)</option>
                         <option value="black-forest-labs/FLUX.2-flex" selected>🔄 FLUX.2-flex - 彈性模型 (推薦)</option>
-                        <option value="black-forest-labs/FLUX.2-pro">🏆 FLUX.2-pro - 專業級最高品質</option>
+                        <option value="black-forest-labs/FLUX.2-pro">🏆 FLUX.2-pro - 專業級品質</option>
+                        <option value="black-forest-labs/FLUX.1-schnell">⚡ FLUX.1-schnell - 極速生成</option>
                         <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2-dev - 開發測試版</option>
                     </select>
                 </div>
@@ -254,6 +256,21 @@
                         <rect x="14" y="14" width="7" height="7" rx="1"/>
                     </svg>
                     <span style="font-size: 0.85rem; color: #10b981;">✅ 將生成 1 張圖片</span>
+                </div>
+
+                <!-- 新增: 進階參數 -->
+                <div class="form-group">
+                    <label class="label-modern">⚙️ 進階參數 (僅 Flex/Dev/Schnell 模型有效)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">步數 (Steps 4-50)</label>
+                            <input type="number" id="steps-input" class="input-modern" value="28" min="4" max="50" placeholder="預設 28">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">種子碼 (Seed, -1 為隨機)</label>
+                            <input type="number" id="seed-input" class="input-modern" value="-1" placeholder="隨機">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
