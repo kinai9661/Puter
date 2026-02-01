@@ -478,10 +478,12 @@ function updateAspectRatioPreview() {
     if (!aspectRatioSelect || !aspectRatioPreview || !imageModelSelect) return;
     const selectedModel = imageModelSelect.value;
     const selectedSize = aspectRatioSelect.value;
-    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('max');
+    // Pro 和 Ultra 模型通常有固定尺寸或限制
+    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('ultra');
     
     if (isFixedSize) {
         Array.from(aspectRatioSelect.options).forEach(option => {
+            // Pro 模型通常支持 1024x1024, 橫向, 縱向，但為了安全起見先限制
             if (option.value !== '1024x1024') option.disabled = true;
         });
         aspectRatioSelect.value = '1024x1024';
@@ -489,7 +491,7 @@ function updateAspectRatioPreview() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
             </svg>
-            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ Pro/Max 模型僅支持 1024x1024 (官方限制)</span>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ 此模型建議使用 1024x1024 (官方限制)</span>
         `;
     } else {
         Array.from(aspectRatioSelect.options).forEach(option => {
@@ -677,13 +679,12 @@ clearHistoryBtn.addEventListener('click', () => {
     }
 });
 
-// FLUX.2 模型資訊
+// FLUX 模型資訊 - 修正為可靠的 FLUX.1 系列
 const modelDescriptions = {
-    'black-forest-labs/FLUX.2-max': '🚀 FLUX.2 Max: 官方旗艦模型，提供目前最高的細節與寫實度',
-    'black-forest-labs/FLUX.2-pro': '🏆 FLUX.2 Pro: 專業級模型，完美文字渲染 (固定 1024x1024)',
-    'black-forest-labs/FLUX.2-flex': '🔄 FLUX.2 Flex: 支援自訂步數與種子碼，彈性最高',
-    'black-forest-labs/FLUX.1-schnell': '⚡ FLUX.1 Schnell: 極速生成模型，適合快速預覽',
-    'black-forest-labs/FLUX.2-dev': '🔧 FLUX.2 Dev: 開發版本，適合實驗'
+    'black-forest-labs/flux-1.1-pro': '🚀 FLUX 1.1 Pro: 2025 最新旗艦,超高細節與寫實度 (固定 1024x1024)',
+    'black-forest-labs/flux-1-schnell': '⚡ FLUX 1 Schnell: 極速生成,適合快速預覽 (支持多尺寸)',
+    'black-forest-labs/flux-1-dev': '🔧 FLUX 1 Dev: 開發者版本,平衡速度與質量',
+    'black-forest-labs/flux-pro': '🏆 FLUX 1 Pro: 經典專業版'
 };
 
 // 聊天功能
@@ -724,9 +725,9 @@ function addMessage(text, sender, isLoading = false) {
     return messageDiv;
 }
 
-// 🔥 完全重建 FLUX.2 圖像生成 - 嚴格遵循官方文檔
+// 🔥 FLUX 圖像生成
 async function generateImage() {
-    console.log('🎨 ===== 開始 FLUX.2 圖像生成 =====');
+    console.log('🎨 ===== 開始 FLUX 圖像生成 =====');
     
     if (!puterReady) {
         console.error('❌ Puter 未就緒');
@@ -765,7 +766,7 @@ async function generateImage() {
         }
     }
     
-    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('max');
+    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('ultra');
     
     // 獲取圖像比例
     let aspectRatio = '1024x1024';
@@ -791,7 +792,7 @@ async function generateImage() {
             <div class="loading-spinner"></div>
             <p class="loading">⚡ 正在使用 ${modelName} 並行生成 ${countText}...</p>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                ${isFixedSize ? '旗艦級品質 • 1024x1024' : `FLUX.2 官方 API • ${aspectRatio}`} • 預計 ${batchCount * 20}-${batchCount * 40} 秒
+                ${isFixedSize ? '旗艦級品質 • 1024x1024' : `自定義尺寸 • ${aspectRatio}`} • 預計 ${batchCount * 15}-${batchCount * 30} 秒
             </p>
             <div id="batch-progress" style="margin-top: 1rem;"></div>
         </div>
@@ -863,7 +864,7 @@ async function generateImage() {
             
             const downloadBtn = document.createElement('a');
             downloadBtn.href = result.imageData;
-            downloadBtn.download = `flux2-${modelName}-${aspectRatio.replace('x', '-')}-${index + 1}-${Date.now()}.png`;
+            downloadBtn.download = `flux-${modelName}-${aspectRatio.replace('x', '-')}-${index + 1}-${Date.now()}.png`;
             downloadBtn.style.cssText = 'position: absolute; bottom: 10px; right: 10px; background: rgba(102, 126, 234, 0.9); color: white; padding: 0.5rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 600;';
             downloadBtn.innerHTML = `
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -901,12 +902,10 @@ async function generateImage() {
                 <div class="error-suggestions">
                     <p><strong>💡 解決建議:</strong></p>
                     <ul>
-                        <li><strong>確認已登入:</strong> 檢查右上角是否顯示用戶名</li>
-                        <li><strong>減少數量:</strong> 嘗試生成 1 張圖片</li>
-                        <li><strong>切換模型:</strong> 使用 <strong>FLUX.2-flex</strong></li>
-                        <li><strong>簡化提示詞:</strong> 移除特殊字符</li>
+                        <li><strong>確認模型:</strong> 嘗試切換到 FLUX.1 Pro 或 Schnell</li>
                         <li><strong>檢查網路:</strong> 確保網路連接正常</li>
-                        <li><strong>查看控制台:</strong> 按 F12 查看詳細錯誤</li>
+                        <li><strong>簡化參數:</strong> 暫時不使用進階參數</li>
+                        <li><strong>減少數量:</strong> 嘗試生成 1 張圖片</li>
                     </ul>
                 </div>
             </div>
@@ -938,14 +937,14 @@ async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspec
                 disable_safety_checker: true
             };
             
-            // ✅ 判斷是否為固定尺寸模型 (Pro/Max)
+            // ✅ 判斷是否為固定尺寸模型 (Pro)
             if (!isFixedSize) {
                 const [width, height] = aspectRatio.split('x').map(Number);
                 options.width = width;
                 options.height = height;
                 
-                // ✅ 處理 Steps 和 Seed (Flex/Dev/Schnell)
-                if (stepsInput && seedInput) {
+                // ✅ 處理 Steps 和 Seed (僅 Schnell/Dev 支持)
+                if (stepsInput && seedInput && !selectedModel.includes('pro')) {
                     const steps = parseInt(stepsInput.value) || 28;
                     const seedVal = parseInt(seedInput.value);
                     
@@ -958,9 +957,9 @@ async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspec
                         console.log(`🎲 使用固定種子碼: ${seedVal}`);
                     }
                 }
-                console.log(`🔄 Flex/Dev/Schnell 參數:`, options);
+                console.log(`🔄 Schnell/Dev 參數:`, options);
             } else {
-                console.log('🏆 Pro/Max 模型使用官方預設參數 (固定尺寸)');
+                console.log('🏆 Pro 模型使用官方預設參數 (固定尺寸)');
             }
             
             debugLog('API 調用參數', options);
@@ -971,9 +970,6 @@ async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspec
                 .then(imageElement => {
                     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
                     console.log(`⏱️ API 調用完成 (耗時: ${elapsed}秒)`);
-                    
-                    debugLog('API 返回結果', imageElement);
-                    debugLog('返回值類型', imageElement?.constructor?.name);
                     
                     if (!imageElement) {
                         console.error('❌ API 返回 null 或 undefined');
@@ -986,15 +982,11 @@ async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspec
                     
                     if (imageElement instanceof HTMLImageElement) {
                         imageData = imageElement.src;
-                        console.log('✅ 返回 HTMLImageElement,成功提取 src');
                     } else if (typeof imageElement === 'string') {
                         imageData = imageElement;
-                        console.log('✅ 返回字符串 URL');
                     } else if (imageElement.src) {
                         imageData = imageElement.src;
-                        console.log('✅ 返回對象包含 src 屬性');
                     } else {
-                        console.error('❌ 無法識別的返回格式:', imageElement);
                         reject(new Error(`無法從返回值提取圖片數據,類型: ${imageElement?.constructor?.name}`));
                         return;
                     }
@@ -1005,12 +997,9 @@ async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspec
                     }
                     
                     console.log(`✅ 圖片 ${index} 生成成功 (尺寸: ${aspectRatio}, 耗時: ${elapsed}秒)`);
-                    debugLog('圖片 Data URL 前100字符', imageData.substring(0, 100));
                     
                     // ✅ 保存到記錄
-                    console.log(`💾 正在保存圖片 ${index} 到記錄...`);
                     imageHistory.addImage(imageData, fullPrompt, selectedModel, aspectRatio);
-                    console.log(`✅ 圖片 ${index} 已保存到記錄!`);
                     
                     // 創建用於顯示的 img 元素
                     const displayImage = document.createElement('img');
@@ -1024,19 +1013,7 @@ async function generateSingleImage(fullPrompt, selectedModel, isFixedSize, aspec
                 })
                 .catch(error => {
                     console.error(`❌ 圖片 ${index} 生成失敗:`, error);
-                    
-                    let errorMessage = error.message || error.error || error.statusText || '未知錯誤';
-                    
-                    if (errorMessage.includes('not signed in') || errorMessage.includes('authentication')) {
-                        errorMessage = '用戶未登入,請先登入';
-                    } else if (errorMessage.includes('timeout')) {
-                        errorMessage = '請求超時,請重試';
-                    } else if (errorMessage.includes('network')) {
-                        errorMessage = '網路錯誤,請檢查連接';
-                    } else if (errorMessage === '未知錯誤') {
-                        errorMessage = 'Puter API 錯誤 (請查看控制台完整日誌)';
-                    }
-                    
+                    let errorMessage = error.message || error.error || '未知錯誤';
                     reject(new Error(errorMessage));
                 });
                 
@@ -1079,7 +1056,7 @@ async function extractText() {
 
 function updateModelInfo() {
     const selectedModel = imageModelSelect.value;
-    const description = modelDescriptions[selectedModel] || '選擇一個 FLUX.2 模型開始生成';
+    const description = modelDescriptions[selectedModel] || '選擇一個 FLUX 模型開始生成';
     modelInfo.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
@@ -1114,10 +1091,6 @@ ocrBtn.addEventListener('click', extractText);
 // 初始化
 async function initialize() {
     console.log('🚀 ===== 應用初始化開始 =====');
-    console.log('當前時間:', new Date().toLocaleString('zh-TW'));
-    console.log('調試模式:', DEBUG_MODE ? '開啟' : '關閉');
-    console.log('localStorage:', USE_LOCAL_STORAGE ? '可用' : '不可用 (使用內存)');
-    
     await initPuter();
     
     if (chatMessages) {
@@ -1128,7 +1101,6 @@ async function initialize() {
     if (aspectRatioSelect) updateAspectRatioPreview();
     if (batchCountSelect) updateBatchCountPreview();
     renderHistory();
-    
     console.log('✅ ===== 應用初始化完成 =====\n');
 }
 

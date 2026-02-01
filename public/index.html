@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puter AI - 免費 FLUX.2 AI 圖像生成與 AI 聊天</title>
+    <title>Puter AI - 免費 FLUX.1 AI 圖像生成與 AI 聊天</title>
     
     <!-- 主要樣式 -->
     <link rel="stylesheet" href="style.css">
@@ -94,7 +94,7 @@
                         <circle cx="8.5" cy="8.5" r="1.5"/>
                         <path d="M21 15l-5-5L5 21"/>
                     </svg>
-                    FLUX.2 圖像
+                    FLUX.1 圖像
                 </button>
                 <button class="tab-btn" data-tab="history">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -156,28 +156,26 @@
             </div>
         </section>
 
-        <!-- FLUX.2 圖像生成區 -->
+        <!-- FLUX.1 圖像生成區 -->
         <section id="image-section" class="section">
             <div class="card">
                 <div class="card-header">
-                    <h2>⚡ FLUX.2 AI 圖像生成</h2>
+                    <h2>⚡ FLUX.1 AI 圖像生成</h2>
                 </div>
                 
                 <div class="flux-badge">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    <span>🎉 完全免費 • Powered by FLUX.2 (Black Forest Labs 2025 最新)</span>
+                    <span>🎉 完全免費 • Powered by FLUX.1 (Black Forest Labs)</span>
                 </div>
 
                 <div class="form-group">
                     <label class="label-modern">選擇 FLUX 模型 (完全免費)</label>
                     <select id="image-model-select" class="select-modern">
-                        <option value="black-forest-labs/FLUX.2-max">🚀 FLUX.2-max - 旗艦級最強畫質 (最新)</option>
-                        <option value="black-forest-labs/FLUX.2-flex" selected>🔄 FLUX.2-flex - 彈性模型 (推薦)</option>
-                        <option value="black-forest-labs/FLUX.2-pro">🏆 FLUX.2-pro - 專業級品質</option>
-                        <option value="black-forest-labs/FLUX.1-schnell">⚡ FLUX.1-schnell - 極速生成</option>
-                        <option value="black-forest-labs/FLUX.2-dev">🔧 FLUX.2-dev - 開發測試版</option>
+                        <option value="black-forest-labs/flux-1.1-pro" selected>🚀 FLUX 1.1 Pro - 旗艦級 (推薦)</option>
+                        <option value="black-forest-labs/flux-1-schnell">⚡ FLUX 1 Schnell - 極速生成</option>
+                        <option value="black-forest-labs/flux-1-dev">🔧 FLUX 1 Dev - 開發者版本</option>
                     </select>
                 </div>
 
@@ -187,7 +185,7 @@
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>🔄 FLUX.2-flex: 彈性模型，適應多種生成需求，支持多種尺寸比例</span>
+                    <span>🔄 FLUX 1.1 Pro: 2025 最新旗艦模型，超高細節與寫實度</span>
                 </div>
 
                 <div class="form-group">
@@ -260,7 +258,7 @@
 
                 <!-- 新增: 進階參數 -->
                 <div class="form-group">
-                    <label class="label-modern">⚙️ 進階參數 (僅 Flex/Dev/Schnell 模型有效)</label>
+                    <label class="label-modern">⚙️ 進階參數 (僅 Schnell/Dev 模型有效)</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div>
                             <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">步數 (Steps 4-50)</label>
@@ -277,11 +275,11 @@
                     <label class="label-modern">💭 圖像描述提示詞</label>
                     <textarea id="image-prompt" class="textarea-modern" rows="4" placeholder="詳細描述你想生成的圖像...
 
-✨ FLUX.2 專長:
-• 超高清寫實照片和完美文字渲染
-• 複雜場景和細節刻畫
-• 藝術創作和專業插畫
-• 產品設計和概念藝術
+✨ FLUX.1 專長:
+• 超高清寫實照片
+• 複雜場景和細節
+• 文字渲染能力
+• 藝術風格創作
 
 示例:
 • A serene Japanese garden with cherry blossoms and koi pond
@@ -293,7 +291,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    🎉 免費生成 FLUX.2 圖像
+                    🎉 免費生成 FLUX.1 圖像
                 </button>
 
                 <div id="image-result" class="result-container"></div>
@@ -368,7 +366,7 @@
     <footer class="footer">
         <p>
             🎉 完全免費 • Powered by <a href="https://puter.com" target="_blank">Puter.js</a> + 
-            <a href="https://blackforestlabs.ai" target="_blank">FLUX.2</a> • 
+            <a href="https://blackforestlabs.ai" target="_blank">FLUX.1</a> • 
             無需 API 金鑰 • 無限制使用
         </p>
     </footer>
