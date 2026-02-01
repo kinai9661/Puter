@@ -478,12 +478,13 @@ function updateAspectRatioPreview() {
     if (!aspectRatioSelect || !aspectRatioPreview || !imageModelSelect) return;
     const selectedModel = imageModelSelect.value;
     const selectedSize = aspectRatioSelect.value;
-    // Pro 和 Ultra 模型通常有固定尺寸或限制
-    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('ultra');
+    
+    // 檢查是否為官方限制模型 (Pro)
+    // 注意: Schnell 和 Dev 支持自定義尺寸
+    const isFixedSize = selectedModel.includes('pro');
     
     if (isFixedSize) {
         Array.from(aspectRatioSelect.options).forEach(option => {
-            // Pro 模型通常支持 1024x1024, 橫向, 縱向，但為了安全起見先限制
             if (option.value !== '1024x1024') option.disabled = true;
         });
         aspectRatioSelect.value = '1024x1024';
@@ -491,7 +492,7 @@ function updateAspectRatioPreview() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
             </svg>
-            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ 此模型建議使用 1024x1024 (官方限制)</span>
+            <span style="font-size: 0.85rem; color: #f59e0b;">⚠️ Pro 模型建議使用 1024x1024</span>
         `;
     } else {
         Array.from(aspectRatioSelect.options).forEach(option => {
@@ -679,12 +680,11 @@ clearHistoryBtn.addEventListener('click', () => {
     }
 });
 
-// FLUX 模型資訊 - 修正為可靠的 FLUX.1 系列
+// FLUX 模型資訊 - 嚴格使用 Puter.js 支援的模型 ID
 const modelDescriptions = {
-    'black-forest-labs/flux-1.1-pro': '🚀 FLUX 1.1 Pro: 2025 最新旗艦,超高細節與寫實度 (固定 1024x1024)',
-    'black-forest-labs/flux-1-schnell': '⚡ FLUX 1 Schnell: 極速生成,適合快速預覽 (支持多尺寸)',
-    'black-forest-labs/flux-1-dev': '🔧 FLUX 1 Dev: 開發者版本,平衡速度與質量',
-    'black-forest-labs/flux-pro': '🏆 FLUX 1 Pro: 經典專業版'
+    'black-forest-labs/FLUX.1-schnell': '⚡ FLUX.1 Schnell: 極速生成模型，免費且不限次數 (支持多尺寸)',
+    'black-forest-labs/FLUX.1-dev': '🔧 FLUX.1 Dev: 開發者版本，細節更豐富',
+    'black-forest-labs/FLUX.1-pro': '🏆 FLUX.1 Pro: 專業版，極致畫質 (可能需要 Credits)'
 };
 
 // 聊天功能
@@ -766,7 +766,7 @@ async function generateImage() {
         }
     }
     
-    const isFixedSize = selectedModel.includes('pro') || selectedModel.includes('ultra');
+    const isFixedSize = selectedModel.includes('pro');
     
     // 獲取圖像比例
     let aspectRatio = '1024x1024';
@@ -792,7 +792,7 @@ async function generateImage() {
             <div class="loading-spinner"></div>
             <p class="loading">⚡ 正在使用 ${modelName} 並行生成 ${countText}...</p>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                ${isFixedSize ? '旗艦級品質 • 1024x1024' : `自定義尺寸 • ${aspectRatio}`} • 預計 ${batchCount * 15}-${batchCount * 30} 秒
+                ${isFixedSize ? '專業品質 • 1024x1024' : `自定義尺寸 • ${aspectRatio}`} • 預計 ${batchCount * 5}-${batchCount * 15} 秒
             </p>
             <div id="batch-progress" style="margin-top: 1rem;"></div>
         </div>
@@ -832,7 +832,7 @@ async function generateImage() {
             throw new Error('所有圖片生成失敗');
         }
         
-        const sizeInfo = isFixedSize ? '1024x1024 (官方預設)' : aspectRatio;
+        const sizeInfo = isFixedSize ? '1024x1024' : aspectRatio;
         imageResult.innerHTML = `
             <div class="success-header">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -902,10 +902,10 @@ async function generateImage() {
                 <div class="error-suggestions">
                     <p><strong>💡 解決建議:</strong></p>
                     <ul>
-                        <li><strong>確認模型:</strong> 嘗試切換到 FLUX.1 Pro 或 Schnell</li>
+                        <li><strong>確認模型:</strong> 嘗試切換到 FLUX.1 Schnell</li>
                         <li><strong>檢查網路:</strong> 確保網路連接正常</li>
-                        <li><strong>簡化參數:</strong> 暫時不使用進階參數</li>
                         <li><strong>減少數量:</strong> 嘗試生成 1 張圖片</li>
+                        <li><strong>簡化參數:</strong> 將步數設為預設值 28</li>
                     </ul>
                 </div>
             </div>
